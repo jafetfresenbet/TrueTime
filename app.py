@@ -4,7 +4,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from uuid import uuid4
 from datetime import datetime
 from datetime import timedelta
-from flask_session import Session
 
 # ---------- Konfiguration ----------
 DATABASE = 'mvp.db'
@@ -15,16 +14,6 @@ app = Flask(__name__)
 app.permanent_session_lifetime = timedelta(days=7)
 app.config.from_object(__name__)
 app.secret_key = app.config['SECRET_KEY']
-
-# ---- Session setup ----
-app.config['SESSION_TYPE'] = 'sqlalchemy'
-app.config['SESSION_SQLALCHEMY'] = sqlite3.connect(DATABASE)
-app.config['SESSION_PERMANENT'] = True
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
-app.secret_key = app.config['SECRET_KEY']
-
-# Initialize Flask-Session
-Session(app)
 
 # ---------- DB-hjälpare ----------
 def get_db():
@@ -1471,5 +1460,6 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
