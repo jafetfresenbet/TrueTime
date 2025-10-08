@@ -1457,9 +1457,3 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
-
-
-# ---------- Starta app ----------
-if __name__ == '__main__':
-    init_db()
-    app.run(debug=True)
