@@ -3,6 +3,7 @@ import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 from uuid import uuid4
 from datetime import datetime
+from datetime import timedelta
 
 # ---------- Konfiguration ----------
 DATABASE = 'mvp.db'
@@ -10,6 +11,7 @@ SECRET_KEY = 'byt-denna-till-nagot-hemligt-i-produkt'  # byt senare
 DEBUG = True
 
 app = Flask(__name__)
+app.permanent_session_lifetime = timedelta(days=7)
 app.config.from_object(__name__)
 app.secret_key = app.config['SECRET_KEY']
 
@@ -89,6 +91,7 @@ def current_user():
     return query_db('SELECT * FROM users WHERE id = ?', (uid,), one=True)
 
 def login_user(user_row):
+    session.permanent = True
     session['user_id'] = user_row['id']
     session['user_name'] = user_row['name']
 
@@ -1457,3 +1460,4 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
