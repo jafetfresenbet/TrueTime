@@ -680,7 +680,7 @@ HOME_TEMPLATE = """
 </head>
 <body>
     <div class="home-card">
-        <h1>Välkommen till TrueTime UF (Beta)</h1>
+        <h1>Välkommen till PlugIt (Beta)</h1>
         <p>Skapa en klass, bjud in klasskompisar och håll koll på uppgifter!</p>
         <a href="{{ url_for('register') }}">Registrera</a>
         <a href="{{ url_for('login') }}">Logga in</a>
@@ -1460,6 +1460,7 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
