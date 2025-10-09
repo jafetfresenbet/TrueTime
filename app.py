@@ -3,7 +3,6 @@ import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 from uuid import uuid4
 from datetime import datetime
-from datetime import timedelta
 
 # ---------- Konfiguration ----------
 DATABASE = 'mvp.db'
@@ -11,7 +10,6 @@ SECRET_KEY = 'byt-denna-till-nagot-hemligt-i-produkt'  # byt senare
 DEBUG = True
 
 app = Flask(__name__)
-app.permanent_session_lifetime = timedelta(days=7)
 app.config.from_object(__name__)
 app.secret_key = app.config['SECRET_KEY']
 
@@ -1460,6 +1458,7 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
