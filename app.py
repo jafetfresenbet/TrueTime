@@ -1,7 +1,7 @@
-from flask import Flask, g, render_template_string, request, redirect, url_for, session, flash
-import sqlite3
-from werkzeug.security import generate_password_hash, check_password_hash
-from uuid import uuid4
+from flask_sqlalchemy import SQLAlchemy
+from flask_session import Session
+from datetime import timedelta
+import os
 from datetime import datetime
 
 # ---------- Konfiguration ----------
@@ -13,85 +13,69 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 app.secret_key = app.config['SECRET_KEY']
 
-# ---------- DB-hjälpare ----------
-def get_db():
-    db = getattr(g, '_database', None)
-    if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
-        db.row_factory = sqlite3.Row
-    return db
+from flask_sqlalchemy import SQLAlchemy
+from flask_session import Session
+from datetime import timedelta
+import os
 
-def query_db(query, args=(), one=False):
-    cur = get_db().execute(query, args)
-    rv = cur.fetchall()
-    cur.close()
-    return (rv[0] if rv else None) if one else rv
+# ---------- Database configuration ----------
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')  # Render internal Postgres URL
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 
-def execute_db(query, args=()):
-    db = get_db()
-    cur = db.execute(query, args)
-    db.commit()
-    cur.close()
+# ---------- Session configuration ----------
+app.config['SESSION_TYPE'] = 'sqlalchemy'
+app.config['SESSION_SQLALCHEMY'] = db
+app.config['SESSION_PERMANENT'] = True
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
+Session(app)
 
-@app.teardown_appcontext
-def close_connection(exception):
-    db = getattr(g, '_database', None)
-    if db is not None:
-        db.close()
+# ---------- Models ----------
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+    email = db.Column(db.String, unique=True, nullable=False)
+    password_hash = db.Column(db.String, nullable=False)
 
-# ---------- Init DB ----------
-def init_db():
-    with app.app_context():
-        db = get_db()
-        c = db.cursor()
-        # Users
-        c.execute('''CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            email TEXT UNIQUE,
-            password_hash TEXT
-        )''')
-        # Classes
-        c.execute('''CREATE TABLE IF NOT EXISTS classes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            join_code TEXT UNIQUE,
-            admin_user_id INTEGER
-        )''')
-        # Memberships
-        c.execute('''CREATE TABLE IF NOT EXISTS user_classes (
-            user_id INTEGER,
-            class_id INTEGER,
-            PRIMARY KEY (user_id, class_id)
-        )''')
-        # Subjects
-        c.execute('''CREATE TABLE IF NOT EXISTS subjects (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            class_id INTEGER,
-            name TEXT
-        )''')
-        # Assignments
-        c.execute('''CREATE TABLE IF NOT EXISTS assignments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            subject_id INTEGER,
-            title TEXT,
-            type TEXT,
-            deadline TEXT,
-            created_by INTEGER
-        )''')
-        db.commit()
+class Class(db.Model):
+    __tablename__ = 'classes'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+    join_code = db.Column(db.String, unique=True, nullable=False)
+    admin_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+class UserClass(db.Model):
+    __tablename__ = 'user_classes'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    class_id = db.Column(db.Integer, db.ForeignKey('classes.id', ondelete='CASCADE'), primary_key=True)
+
+class Subject(db.Model):
+    __tablename__ = 'subjects'
+    id = db.Column(db.Integer, primary_key=True)
+    class_id = db.Column(db.Integer, db.ForeignKey('classes.id'), nullable=False)
+    name = db.Column(db.String, nullable=False)
+
+class Assignment(db.Model):
+    __tablename__ = 'assignments'
+    id = db.Column(db.Integer, primary_key=True)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subjects.id'), nullable=False)
+    title = db.Column(db.String, nullable=False)
+    type = db.Column(db.String, nullable=False)
+    deadline = db.Column(db.DateTime)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
 
 # ---------- Auth hjälpare ----------
 def current_user():
     uid = session.get('user_id')
     if not uid:
         return None
-    return query_db('SELECT * FROM users WHERE id = ?', (uid,), one=True)
+    return User.query.get(uid)
 
-def login_user(user_row):
+def login_user(user):
     session.permanent = True
-    session['user_id'] = user_row['id']
-    session['user_name'] = user_row['name']
+    session['user_id'] = user.id
+    session['user_name'] = user.name
 
 def logout_user():
     session.pop('user_id', None)
@@ -114,11 +98,7 @@ def index():
     if not user:
         return render_template_string(HOME_TEMPLATE)
     # Visa kommande uppgifter för användarens klasser
-    classes = query_db('''
-        SELECT c.* FROM classes c
-        JOIN user_classes uc ON uc.class_id = c.id
-        WHERE uc.user_id = ?
-    ''', (user['id'],))
+    classes = db.session.query(Class).join(UserClass).filter(UserClass.user_id == user.id).all()
     # samla assignments
     assignments = []
     for c in classes:
@@ -127,7 +107,7 @@ def index():
             JOIN subjects s ON a.subject_id = s.id
             JOIN classes c ON s.class_id = c.id
             WHERE c.id = ?
-            ORDER BY datetime(a.deadline) ASC
+            order_by(Assignment.deadline.asc())
             LIMIT 50
         ''', (c['id'],))
         for a in a_rows:
@@ -143,13 +123,15 @@ def register():
         if not name or not email or not pw:
             flash("Fyll i alla fält.")
             return redirect(url_for('register'))
-        existing = query_db('SELECT * FROM users WHERE email = ?', (email,), one=True)
+        existing = User.query.filter_by(email=email).first()
         if existing:
             flash("E-post redan registrerad.")
             return redirect(url_for('register'))
         pw_hash = generate_password_hash(pw)
-        execute_db('INSERT INTO users (name,email,password_hash) VALUES (?,?,?)', (name,email,pw_hash))
-        user = query_db('SELECT * FROM users WHERE email = ?', (email,), one=True)
+        new_user = User(name=name, email=email, password_hash=pw_hash)
+        db.session.add(new_user)
+        db.session.commit()
+        user = User.query.filter_by(email=email).first()
         login_user(user)
         flash("Registrerad och inloggad!")
         return redirect(url_for('index'))
@@ -160,8 +142,8 @@ def login():
     if request.method=='POST':
         email = request.form['email'].strip().lower()
         pw = request.form['password']
-        user = query_db('SELECT * FROM users WHERE email = ?', (email,), one=True)
-        if not user or not check_password_hash(user['password_hash'], pw):
+        user = User.query.filter_by(email=email).first()
+        if not user or not check_password_hash(user.password_hash, pw):
             flash("Fel e-post eller lösenord.")
             return redirect(url_for('login'))
         login_user(user)
@@ -185,10 +167,13 @@ def create_class():
             flash("Skriv ett klassnamn.")
             return redirect(url_for('create_class'))
         join_code = generate_join_code()
-        execute_db('INSERT INTO classes (name, join_code, admin_user_id) VALUES (?,?,?)', (name,join_code,user['id']))
-        cls = query_db('SELECT * FROM classes WHERE join_code = ?', (join_code,), one=True)
+        new_class = Class(name=name, join_code=join_code, admin_user_id=user.id)
+        db.session.add(new_class)
+        db.session.commit()
+
+        cls = Class.query.filter_by(join_code=join_code).first()
         # add creator as member
-        execute_db('INSERT INTO user_classes (user_id,class_id) VALUES (?,?)', (user['id'], cls['id']))
+        db.session.add(user); db.session.commit()
         flash(f"Klass skapad! Join-kod: {join_code}")
         return redirect(url_for('view_class', class_id=cls['id']))
     return render_template_string(CREATE_CLASS_TEMPLATE)
@@ -199,14 +184,14 @@ def join_class():
     user = current_user()
     if request.method=='POST':
         join_code = request.form['join_code'].strip()
-        cls = query_db('SELECT * FROM classes WHERE join_code = ?', (join_code,), one=True)
+        cls = Class.query.filter_by(join_code=join_code).first()
         if not cls:
             flash("Ogiltig kod.")
             return redirect(url_for('join_class'))
         # insert membership if not already
-        existing = query_db('SELECT * FROM user_classes WHERE user_id = ? AND class_id = ?', (user['id'], cls['id']), one=True)
+        existing = query_db('SELECT * FROM user_classes WHERE user_id = ? AND class_id = ?', (user.id, cls['id']), one=True)
         if not existing:
-            execute_db('INSERT INTO user_classes (user_id,class_id) VALUES (?,?)', (user['id'], cls['id']))
+            db.session.add(user); db.session.commit()
         flash(f"Gick med i {cls['name']}")
         return redirect(url_for('view_class', class_id=cls['id']))
     return render_template_string(JOIN_CLASS_TEMPLATE)
@@ -220,7 +205,7 @@ def view_class(class_id):
         flash("Klass hittades ej.")
         return redirect(url_for('index'))
     # kontrollera medlemskap
-    membership = query_db('SELECT * FROM user_classes WHERE class_id = ? AND user_id = ?', (class_id, user['id']), one=True)
+    membership = query_db('SELECT * FROM user_classes WHERE class_id = ? AND user_id = ?', (class_id, user.id), one=True)
     if not membership:
         flash("Du är inte medlem i den här klassen.")
         return redirect(url_for('index'))
@@ -230,9 +215,9 @@ def view_class(class_id):
         SELECT a.*, s.name as subject_name FROM assignments a
         JOIN subjects s ON a.subject_id = s.id
         WHERE s.class_id = ?
-        ORDER BY datetime(a.deadline) ASC
+        order_by(Assignment.deadline.asc())
     ''', (class_id,))
-    is_admin = (cls['admin_user_id'] == user['id'])
+    is_admin = (cls['admin_user_id'] == user.id)
     return render_template_string(CLASS_TEMPLATE, class_data=cls, subjects=subjects, assignments=assignments, is_admin=is_admin)
 
 @app.route('/class/<int:class_id>/delete', methods=['POST'])
@@ -244,21 +229,27 @@ def delete_class(class_id):
         flash("Klass hittades inte.")
         return redirect(url_for('index'))
 
-    if cls['admin_user_id'] != user['id']:
+    if cls['admin_user_id'] != user.id:
         flash("Endast admin kan radera klassen.")
         return redirect(url_for('view_class', class_id=class_id))
 
     # Radera kopplade ämnen och uppgifter först
     subjects = query_db('SELECT id FROM subjects WHERE class_id = ?', (class_id,))
     for sub in subjects:
-        execute_db('DELETE FROM assignments WHERE subject_id = ?', (sub['id'],))
-    execute_db('DELETE FROM subjects WHERE class_id = ?', (class_id,))
+        Assignment.query.filter_by(id=assignment_id).delete()
+    Subject.query.filter_by(class_id=class_id).delete()
+    db.session.commit()
 
     # Radera medlemskap
     execute_db('DELETE FROM user_classes WHERE class_id = ?', (class_id,))
 
     # Radera själva klassen
-    execute_db('DELETE FROM classes WHERE id = ?', (class_id,))
+    # Hämta klassen först
+    cls = Class.query.get(class_id)
+    if cls:
+        db.session.delete(cls)
+        db.session.commit()
+
 
     flash(f"Klassen '{cls['name']}' har raderats.")
     return redirect(url_for('index'))
@@ -272,7 +263,7 @@ def edit_class(class_id):
         flash("Klass hittades inte.")
         return redirect(url_for('index'))
 
-    if cls['admin_user_id'] != user['id']:
+    if cls['admin_user_id'] != user.id:
         flash("Endast admin kan ändra klassen.")
         return redirect(url_for('view_class', class_id=class_id))
 
@@ -328,12 +319,12 @@ def leave_class(class_id):
         return redirect(url_for('index'))
 
     # Admin får inte lämna sin egen klass
-    if class_data['admin_user_id'] == user['id']:
+    if class_data['admin_user_id'] == user.id:
         flash("Admin kan inte lämna sin egen klass.")
         return redirect(url_for('index'))
 
     # Ta bort användaren från klassen
-    execute_db('DELETE FROM user_classes WHERE class_id = ? AND user_id = ?', (class_id, user['id']))
+    execute_db('DELETE FROM user_classes WHERE class_id = ? AND user_id = ?', (class_id, user.id))
     flash("Du har lämnat klassen.")
 
     return redirect(url_for('index'))
@@ -348,12 +339,12 @@ def delete_subject(subject_id):
         return redirect(url_for('index'))
 
     cls = query_db('SELECT * FROM classes WHERE id = ?', (subject['class_id'],), one=True)
-    if cls['admin_user_id'] != user['id']:
+    if cls['admin_user_id'] != user.id:
         flash("Endast admin kan radera ämnen.")
         return redirect(url_for('view_class', class_id=cls['id']))
 
     # Ta bort tillhörande uppgifter först
-    execute_db('DELETE FROM assignments WHERE subject_id = ?', (subject_id,))
+    Assignment.query.filter_by(id=assignment_id).delete()
     execute_db('DELETE FROM subjects WHERE id = ?', (subject_id,))
     flash(f"Ämnet '{subject['name']}' har raderats.")
     return redirect(url_for('view_class', class_id=cls['id']))
@@ -368,7 +359,7 @@ def edit_subject(subject_id):
         return redirect(url_for('index'))
 
     cls = query_db('SELECT * FROM classes WHERE id = ?', (subject['class_id'],), one=True)
-    if cls['admin_user_id'] != user['id']:
+    if cls['admin_user_id'] != user.id:
         flash("Endast admin kan ändra ämnen.")
         return redirect(url_for('view_class', class_id=cls['id']))
 
@@ -423,11 +414,11 @@ def delete_assignment(assignment_id):
     # Hämta ämnet för kontroll
     subject = query_db('SELECT * FROM subjects WHERE id = ?', (assignment['subject_id'],), one=True)
     class_data = query_db('SELECT * FROM classes WHERE id = ?', (subject['class_id'],), one=True)
-    if class_data['admin_user_id'] != user['id']:
+    if class_data['admin_user_id'] != user.id:
         flash("Endast admin kan radera uppgifter.")
         return redirect(url_for('index'))
     # Radera
-    execute_db('DELETE FROM assignments WHERE id = ?', (assignment_id,))
+    Assignment.query.filter_by(id=assignment_id).delete()
     flash("Uppgiften har raderats.")
     return redirect(url_for('index'))
 
@@ -443,7 +434,7 @@ def edit_assignment(assignment_id):
 
     subject = query_db('SELECT * FROM subjects WHERE id = ?', (assignment['subject_id'],), one=True)
     class_data = query_db('SELECT * FROM classes WHERE id = ?', (subject['class_id'],), one=True)
-    if class_data['admin_user_id'] != user['id']:
+    if class_data['admin_user_id'] != user.id:
         flash("Endast admin kan ändra uppgifter.")
         return redirect(url_for('index'))
 
@@ -462,7 +453,7 @@ def edit_assignment(assignment_id):
 
     # GET: visa samma layout som view_subject, fast med förifyllda värden för denna uppgift
     assignments = query_db('SELECT * FROM assignments WHERE subject_id = ?', (subject['id'],))
-    is_admin = class_data['admin_user_id'] == user['id']
+    is_admin = class_data['admin_user_id'] == user.id
 
     return render_template_string("""
 <!doctype html>
@@ -543,7 +534,7 @@ def add_subject(class_id):
     if not cls:
         flash("Klass finns inte.")
         return redirect(url_for('index'))
-    if cls['admin_user_id'] != user['id']:
+    if cls['admin_user_id'] != user.id:
         flash("Endast admin kan lägga till ämnen.")
         return redirect(url_for('view_class', class_id=class_id))
     name = request.form['name'].strip()
@@ -571,20 +562,19 @@ def view_subject(subject_id):
         return redirect(url_for('index'))
 
     membership = query_db('SELECT * FROM user_classes WHERE class_id = ? AND user_id = ?',
-                          (subject['class_id'], user['id']), one=True)
+                          (subject['class_id'], user.id), one=True)
     if not membership:
         flash("Du är inte medlem i den här klassen.")
         return redirect(url_for('index'))
 
-    assignments = query_db('''
-        SELECT * FROM assignments 
-        WHERE subject_id = ? AND datetime(deadline) >= datetime('now')
-        ORDER BY datetime(deadline) ASC
-    ''', (subject_id,))
+    assignments = Assignment.query.filter(
+        Assignment.subject_id == subject_id,           # same filter as before
+        Assignment.deadline >= datetime.utcnow()       # compare with current time
+    ).order_by(Assignment.deadline.asc()).all()
 
     class_data = {'id': subject['class_id'], 'name': subject['class_name']}
     is_admin = (query_db('SELECT * FROM classes WHERE id = ?', (subject['class_id'],), one=True)['admin_user_id'] ==
-                user['id'])
+                user.id)
 
     return render_template_string(SUBJECT_TEMPLATE,
                                   subject=subject,
@@ -606,7 +596,7 @@ def add_assignment(subject_id):
 
     # Hämta klassdata
     class_data = query_db('SELECT * FROM classes WHERE id = ?', (subject['class_id'],), one=True)
-    if class_data['admin_user_id'] != user['id']:
+    if class_data['admin_user_id'] != user.id:
         flash("Endast admin kan lägga till uppgifter.")
         return redirect(url_for('view_subject', subject_id=subject_id))
 
@@ -621,7 +611,7 @@ def add_assignment(subject_id):
 
     # Lägg till uppgift i databasen
     execute_db('INSERT INTO assignments (subject_id, title, deadline, type, created_by) VALUES (?, ?, ?, ?, ?)',
-               (subject_id, title, deadline, type_, user['id']))
+               (subject_id, title, deadline, type_, user.id))
 
     flash("Uppgift tillagd.")
     return redirect(url_for('view_subject', subject_id=subject_id))
@@ -953,7 +943,7 @@ DASH_TEMPLATE = """
 </head>
 <body>
     <header>
-        <h2>Hej {{ user['name'] }} — Din översikt</h2>
+        <h2>Hej {{ user.name }} — Din översikt</h2>
     </header>
     <nav>
         <a href="{{ url_for('logout') }}">Logga ut</a>
@@ -982,7 +972,7 @@ DASH_TEMPLATE = """
                             <a href="{{ url_for('view_class', class_id=c['id']) }}">{{ c['name'] }}</a> 
                             (kod: {{ c['join_code'] }})
                         </span>
-                        {% if user['id'] == c['admin_user_id'] %}
+                        {% if user.id == c['admin_user_id'] %}
                             <span>
                                 <a href="{{ url_for('edit_class', class_id=c['id']) }}">
                                     <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
@@ -1016,7 +1006,7 @@ DASH_TEMPLATE = """
                             <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }} ({{ a['class_name'] }})
                             {% if a['deadline'] %} — deadline: {{ a['deadline']|replace('-', '/') }}{% endif %}
                         </span>
-                        {% if user['id'] == a['created_by'] %}
+                        {% if user.id == a['created_by'] %}
                         <span>
                             <!-- Ändra-knapp -->
                             <a href="{{ url_for('edit_assignment', assignment_id=a['id']) }}">
@@ -1458,6 +1448,7 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
