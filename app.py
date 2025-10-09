@@ -638,7 +638,7 @@ HOME_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
-    <title>ClassBoard - Hem</title>
+    <title>PlugIt+ - Hem</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -680,7 +680,7 @@ HOME_TEMPLATE = """
 </head>
 <body>
     <div class="home-card">
-        <h1>Välkommen till PlugIt (Beta)</h1>
+        <h1>Välkommen till <span style="color:#007bff;">PlugIt+</span> (Beta)</h1>
         <p>Skapa en klass, bjud in klasskompisar och håll koll på uppgifter!</p>
         <a href="{{ url_for('register') }}">Registrera</a>
         <a href="{{ url_for('login') }}">Logga in</a>
@@ -1460,6 +1460,7 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
