@@ -291,7 +291,7 @@ def edit_class(class_id):
     <html lang="sv">
     <head>
         <meta charset="UTF-8">
-        <title>Ändra klass - ClassBoard</title>
+        <title>Ändra klass - PlugIt+</title>
         <style>
             body { font-family: Arial, sans-serif; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; margin:0; }
             .edit-card { background-color: #fff; padding: 30px; border-radius:8px; box-shadow:0px 4px 12px rgba(0,0,0,0.1); width:400px; text-align:center; }
@@ -386,7 +386,7 @@ def edit_subject(subject_id):
     <html lang="sv">
     <head>
         <meta charset="UTF-8">
-        <title>Ändra ämne - ClassBoard</title>
+        <title>Ändra ämne - PlugIt+</title>
         <style>
             body { font-family: Arial, sans-serif; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; height:100vh; margin:0; }
             .edit-card { background-color: #fff; padding: 30px; border-radius:8px; box-shadow:0px 4px 12px rgba(0,0,0,0.1); width:400px; text-align:center; }
@@ -882,7 +882,7 @@ DASH_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
-    <title>ClassBoard - Översikt</title>
+    <title>PlugIt+ - Översikt</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -1047,7 +1047,7 @@ CREATE_CLASS_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
-    <title>Skapa klass - ClassBoard</title>
+    <title>Skapa klass - PlugIt+</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -1140,7 +1140,7 @@ JOIN_CLASS_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
-    <title>Gå med i klass - ClassBoard</title>
+    <title>Gå med i klass - PlugIt+</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -1233,7 +1233,7 @@ CLASS_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
-    <title>{{ class_data['name'] }} - ClassBoard</title>
+    <title>{{ class_data['name'] }} - PlugIt+</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -1458,6 +1458,7 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
