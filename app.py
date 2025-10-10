@@ -236,7 +236,7 @@ def delete_class(class_id):
     # Radera kopplade ämnen och uppgifter först
     subjects = query_db('SELECT id FROM subjects WHERE class_id = ?', (class_id,))
     for sub in subjects:
-        Assignment.query.filter_by(id=assignment_id).delete()
+        Assignment.query.filter_by(subject_id=sub['id']).delete()
     Subject.query.filter_by(class_id=class_id).delete()
     db.session.commit()
 
@@ -1448,6 +1448,7 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
