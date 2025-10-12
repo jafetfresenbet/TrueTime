@@ -1,8 +1,9 @@
+from flask import Flask, g, render_template_string, request, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
-from flask_session import Session
-from datetime import timedelta
-import os
+from werkzeug.security import generate_password_hash, check_password_hash
+from uuid import uuid4
 from datetime import datetime
+import os
 
 # ---------- Konfiguration ----------
 DATABASE = 'mvp.db'
@@ -1448,6 +1449,7 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
