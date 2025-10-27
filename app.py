@@ -282,6 +282,170 @@ def delete_assignment(assignment_id):
     flash("Uppgift raderad.")
     return redirect(url_for('view_class', class_id=assign.subject.class_id))
 
+@app.route('/class/<int:class_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_class(class_id):
+    user = current_user()
+    cls = Class.query.get_or_404(class_id)
+
+    if cls.admin_user_id != user.id:
+        flash("Endast admin kan ändra klassen.")
+        return redirect(url_for('view_class', class_id=class_id))
+
+    if request.method == 'POST':
+        new_name = request.form['class_name'].strip()
+        if not new_name:
+            flash("Skriv ett klassnamn.")
+            return redirect(url_for('edit_class', class_id=class_id))
+
+        cls.name = new_name
+        db.session.commit()
+        flash("Klassnamnet har uppdaterats.")
+        return redirect(url_for('view_class', class_id=class_id))
+
+    return render_template_string("""
+    <h2>Ändra klassnamn</h2>
+    <form method="post">
+        <input type="text" name="class_name" value="{{ cls.name }}" required>
+        <button type="submit">Spara ändringar</button>
+    </form>
+    """, cls=cls)
+
+@app.route('/class/<int:class_id>/leave', methods=['POST'])
+@login_required
+def leave_class(class_id):
+    user = current_user()
+    cls = Class.query.get_or_404(class_id)
+
+    if cls.admin_user_id == user.id:
+        flash("Admin kan inte lämna sin egen klass.")
+        return redirect(url_for('index'))
+
+    uc = UserClass.query.filter_by(class_id=class_id, user_id=user.id).first()
+    if uc:
+        db.session.delete(uc)
+        db.session.commit()
+        flash("Du har lämnat klassen.")
+    else:
+        flash("Du är inte medlem i den här klassen.")
+
+    return redirect(url_for('index'))
+
+@app.route('/subject/<int:subject_id>')
+@login_required
+def view_subject(subject_id):
+    subject = Subject.query.get_or_404(subject_id)
+    cls = subject.cls
+    user = current_user()
+    is_admin = (cls.admin_user_id == user.id)
+    assignments = subject.assignments
+    return render_template_string(SUBJECT_TEMPLATE, subject=subject, class_data=cls, assignments=assignments, is_admin=is_admin)
+
+@app.route('/subject/<int:subject_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_subject(subject_id):
+    user = current_user()
+    subject = Subject.query.get_or_404(subject_id)
+    cls = subject.cls
+
+    if cls.admin_user_id != user.id:
+        flash("Endast admin kan ändra ämnen.")
+        return redirect(url_for('view_class', class_id=cls.id))
+
+    if request.method == 'POST':
+        new_name = request.form['name'].strip()
+        if not new_name:
+            flash("Fyll i ämnesnamn.")
+            return redirect(url_for('edit_subject', subject_id=subject_id))
+
+        subject.name = new_name
+        db.session.commit()
+        flash("Ämnet har uppdaterats.")
+        return redirect(url_for('view_class', class_id=cls.id))
+
+    return render_template_string("""
+    <h2>Ändra ämnesnamn</h2>
+    <form method="post">
+        <input type="text" name="name" value="{{ subject.name }}" required>
+        <button type="submit">Spara ändringar</button>
+    </form>
+    """, subject=subject)
+
+@app.route('/subject/<int:subject_id>/delete', methods=['POST'])
+@login_required
+def delete_subject(subject_id):
+    user = current_user()
+    subject = Subject.query.get_or_404(subject_id)
+    cls = subject.cls
+
+    if cls.admin_user_id != user.id:
+        flash("Endast admin kan radera ämnen.")
+        return redirect(url_for('view_class', class_id=cls.id))
+
+    # Delete all assignments in this subject first
+    for a in subject.assignments:
+        db.session.delete(a)
+    db.session.delete(subject)
+    db.session.commit()
+
+    flash(f"Ämnet '{subject.name}' har raderats.")
+    return redirect(url_for('view_class', class_id=cls.id))
+
+@app.route('/assignment/<int:assignment_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_assignment(assignment_id):
+    user = current_user()
+    assignment = Assignment.query.get_or_404(assignment_id)
+    subject = assignment.subject
+    cls = subject.cls
+
+    if cls.admin_user_id != user.id:
+        flash("Endast admin kan ändra uppgifter.")
+        return redirect(url_for('view_subject', subject_id=subject.id))
+
+    if request.method == 'POST':
+        assignment.title = request.form['title'].strip()
+        assignment.description = request.form['description'].strip()
+        assignment.deadline = datetime.strptime(request.form['deadline'], '%Y-%m-%d').date()
+        db.session.commit()
+        flash("Uppgiften har uppdaterats.")
+        return redirect(url_for('view_subject', subject_id=subject.id))
+
+    return render_template_string("""
+    <h2>Ändra uppgift</h2>
+    <form method="post">
+        <input type="text" name="title" value="{{ assignment.title }}" required><br>
+        <textarea name="description">{{ assignment.description }}</textarea><br>
+        <input type="date" name="deadline" value="{{ assignment.deadline }}"><br>
+        <button type="submit">Spara</button>
+    </form>
+    """, assignment=assignment)
+
+@app.route('/class/<int:class_id>/delete', methods=['POST'])
+@login_required
+def delete_class(class_id):
+    user = current_user()
+    cls = Class.query.get_or_404(class_id)
+
+    if cls.admin_user_id != user.id:
+        flash("Endast admin kan radera klassen.")
+        return redirect(url_for('view_class', class_id=class_id))
+
+    # Delete related subjects + assignments
+    for subject in cls.subjects:
+        for assignment in subject.assignments:
+            db.session.delete(assignment)
+        db.session.delete(subject)
+
+    # Delete memberships
+    UserClass.query.filter_by(class_id=class_id).delete()
+
+    db.session.delete(cls)
+    db.session.commit()
+
+    flash(f"Klassen '{cls.name}' har raderats.")
+    return redirect(url_for('index'))
+
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
 HOME_TEMPLATE = """
@@ -1104,5 +1268,6 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
