@@ -436,13 +436,96 @@ REGISTER_TEMPLATE = """
 """
 
 LOGIN_TEMPLATE = """
-<h1>Logga in</h1>
-<form method="post">
-  E-post: <input type="email" name="email"><br>
-  Lösenord: <input type="password" name="password"><br>
-  <button type="submit">Logga in</button>
-</form>
-<a href="{{ url_for('register') }}">Registrera</a>
+<!doctype html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>Logga in</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-card {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+            width: 350px;
+        }
+        .login-card h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .login-card input[type="email"],
+        .login-card input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0 20px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .login-card button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .login-card button:hover {
+            background-color: #0056b3;
+        }
+        .login-card .register-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+        .login-card .register-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .login-card .register-link a:hover {
+            text-decoration: underline;
+        }
+        .flash-message {
+            color: red;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2>Logga in</h2>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash-message">
+              {% for message in messages %}
+                {{ message }}<br>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+        <form method="post">
+            <input type="email" name="email" placeholder="E-post" required>
+            <input type="password" name="password" placeholder="Lösenord" required>
+            <button type="submit">Logga in</button>
+        </form>
+        <div class="register-link">
+            Har du inget konto? <a href="{{ url_for('register') }}">Registrera här</a>
+        </div>
+    </div>
+</body>
+</html>
 """
 
 DASH_TEMPLATE = """
@@ -500,5 +583,6 @@ CLASS_TEMPLATE = """
 </form>
 {% endif %}
 """
+
 
 
