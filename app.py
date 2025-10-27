@@ -239,19 +239,6 @@ def add_subject(class_id):
         flash(f"Ämne '{name}' lagt till.")
     return redirect(url_for('view_class', class_id=cls.id))
 
-@app.route('/subject/<int:subject_id>/delete', methods=['POST'])
-@login_required
-def delete_subject(subject_id):
-    subj = Subject.query.get_or_404(subject_id)
-    user = current_user()
-    if subj.cls.admin_user_id != user.id:
-        flash("Endast admin kan radera ämnen.")
-        return redirect(url_for('view_class', class_id=subj.class_id))
-    db.session.delete(subj)
-    db.session.commit()
-    flash("Ämne raderat.")
-    return redirect(url_for('view_class', class_id=subj.class_id))
-
 # ---------- Assignment routes ----------
 @app.route('/subject/<int:subject_id>/add_assignment', methods=['POST'])
 @login_required
@@ -1268,6 +1255,7 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
