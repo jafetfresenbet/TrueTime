@@ -529,60 +529,580 @@ LOGIN_TEMPLATE = """
 """
 
 DASH_TEMPLATE = """
-<h1>Hej {{ user.name }}</h1>
-<a href="{{ url_for('logout') }}">Logga ut</a><br>
-<h2>Dina klasser</h2>
-<ul>
-{% for cls in classes %}
-  <li><a href="{{ url_for('view_class', class_id=cls.id) }}">{{ cls.name }}</a></li>
-{% endfor %}
-</ul>
-<h2>Kommande uppgifter</h2>
-<ul>
-{% for a in assignments %}
-  <li>{{ a.title }} - {{ a.type }} - {{ a.deadline }}</li>
-{% endfor %}
-</ul>
-<a href="{{ url_for('create_class') }}">Skapa klass</a> | <a href="{{ url_for('join_class') }}">Gå med i klass</a>
+<!doctype html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>PlugIt+ - Översikt</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 15px 20px;
+            text-align: center;
+        }
+        header h2 {
+            margin: 0;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+            gap: 15px;
+        }
+        nav a {
+            text-decoration: none;
+            background-color: #28a745;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 4px;
+        }
+        nav a:hover {
+            background-color: #218838;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        .dashboard-card {
+            background-color: #fff;
+            width: 600px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .dashboard-card h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        li {
+            background-color: #f8f9fa;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .flash-message {
+            color: red;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h2>Hej {{ user['name'] }} — Din översikt</h2>
+    </header>
+    <nav>
+        <a href="{{ url_for('logout') }}">Logga ut</a>
+        <a href="{{ url_for('create_class') }}">Skapa klass</a>
+        <a href="{{ url_for('join_class') }}">Gå med i klass</a>
+    </nav>
+
+    <div class="container">
+        <div class="dashboard-card">
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="flash-message">
+                  {% for message in messages %}
+                    {{ message }}<br>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+
+            <div class="section">
+                <h3>Dina klasser</h3>
+                <ul>
+                {% for c in classes %}
+                    <li style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0;">
+                        <span>
+                            <a href="{{ url_for('view_class', class_id=c['id']) }}">{{ c['name'] }}</a> 
+                            (kod: {{ c['join_code'] }})
+                        </span>
+                        {% if user['id'] == c['admin_user_id'] %}
+                            <span>
+                                <a href="{{ url_for('edit_class', class_id=c['id']) }}">
+                                    <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
+                                </a>
+                                <form method="post" action="{{ url_for('delete_class', class_id=c['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera klassen?');">
+                                    <button type="submit" style="background-color: red; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:3px;">Radera</button>
+                                </form>
+                            </span>
+                        {% else %}
+                            <span>
+                                <form method="post" action="{{ url_for('leave_class', class_id=c['id']) }}" style="display:inline;" onsubmit="return confirm('Vill du lämna klassen?');">
+                                    <button type="submit" style="background-color: orange; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">
+                                        Lämna
+                                    </button>
+                                </form>
+                            </span>
+                        {% endif %}
+                    </li>
+                {% else %}
+                    <li>Inga klasser ännu.</li>
+                {% endfor %}
+                </ul>
+            </div>
+
+            <div class="section">
+                <h3>Kommande uppgifter</h3>
+                <ul>
+                {% for a in assignments %}
+                    <li style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0;">
+                        <span>
+                            <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }} ({{ a['class_name'] }})
+                            {% if a['deadline'] %} — deadline: {{ a['deadline']|replace('-', '/') }}{% endif %}
+                        </span>
+                        {% if user['id'] == a['created_by'] %}
+                        <span>
+                            <!-- Ändra-knapp -->
+                            <a href="{{ url_for('edit_assignment', assignment_id=a['id']) }}">
+                                <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
+                            </a>
+
+                            <!-- Radera-knapp -->
+                            <form method="post" action="{{ url_for('delete_assignment', assignment_id=a['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera uppgiften?');">
+                                <button type="submit" style="background-color: red; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:3px;">Radera</button>
+                            </form>
+                        </span>
+                        {% endif %}
+                    </li>
+                {% else %}
+                    <li>Inga uppgifter hittades.</li>
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
 """
 
 CREATE_CLASS_TEMPLATE = """
-<h1>Skapa klass</h1>
-<form method="post">
-  Klassnamn: <input type="text" name="class_name"><br>
-  <button type="submit">Skapa</button>
-</form>
+<!doctype html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>Skapa klass - PlugIt+</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .create-card {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+            width: 400px;
+            text-align: center;
+        }
+        .create-card h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .create-card input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0 20px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .create-card button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .create-card button:hover {
+            background-color: #218838;
+        }
+        .flash-message {
+            color: red;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+        }
+        .back-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="create-card">
+        <h2>Skapa ny klass</h2>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash-message">
+              {% for message in messages %}
+                {{ message }}<br>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+        <form method="post">
+            <input type="text" name="class_name" placeholder="Klassnamn" required>
+            <button type="submit">Skapa klass</button>
+        </form>
+        <div class="back-link">
+            <a href="{{ url_for('index') }}">Tillbaka till översikten</a>
+        </div>
+    </div>
+</body>
+</html>
 """
 
 JOIN_CLASS_TEMPLATE = """
-<h1>Gå med i klass</h1>
-<form method="post">
-  Join-kod: <input type="text" name="join_code"><br>
-  <button type="submit">Gå med</button>
-</form>
+<!doctype html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>Gå med i klass - PlugIt+</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .join-card {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+            width: 400px;
+            text-align: center;
+        }
+        .join-card h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .join-card input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0 20px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .join-card button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .join-card button:hover {
+            background-color: #0056b3;
+        }
+        .flash-message {
+            color: red;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+        }
+        .back-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="join-card">
+        <h2>Gå med i klass</h2>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash-message">
+              {% for message in messages %}
+                {{ message }}<br>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+        <form method="post">
+            <input type="text" name="join_code" placeholder="Ange join-kod" required>
+            <button type="submit">Gå med</button>
+        </form>
+        <div class="back-link">
+            <a href="{{ url_for('index') }}">Tillbaka till översikten</a>
+        </div>
+    </div>
+</body>
+</html>
 """
 
 CLASS_TEMPLATE = """
-<h1>{{ class_data.name }}</h1>
-{% if is_admin %}<form method="post" action="{{ url_for('delete_class', class_id=class_data.id) }}"><button type="submit">Radera klass</button></form>{% endif %}
-<h2>Ämnen</h2>
-<ul>
-{% for s in subjects %}
-  <li>{{ s.name }}
-      {% if is_admin %}
-      <form method="post" action="{{ url_for('delete_subject', subject_id=s.id) }}" style="display:inline">
-        <button type="submit">Radera ämne</button>
-      </form>
-      {% endif %}
-  </li>
-{% endfor %}
-</ul>
-{% if is_admin %}
-<form method="post" action="{{ url_for('add_subject', class_id=class_data.id) }}">
-  Lägg till ämne: <input type="text" name="subject_name"><button type="submit">Lägg till</button>
-</form>
-{% endif %}
+<!doctype html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ class_data['name'] }} - PlugIt+</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 15px 20px;
+            text-align: center;
+        }
+        header h2 {
+            margin: 0;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+            gap: 15px;
+        }
+        nav a, nav form button {
+            text-decoration: none;
+            background-color: #28a745;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+        }
+        nav a:hover, nav form button:hover {
+            background-color: #218838;
+        }
+        nav form {
+            display: inline;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        .class-card {
+            background-color: #fff;
+            width: 600px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .class-card h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        li {
+            background-color: #f8f9fa;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .flash-message {
+            color: red;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        form input[type="text"] {
+            width: 70%;
+            padding: 8px;
+            margin-right: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        form button {
+            padding: 8px 12px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        form button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h2>{{ class_data['name'] }}</h2>
+        {% if is_admin %}
+            <p>Join-kod: {{ class_data['join_code'] }}</p>
+        {% endif %}
+    </header>
+
+    <nav>
+        <a href="{{ url_for('index') }}">Tillbaka till översikten</a>
+        {% if is_admin %}
+            <!-- Byt ut länk mot formulär med POST -->
+            <form method="post" action="{{ url_for('add_subject', class_id=class_data['id']) }}">
+                <input type="text" name="name" placeholder="Ämnesnamn" required>
+                <button type="submit">Lägg till ämne</button>
+            </form>
+        {% endif %}
+    </nav>
+
+    <div class="container">
+        <div class="class-card">
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="flash-message">
+                  {% for message in messages %}
+                    {{ message }}<br>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+
+            <div class="section">
+                <h3>Ämnen / Kurser</h3>
+                <ul>
+                {% for subject in subjects %}
+                    <li style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0;">
+                        <span>
+                            <a href="{{ url_for('view_subject', subject_id=subject['id']) }}">{{ subject['name'] }}</a>
+                        </span>
+                        {% if is_admin %}
+                        <span>
+                            <a href="{{ url_for('edit_subject', subject_id=subject['id']) }}">
+                                <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px;">Ändra</button>
+                            </a>
+                            <form method="post" action="{{ url_for('delete_subject', subject_id=subject['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera ämnet?');">
+                                <button type="submit" style="background-color: red; color: white; border: none; padding: 3px 8px; border-radius:4px;">Radera</button>
+                            </form>
+                        </span>
+                        {% endif %}
+                    </li>
+                {% else %}
+                    <li>Inga ämnen tillagda ännu.</li>
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
 """
 
+SUBJECT_TEMPLATE = """
+<!doctype html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ subject['name'] }} - {{ class_data['name'] }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+        header { background-color: #007bff; color: #fff; padding: 15px 20px; text-align: center; }
+        header h2 { margin: 0; }
+        .container { display: flex; justify-content: center; padding: 20px; }
+        .subject-card { background-color: #fff; width: 600px; border-radius: 8px; box-shadow: 0px 4px 12px rgba(0,0,0,0.1); padding: 20px; }
+        h3 { margin-top: 0; color: #333; }
+        ul { list-style: none; padding-left: 0; }
+        li { background-color: #f8f9fa; margin: 5px 0; padding: 10px; border-radius: 4px; }
+        .flash-message { color: red; text-align: center; margin-bottom: 10px; }
+        form input[type="text"], form input[type="datetime-local"], form select { width: 65%; padding: 8px; margin-right: 5px; border-radius: 4px; border: 1px solid #ccc; }
+        form button { padding: 8px 12px; border: none; background-color: #28a745; color: #fff; border-radius: 4px; cursor: pointer; }
+        form button:hover { background-color: #218838; }
+        .back-link { display: block; text-align: center; margin-top: 15px; }
+        .back-link a { color: #007bff; text-decoration: none; }
+        .back-link a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <header>
+        <h2>{{ subject['name'] }} - {{ class_data['name'] }}</h2>
+    </header>
+
+    <div class="container">
+        <div class="subject-card">
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="flash-message">
+                  {% for message in messages %}
+                    {{ message }}<br>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+
+            <h3>Uppgifter / Inlämningar / Prov</h3>
+            <ul>
+            {% for assignment in assignments %}
+                <li>{{ assignment['title'] }} – Deadline: {{ assignment['deadline'] }} – Typ: {{ assignment['type'] }}</li>
+            {% else %}
+                <li>Inga uppgifter tillagda ännu.</li>
+            {% endfor %}
+            </ul>
+
+            {% if is_admin %}
+            <form method="post" action="{{ url_for('add_assignment', subject_id=subject['id']) }}">
+                <input type="text" name="name" placeholder="Uppgiftsnamn" required>
+                <input type="date" name="deadline" required>
+                <select name="type" required>
+                    <option value="assignment">Uppgift</option>
+                    <option value="exam">Prov</option>
+                </select>
+                <button type="submit">Lägg till uppgift</button>
+            </form>
+            {% endif %}
+
+            <div class="back-link">
+                <a href="{{ url_for('view_class', class_id=class_data['id']) }}">Tillbaka till klassen</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+"""
 
 
