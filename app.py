@@ -209,19 +209,6 @@ def view_class(class_id):
     is_admin = (cls.admin_user_id == user.id)
     return render_template_string(CLASS_TEMPLATE, class_data=cls, subjects=subjects, is_admin=is_admin)
 
-@app.route('/class/<int:class_id>/delete', methods=['POST'])
-@login_required
-def delete_class(class_id):
-    user = current_user()
-    cls = Class.query.get_or_404(class_id)
-    if cls.admin_user_id != user.id:
-        flash("Endast admin kan radera klassen.")
-        return redirect(url_for('view_class', class_id=class_id))
-    db.session.delete(cls)
-    db.session.commit()
-    flash("Klass raderad.")
-    return redirect(url_for('index'))
-
 # ---------- Subject routes ----------
 @app.route('/class/<int:class_id>/add_subject', methods=['POST'])
 @login_required
@@ -1255,6 +1242,7 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
