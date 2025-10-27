@@ -285,8 +285,59 @@ def delete_assignment(assignment_id):
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
 HOME_TEMPLATE = """
-<h1>Välkommen!</h1>
-<a href="{{ url_for('login') }}">Logga in</a> | <a href="{{ url_for('register') }}">Registrera</a>
+<!doctype html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>PlugIt+ - Hem</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .home-card {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+            width: 400px;
+            text-align: center;
+        }
+        .home-card h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .home-card p {
+            margin: 15px 0;
+        }
+        .home-card a {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .home-card a:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="home-card">
+        <h1>Välkommen till <span style="color:#007bff;">PlugIt+</span> (Beta)</h1>
+        <p>Skapa en klass, bjud in klasskompisar och håll koll på uppgifter!</p>
+        <a href="{{ url_for('register') }}">Registrera</a>
+        <a href="{{ url_for('login') }}">Logga in</a>
+    </div>
+</body>
+</html>
 """
 
 REGISTER_TEMPLATE = """
@@ -365,3 +416,4 @@ CLASS_TEMPLATE = """
 </form>
 {% endif %}
 """
+
