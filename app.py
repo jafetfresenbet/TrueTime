@@ -248,16 +248,32 @@ def add_subject(class_id):
 def add_assignment(subject_id):
     subj = Subject.query.get_or_404(subject_id)
     user = current_user()
-    title = request.form['name'].strip()        # <-- ändrat från 'title' till 'name'
-    type_ = request.form['type'].strip()
-    deadline_str = request.form.get('deadline')
-    deadline = datetime.strptime(deadline_str, '%Y-%m-%d') if deadline_str else None
-    if title and type_:
-        assign = Assignment(subject_id=subject_id, title=title, type=type_, deadline=deadline, created_by=user.id)
-        db.session.add(assign)
-        db.session.commit()
-        flash("Uppgift/prov lagt till.")
-    return redirect(url_for('view_class', class_id=subj.class_id))
+
+    title = request.form.get('title', '').strip()
+    type_ = request.form.get('type', '').strip()
+    deadline_str = request.form.get('deadline', '').strip()
+
+    if not title or not type_:
+        flash("Du måste fylla i både namn och typ.")
+        return redirect(url_for('view_subject', subject_id=subject_id))
+
+    # hantera deadline
+    deadline = None
+    if deadline_str:
+        try:
+            if type_ == 'exam':
+                deadline = datetime.strptime(deadline_str, '%Y-%m-%d')
+            else:  # assignment
+                deadline = datetime.strptime(deadline_str, '%Y-%m-%dT%H:%M')
+        except ValueError:
+            flash("Fel datumformat.")
+            return redirect(url_for('view_subject', subject_id=subject_id))
+
+    assign = Assignment(subject_id=subject_id, title=title, type=type_, deadline=deadline, created_by=user.id)
+    db.session.add(assign)
+    db.session.commit()
+    flash("Uppgift/prov lagt till.")
+    return redirect(url_for('view_subject', subject_id=subject_id))
 
 @app.route('/assignment/<int:assignment_id>/delete', methods=['POST'])
 @login_required
@@ -1367,7 +1383,7 @@ SUBJECT_TEMPLATE = """
                     <option value="exam">Prov</option>
                 </select>
             
-                <input type="datetime-local" name="deadline" id="deadline_input">
+                <input type="datetime-local" name="deadline" id="deadline_input" value="">
             
                 <button type="submit">Lägg till uppgift</button>
             </form>
@@ -1394,6 +1410,7 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
