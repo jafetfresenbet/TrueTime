@@ -286,7 +286,7 @@ def delete_assignment(assignment_id):
     db.session.delete(assign)
     db.session.commit()
     flash("Uppgift raderad.")
-    return redirect(url_for('view_class', class_id=assign.subject.class_id))
+    return redirect(url_for('index', class_id=assign.subject.class_id))
 
 @app.route('/class/<int:class_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -1510,6 +1510,7 @@ EDIT_ASSIGNMENT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
