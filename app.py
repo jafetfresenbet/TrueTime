@@ -291,7 +291,7 @@ def edit_class(class_id):
         cls.name = new_name
         db.session.commit()
         flash("Klassnamnet har uppdaterats.")
-        return redirect(url_for('view_class', class_id=class_id))
+        return redirect(url_for('index', class_id=class_id))
 
     return render_template_string("""
 <!doctype html>
@@ -1394,6 +1394,7 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
