@@ -545,7 +545,7 @@ def edit_assignment(assignment_id):
         db.session.commit()
 
         flash("Uppgiften/provet har uppdaterats.")
-        return redirect(url_for('view_subject', subject_id=subj.id))
+        return redirect(url_for('index', subject_id=subj.id))
 
     # GET → rendera sidan med befintliga värden
     return render_template_string(EDIT_ASSIGNMENT_TEMPLATE,
@@ -1510,6 +1510,7 @@ EDIT_ASSIGNMENT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
