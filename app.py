@@ -294,12 +294,96 @@ def edit_class(class_id):
         return redirect(url_for('view_class', class_id=class_id))
 
     return render_template_string("""
-    <h2>Ändra klassnamn</h2>
-    <form method="post">
-        <input type="text" name="class_name" value="{{ cls.name }}" required>
-        <button type="submit">Spara ändringar</button>
-    </form>
-    """, cls=cls)
+<!doctype html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>Ändra klass - PlugIt+</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .create-card {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+            width: 400px;
+            text-align: center;
+        }
+        .create-card h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .create-card input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0 20px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .create-card button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .create-card button:hover {
+            background-color: #218838;
+        }
+        .flash-message {
+            color: red;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+        }
+        .back-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="create-card">
+        <h2>Ändra klass</h2>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash-message">
+              {% for message in messages %}
+                {{ message }}<br>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+        <form method="post">
+            <input type="text" name="class_name" placeholder="Klassnamn" required>
+            <button type="submit">Ändra klass</button>
+        </form>
+        <div class="back-link">
+            <a href="{{ url_for('index') }}">Tillbaka till översikten</a>
+        </div>
+    </div>
+</body>
+</html>
+""", cls=cls)
 
 @app.route('/class/<int:class_id>/leave', methods=['POST'])
 @login_required
@@ -1279,6 +1363,7 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
