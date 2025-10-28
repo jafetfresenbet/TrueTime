@@ -106,13 +106,23 @@ def index():
         return render_template_string(HOME_TEMPLATE)
 
     classes = [uc.cls for uc in user.classes]
-    assignments = []
+    assignments_display = []
     for cls in classes:
         for subj in cls.subjects:
-            assignments.extend(subj.assignments)
-    assignments.sort(key=lambda x: x.deadline or datetime.max)
+            for a in subj.assignments:
+                assignments_display.append({
+                    'id': a.id,
+                    'title': a.title,
+                    'type': a.type,
+                    'deadline': a.deadline,
+                    'subject_name': subj.name,
+                    'class_name': cls.name,
+                    'created_by': a.created_by
+                })
 
-    return render_template_string(DASH_TEMPLATE, user=user, classes=classes, assignments=assignments[:50])
+    assignments_display.sort(key=lambda x: x['deadline'] or datetime.max)
+
+    return render_template_string(DASH_TEMPLATE, user=user, classes=classes, assignments=assignments_display[:50])
 
 @app.route('/register', methods=['GET','POST'])
 def register():
@@ -808,17 +818,20 @@ DASH_TEMPLATE = """
                 {% for a in assignments %}
                     <li style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0;">
                         <span>
-                            <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }} ({{ a['class_name'] }})
-                            {% if a['deadline'] %} — deadline: {{ a['deadline']|replace('-', '/') }}{% endif %}
+                            <strong>{{ a['title'] }}</strong> — ({{ a['class_name'] }})
+                            {% if a['deadline'] %}
+                                {% if a['type'] == 'assignment' %}
+                                    — deadline: {{ a['deadline'].strftime('%Y/%m/%d %H:%M') }}
+                                {% elif a['type'] == 'exam' %}
+                                    — datum: {{ a['deadline'].strftime('%Y/%m/%d') }}
+                                {% endif %}
+                            {% endif %}
                         </span>
                         {% if user['id'] == a['created_by'] %}
                         <span>
-                            <!-- Ändra-knapp -->
                             <a href="{{ url_for('edit_assignment', assignment_id=a['id']) }}">
                                 <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
                             </a>
-
-                            <!-- Radera-knapp -->
                             <form method="post" action="{{ url_for('delete_assignment', assignment_id=a['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera uppgiften?');">
                                 <button type="submit" style="background-color: red; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:3px;">Radera</button>
                             </form>
@@ -1231,14 +1244,31 @@ SUBJECT_TEMPLATE = """
 
             {% if is_admin %}
             <form method="post" action="{{ url_for('add_assignment', subject_id=subject['id']) }}">
-                <input type="text" name="name" placeholder="Uppgiftsnamn" required>
-                <input type="date" name="deadline">
-                <select name="type" required>
+                <input type="text" name="title" placeholder="Uppgiftsnamn" required>
+            
+                <label for="type">Typ:</label>
+                <select name="type" id="type" required onchange="updateDeadlineInput()">
                     <option value="assignment">Uppgift</option>
                     <option value="exam">Prov</option>
                 </select>
+            
+                <input type="datetime-local" name="deadline" id="deadline_input">
+            
                 <button type="submit">Lägg till uppgift</button>
             </form>
+            
+            <script>
+            function updateDeadlineInput() {
+                const typeSelect = document.getElementById('type');
+                const deadlineInput = document.getElementById('deadline_input');
+                if(typeSelect.value === 'exam') {
+                    deadlineInput.type = 'date'; // bara datum
+                } else {
+                    deadlineInput.type = 'datetime-local'; // datum + tid
+                }
+            }
+            window.onload = updateDeadlineInput;
+            </script>
             {% endif %}
 
             <div class="back-link">
@@ -1249,6 +1279,7 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
