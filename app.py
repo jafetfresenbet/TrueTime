@@ -494,7 +494,7 @@ def delete_subject(subject_id):
     db.session.commit()
 
     flash(f"Ämnet '{subject.name}' har raderats.")
-    return redirect(url_for('view_class', class_id=cls.id))
+    return redirect(url_for('index', class_id=cls.id))
 
 @app.route('/assignment/<int:assignment_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -1394,6 +1394,7 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
