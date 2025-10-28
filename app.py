@@ -374,7 +374,7 @@ def edit_class(class_id):
           {% endif %}
         {% endwith %}
         <form method="post">
-            <input type="text" name="class_name" value="{{ class_name }}" required>
+            <input type="text" name="class_name" value="{{ cls.name }}" required>
             <button type="submit">Ändra klass</button>
         </form>
         <div class="back-link">
@@ -1394,6 +1394,7 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
