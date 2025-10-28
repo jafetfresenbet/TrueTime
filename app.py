@@ -818,7 +818,7 @@ DASH_TEMPLATE = """
                 {% for a in assignments %}
                     <li style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0;">
                         <span>
-                            <strong>{{ a['title'] }}</strong> — ({{ a['class_name'] }})
+                            <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }} ({{ a['class_name'] }})
                             {% if a['deadline'] %}
                                 {% if a['type'] == 'assignment' %}
                                     — deadline: {{ a['deadline'].strftime('%Y/%m/%d %H:%M') }}
@@ -1279,6 +1279,7 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
