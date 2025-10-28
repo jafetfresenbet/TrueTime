@@ -437,6 +437,15 @@ def edit_subject(subject_id):
         flash("Ämnet har uppdaterats.")
         return redirect(url_for('view_class', class_id=cls.id))
 
+    # Prepare data for the template
+    assignments = []
+    for a in subject.assignments:
+        assignments.append({
+            'title': a.title,
+            'type': a.type,
+            'deadline': a.deadline.strftime('%Y/%m/%d %H:%M') if a.deadline else 'Ingen deadline'
+        })
+
     return render_template_string("""
 <!doctype html>
 <html lang="sv">
@@ -523,7 +532,11 @@ def edit_subject(subject_id):
     </div>
 </body>
 </html>
-""", subject=subject)
+""", 
+subject=subject,
+class_data={'id': cls.id, 'name': cls.name},
+assignments=assignments,
+is_admin=(cls.admin_user_id == user.id))
 
 @app.route('/subject/<int:subject_id>/delete', methods=['POST'])
 @login_required
@@ -1443,6 +1456,7 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
