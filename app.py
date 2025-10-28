@@ -215,15 +215,21 @@ def view_class(class_id):
 def add_subject(class_id):
     user = current_user()
     cls = Class.query.get_or_404(class_id)
+
     if cls.admin_user_id != user.id:
         flash("Endast admin kan lägga till ämnen.")
         return redirect(url_for('view_class', class_id=class_id))
-    name = request.form['subject_name'].strip()
-    if name:
-        subj = Subject(class_id=cls.id, name=name)
-        db.session.add(subj)
-        db.session.commit()
-        flash(f"Ämne '{name}' lagt till.")
+
+    name = request.form.get('subject_name', '').strip()
+    if not name:
+        flash("Du måste skriva ett ämnesnamn.")
+        return redirect(url_for('view_class', class_id=class_id))
+
+    subj = Subject(class_id=cls.id, name=name)
+    db.session.add(subj)
+    db.session.commit()
+
+    flash(f"Ämne '{name}' har lagts till.")
     return redirect(url_for('view_class', class_id=cls.id))
 
 # ---------- Assignment routes ----------
@@ -1124,9 +1130,10 @@ CLASS_TEMPLATE = """
         {% if is_admin %}
             <!-- Byt ut länk mot formulär med POST -->
             <form method="post" action="{{ url_for('add_subject', class_id=class_data['id']) }}">
-                <input type="text" name="name" placeholder="Ämnesnamn" required>
+                <input type="text" name="subject_name" placeholder="Ämnesnamn" required>
                 <button type="submit">Lägg till ämne</button>
             </form>
+
         {% endif %}
     </nav>
 
@@ -1242,6 +1249,7 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
