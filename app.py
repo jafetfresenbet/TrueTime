@@ -238,7 +238,7 @@ def add_subject(class_id):
 def add_assignment(subject_id):
     subj = Subject.query.get_or_404(subject_id)
     user = current_user()
-    title = request.form['title'].strip()
+    title = request.form['name'].strip()        # <-- ändrat från 'title' till 'name'
     type_ = request.form['type'].strip()
     deadline_str = request.form.get('deadline')
     deadline = datetime.strptime(deadline_str, '%Y-%m-%d') if deadline_str else None
@@ -1232,7 +1232,7 @@ SUBJECT_TEMPLATE = """
             {% if is_admin %}
             <form method="post" action="{{ url_for('add_assignment', subject_id=subject['id']) }}">
                 <input type="text" name="name" placeholder="Uppgiftsnamn" required>
-                <input type="date" name="deadline" required>
+                <input type="date" name="deadline">
                 <select name="type" required>
                     <option value="assignment">Uppgift</option>
                     <option value="exam">Prov</option>
@@ -1249,6 +1249,7 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
