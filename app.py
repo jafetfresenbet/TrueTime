@@ -1428,16 +1428,18 @@ EDIT_ASSIGNMENT_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
-    <title>Ändra uppgift/prov - {{ assignment.title }}</title>
+    <title>{{ subject.name }} - {{ class_data.name }}</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
         header { background-color: #007bff; color: #fff; padding: 15px 20px; text-align: center; }
         header h2 { margin: 0; }
         .container { display: flex; justify-content: center; padding: 20px; }
-        .card { background-color: #fff; width: 600px; border-radius: 8px; box-shadow: 0px 4px 12px rgba(0,0,0,0.1); padding: 20px; }
+        .subject-card { background-color: #fff; width: 600px; border-radius: 8px; box-shadow: 0px 4px 12px rgba(0,0,0,0.1); padding: 20px; }
         h3 { margin-top: 0; color: #333; }
+        ul { list-style: none; padding-left: 0; }
+        li { background-color: #f8f9fa; margin: 5px 0; padding: 10px; border-radius: 4px; }
         .flash-message { color: red; text-align: center; margin-bottom: 10px; }
-        form input[type="text"], form input[type="datetime-local"], form input[type="date"], form select { width: 65%; padding: 8px; margin-right: 5px; border-radius: 4px; border: 1px solid #ccc; }
+        form input[type="text"], form input[type="date"], form input[type="datetime-local"], form select { width: 65%; padding: 8px; margin-right: 5px; border-radius: 4px; border: 1px solid #ccc; }
         form button { padding: 8px 12px; border: none; background-color: #28a745; color: #fff; border-radius: 4px; cursor: pointer; }
         form button:hover { background-color: #218838; }
         .back-link { display: block; text-align: center; margin-top: 15px; }
@@ -1448,11 +1450,11 @@ EDIT_ASSIGNMENT_TEMPLATE = """
 </head>
 <body>
     <header>
-        <h2>Ändra uppgift/prov - {{ assignment.title }}</h2>
+        <h2>{{ subject.name }} - {{ class_data.name }}</h2>
     </header>
 
     <div class="container">
-        <div class="card">
+        <div class="subject-card">
             {% with messages = get_flashed_messages() %}
               {% if messages %}
                 <div class="flash-message">
@@ -1463,16 +1465,18 @@ EDIT_ASSIGNMENT_TEMPLATE = """
               {% endif %}
             {% endwith %}
 
+            <h3>Ändra uppgift / Prov</h3>
+
             {% if is_admin %}
-            <form method="post" action="{{ url_for('edit_assignment', assignment_id=assignment.id) }}">
-                <input type="text" name="title" placeholder="Uppgiftsnamn" required value="{{ assignment.title }}">
-                
+            <form method="post" action="">
+                <input type="text" name="title" value="{{ assignment.title }}" required>
+
                 <label for="type">Typ:</label>
                 <select name="type" id="type" required onchange="updateDeadlineInput()">
                     <option value="assignment" {% if assignment.type == 'assignment' %}selected{% endif %}>Uppgift</option>
                     <option value="exam" {% if assignment.type == 'exam' %}selected{% endif %}>Prov</option>
                 </select>
-                
+
                 <input 
                     type="{% if assignment.type == 'exam' %}date{% else %}datetime-local{% endif %}" 
                     name="deadline" 
@@ -1483,7 +1487,7 @@ EDIT_ASSIGNMENT_TEMPLATE = """
 
                 <button type="submit">Spara ändringar</button>
             </form>
-            
+
             <script>
             function updateDeadlineInput() {
                 const typeSelect = document.getElementById('type');
@@ -1499,13 +1503,14 @@ EDIT_ASSIGNMENT_TEMPLATE = """
             {% endif %}
 
             <div class="back-link">
-                <a href="{{ url_for('view_subject', subject_id=subject.id) }}">Tillbaka till ämnet</a>
+                <a href="{{ url_for('view_subject', subject_id=subject.id) }}">Avbryt / Tillbaka</a>
             </div>
         </div>
     </div>
 </body>
 </html>
 """
+
 
 
 
