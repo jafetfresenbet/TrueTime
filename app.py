@@ -415,7 +415,7 @@ def view_subject(subject_id):
     assignments = subject.assignments
     return render_template_string(SUBJECT_TEMPLATE, subject=subject, class_data=cls, assignments=assignments, is_admin=is_admin)
 
-@app.route('/subject/<int:subject_id>/edit', methods=['GET', 'POST'])
+@app.route('/subject/<int:subject_id>/edit', methods=['GET','POST'])
 @login_required
 def edit_subject(subject_id):
     user = current_user()
@@ -427,14 +427,14 @@ def edit_subject(subject_id):
         return redirect(url_for('view_class', class_id=cls.id))
 
     if request.method == 'POST':
-        new_name = request.form['name'].strip()
+        new_name = request.form['subject_name'].strip()
         if not new_name:
-            flash("Fyll i ämnesnamn.")
+            flash("Skriv ett ämnesnamn.")
             return redirect(url_for('edit_subject', subject_id=subject_id))
 
         subject.name = new_name
         db.session.commit()
-        flash("Ämnet har uppdaterats.")
+        flash("Ämnesnamnet har uppdaterats.")
         return redirect(url_for('view_class', class_id=cls.id))
 
     return render_template_string("""
@@ -1394,6 +1394,7 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
