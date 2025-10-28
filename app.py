@@ -515,32 +515,44 @@ def delete_subject(subject_id):
 @app.route('/assignment/<int:assignment_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_assignment(assignment_id):
-    user = current_user()
     assignment = Assignment.query.get_or_404(assignment_id)
-    subject = assignment.subject
-    cls = subject.cls
+    subj = assignment.subject
+    cls = subj.cls
+    user = current_user()
 
     if cls.admin_user_id != user.id:
-        flash("Endast admin kan ändra uppgifter.")
-        return redirect(url_for('view_subject', subject_id=subject.id))
+        flash("Endast admin kan ändra uppgifter/prov.")
+        return redirect(url_for('view_class', class_id=cls.id))
 
     if request.method == 'POST':
-        assignment.title = request.form['title'].strip()
-        assignment.description = request.form['description'].strip()
-        assignment.deadline = datetime.strptime(request.form['deadline'], '%Y-%m-%d').date()
-        db.session.commit()
-        flash("Uppgiften har uppdaterats.")
-        return redirect(url_for('view_subject', subject_id=subject.id))
+        new_title = request.form['title'].strip()
+        new_type = request.form['type'].strip()
+        deadline_str = request.form.get('deadline')
 
-    return render_template_string("""
-    <h2>Ändra uppgift</h2>
-    <form method="post">
-        <input type="text" name="title" value="{{ assignment.title }}" required><br>
-        <textarea name="description">{{ assignment.description }}</textarea><br>
-        <input type="date" name="deadline" value="{{ assignment.deadline }}"><br>
-        <button type="submit">Spara</button>
-    </form>
-    """, assignment=assignment)
+        if not new_title:
+            flash("Fyll i ett namn för uppgiften/provet.")
+            return redirect(url_for('edit_assignment', assignment_id=assignment_id))
+
+        # Hantera datum
+        if new_type == 'exam':
+            new_deadline = datetime.strptime(deadline_str, '%Y-%m-%d')
+        else:
+            new_deadline = datetime.strptime(deadline_str, '%Y-%m-%dT%H:%M')
+
+        assignment.title = new_title
+        assignment.type = new_type
+        assignment.deadline = new_deadline
+        db.session.commit()
+
+        flash("Uppgiften/provet har uppdaterats.")
+        return redirect(url_for('view_subject', subject_id=subj.id))
+
+    # GET → rendera sidan med befintliga värden
+    return render_template_string(EDIT_ASSIGNMENT_TEMPLATE,
+                                  assignment=assignment,
+                                  subject=subj,
+                                  class_data=cls,
+                                  is_admin=True)
 
 @app.route('/class/<int:class_id>/delete', methods=['POST'])
 @login_required
@@ -1411,6 +1423,89 @@ SUBJECT_TEMPLATE = """
 </html>
 """
 
+EDIT_ASSIGNMENT_TEMPLATE = """
+<!doctype html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>Ändra uppgift/prov - {{ assignment.title }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+        header { background-color: #007bff; color: #fff; padding: 15px 20px; text-align: center; }
+        header h2 { margin: 0; }
+        .container { display: flex; justify-content: center; padding: 20px; }
+        .card { background-color: #fff; width: 600px; border-radius: 8px; box-shadow: 0px 4px 12px rgba(0,0,0,0.1); padding: 20px; }
+        h3 { margin-top: 0; color: #333; }
+        .flash-message { color: red; text-align: center; margin-bottom: 10px; }
+        form input[type="text"], form input[type="datetime-local"], form input[type="date"], form select { width: 65%; padding: 8px; margin-right: 5px; border-radius: 4px; border: 1px solid #ccc; }
+        form button { padding: 8px 12px; border: none; background-color: #28a745; color: #fff; border-radius: 4px; cursor: pointer; }
+        form button:hover { background-color: #218838; }
+        .back-link { display: block; text-align: center; margin-top: 15px; }
+        .back-link a { color: #007bff; text-decoration: none; }
+        .back-link a:hover { text-decoration: underline; }
+        label { display: inline-block; width: 80px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h2>Ändra uppgift/prov - {{ assignment.title }}</h2>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="flash-message">
+                  {% for message in messages %}
+                    {{ message }}<br>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+
+            {% if is_admin %}
+            <form method="post" action="{{ url_for('edit_assignment', assignment_id=assignment.id) }}">
+                <input type="text" name="title" placeholder="Uppgiftsnamn" required value="{{ assignment.title }}">
+                
+                <label for="type">Typ:</label>
+                <select name="type" id="type" required onchange="updateDeadlineInput()">
+                    <option value="assignment" {% if assignment.type == 'assignment' %}selected{% endif %}>Uppgift</option>
+                    <option value="exam" {% if assignment.type == 'exam' %}selected{% endif %}>Prov</option>
+                </select>
+                
+                <input 
+                    type="{% if assignment.type == 'exam' %}date{% else %}datetime-local{% endif %}" 
+                    name="deadline" 
+                    id="deadline_input"
+                    value="{% if assignment.type == 'exam' %}{{ assignment.deadline.strftime('%Y-%m-%d') }}{% else %}{{ assignment.deadline.strftime('%Y-%m-%dT%H:%M') }}{% endif %}"
+                    required
+                >
+
+                <button type="submit">Spara ändringar</button>
+            </form>
+            
+            <script>
+            function updateDeadlineInput() {
+                const typeSelect = document.getElementById('type');
+                const deadlineInput = document.getElementById('deadline_input');
+                if(typeSelect.value === 'exam') {
+                    deadlineInput.type = 'date';
+                } else {
+                    deadlineInput.type = 'datetime-local';
+                }
+            }
+            window.onload = updateDeadlineInput;
+            </script>
+            {% endif %}
+
+            <div class="back-link">
+                <a href="{{ url_for('view_subject', subject_id=subject.id) }}">Tillbaka till ämnet</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+"""
 
 
 
