@@ -437,106 +437,44 @@ def edit_subject(subject_id):
         flash("Ämnet har uppdaterats.")
         return redirect(url_for('view_class', class_id=cls.id))
 
-    # Prepare data for the template
-    assignments = []
-    for a in subject.assignments:
-        assignments.append({
-            'title': a.title,
-            'type': a.type,
-            'deadline': a.deadline.strftime('%Y/%m/%d %H:%M') if a.deadline else 'Ingen deadline'
-        })
-
     return render_template_string("""
-<!doctype html>
-<html lang="sv">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ subject['name'] }} - {{ class_data['name'] }}</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
-        header { background-color: #007bff; color: #fff; padding: 15px 20px; text-align: center; }
-        header h2 { margin: 0; }
-        .container { display: flex; justify-content: center; padding: 20px; }
-        .subject-card { background-color: #fff; width: 600px; border-radius: 8px; box-shadow: 0px 4px 12px rgba(0,0,0,0.1); padding: 20px; }
-        h3 { margin-top: 0; color: #333; }
-        ul { list-style: none; padding-left: 0; }
-        li { background-color: #f8f9fa; margin: 5px 0; padding: 10px; border-radius: 4px; }
-        .flash-message { color: red; text-align: center; margin-bottom: 10px; }
-        form input[type="text"], form input[type="datetime-local"], form select { width: 65%; padding: 8px; margin-right: 5px; border-radius: 4px; border: 1px solid #ccc; }
-        form button { padding: 8px 12px; border: none; background-color: #28a745; color: #fff; border-radius: 4px; cursor: pointer; }
-        form button:hover { background-color: #218838; }
-        .back-link { display: block; text-align: center; margin-top: 15px; }
-        .back-link a { color: #007bff; text-decoration: none; }
-        .back-link a:hover { text-decoration: underline; }
-    </style>
-</head>
-<body>
-    <header>
-        <h2>{{ subject['name'] }} - {{ class_data['name'] }}</h2>
-    </header>
-
-    <div class="container">
-        <div class="subject-card">
-            {% with messages = get_flashed_messages() %}
-              {% if messages %}
-                <div class="flash-message">
-                  {% for message in messages %}
-                    {{ message }}<br>
-                  {% endfor %}
-                </div>
-              {% endif %}
-            {% endwith %}
-
-            <h3>Uppgifter / Inlämningar / Prov</h3>
-            <ul>
-            {% for assignment in assignments %}
-                <li>{{ assignment['title'] }} – Deadline: {{ assignment['deadline'] }} – Typ: {{ assignment['type'] }}</li>
-            {% else %}
-                <li>Inga uppgifter tillagda ännu.</li>
-            {% endfor %}
-            </ul>
-
-            {% if is_admin %}
-            <form method="post" action="{{ url_for('add_assignment', subject_id=subject['id']) }}">
-                <input type="text" name="title" placeholder="Uppgiftsnamn" required>
-            
-                <label for="type">Typ:</label>
-                <select name="type" id="type" required onchange="updateDeadlineInput()">
-                    <option value="assignment">Uppgift</option>
-                    <option value="exam">Prov</option>
-                </select>
-            
-                <input type="datetime-local" name="deadline" id="deadline_input">
-            
-                <button type="submit">Lägg till uppgift</button>
+    <!doctype html>
+    <html lang="sv">
+    <head>
+        <meta charset="UTF-8">
+        <title>Ändra ämne - PlugIt+</title>
+        <style>
+            body { font-family: Arial, sans-serif; background-color: #f4f4f4; 
+                   display: flex; justify-content: center; align-items: center; 
+                   height: 100vh; margin:0; }
+            .edit-card { background-color: #fff; padding: 30px; border-radius:8px; 
+                         box-shadow:0px 4px 12px rgba(0,0,0,0.1); width:400px; 
+                         text-align:center; }
+            input[type="text"] { width: 100%; padding:10px; margin: 10px 0 20px 0; 
+                                 border:1px solid #ccc; border-radius:4px; 
+                                 box-sizing:border-box; }
+            button { width:100%; padding:10px; background-color:#007bff; color:#fff; 
+                     border:none; border-radius:4px; cursor:pointer; }
+            button:hover { background-color:#0056b3; }
+            .back-link { margin-top:15px; display:block; }
+            .back-link a { color:#007bff; text-decoration:none; }
+            .back-link a:hover { text-decoration:underline; }
+        </style>
+    </head>
+    <body>
+        <div class="edit-card">
+            <h2>Ändra ämnesnamn</h2>
+            <form method="post">
+                <input type="text" name="subject_name" value="{{ subject.name }}" required>
+                <button type="submit">Spara ändringar</button>
             </form>
-            
-            <script>
-            function updateDeadlineInput() {
-                const typeSelect = document.getElementById('type');
-                const deadlineInput = document.getElementById('deadline_input');
-                if(typeSelect.value === 'exam') {
-                    deadlineInput.type = 'date'; // bara datum
-                } else {
-                    deadlineInput.type = 'datetime-local'; // datum + tid
-                }
-            }
-            window.onload = updateDeadlineInput;
-            </script>
-            {% endif %}
-
             <div class="back-link">
-                <a href="{{ url_for('view_class', class_id=class_data['id']) }}">Tillbaka till klassen</a>
+                <a href="{{ url_for('view_class', class_id=cls.id) }}">Tillbaka till klassen</a>
             </div>
         </div>
-    </div>
-</body>
-</html>
-""", 
-subject=subject,
-class_data={'id': cls.id, 'name': cls.name},
-assignments=assignments,
-is_admin=(cls.admin_user_id == user.id))
+    </body>
+    </html>
+    """, subject=subject, cls=cls)
 
 @app.route('/subject/<int:subject_id>/delete', methods=['POST'])
 @login_required
@@ -1456,6 +1394,7 @@ SUBJECT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
