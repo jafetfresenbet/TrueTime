@@ -946,6 +946,10 @@ DASH_TEMPLATE = """
         <a href="{{ url_for('logout') }}">Logga ut</a>
         <a href="{{ url_for('create_class') }}">Skapa klass</a>
         <a href="{{ url_for('join_class') }}">Gå med i klass</a>
+        <a href="{{ url_for('profile') }}" 
+           style="padding: 8px 12px; background-color: #007bff; color: white; border-radius: 4px; text-decoration: none; margin-left: 10px;">
+            Min profil
+        </a>
     </nav>
 
     <div class="container">
@@ -1611,6 +1615,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
