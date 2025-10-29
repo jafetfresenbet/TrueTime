@@ -117,14 +117,21 @@ def edit_profile():
     user = current_user()
     new_name = request.form.get('name', '').strip()
     new_email = request.form.get('email', '').strip()
+    new_password = request.form.get('password', '').strip()
+    confirm_password = request.form.get('confirm_password', '').strip()
 
     if not new_name or not new_email:
         flash("Fyll i både namn och e-post.")
         return redirect(url_for('profile'))
 
+    if new_password:
+        if new_password != confirm_password:
+            flash("Lösenorden matchar inte.")
+            return redirect(url_for('profile'))
+        user.password = generate_password_hash(new_password)
+
     user.name = new_name
     user.email = new_email
-    # Om du sparar lösenord: user.password = generate_password_hash(new_password)
     db.session.commit()
     flash("Dina uppgifter har uppdaterats.")
     return redirect(url_for('profile'))
@@ -1605,6 +1612,10 @@ PROFILE_TEMPLATE = """
             <form method="post" action="{{ url_for('edit_profile') }}">
                 <input type="text" name="name" value="{{ user.name }}" placeholder="Namn" required>
                 <input type="email" name="email" value="{{ user.email }}" placeholder="E-post" required>
+                
+                <input type="password" name="password" placeholder="Nytt lösenord (lämna tomt om du inte vill byta)">
+                <input type="password" name="confirm_password" placeholder="Bekräfta nytt lösenord">
+                
                 <button type="submit">Spara ändringar</button>
             </form>
 
@@ -1621,6 +1632,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
