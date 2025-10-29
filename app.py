@@ -197,6 +197,11 @@ def register():
         flash("Registrerad och inloggad!")
         return redirect(url_for('index'))
 
+        accept_gdpr = request.form.get('accept_gdpr')
+        if not accept_gdpr:
+            flash("Du måste acceptera sekretesspolicyn för att registrera dig.")
+            return redirect(url_for('register'))
+
     return render_template_string(REGISTER_TEMPLATE)
 
 @app.route('/login', methods=['GET','POST'])
@@ -631,6 +636,68 @@ def delete_class(class_id):
     flash(f"Klassen '{cls.name}' har raderats.")
     return redirect(url_for('index'))
 
+@app.route('/privacy')
+def privacy_policy():
+    return render_template_string("""
+<!doctype html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>Sekretesspolicy - PlugIt+</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+        header { background-color: #007bff; color: #fff; padding: 15px 20px; text-align: center; }
+        header h2 { margin: 0; }
+        .container { max-width: 800px; margin: 30px auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0px 4px 12px rgba(0,0,0,0.1); }
+        h3 { color: #007bff; margin-top: 20px; }
+        p, li { line-height: 1.6; }
+        ul { padding-left: 20px; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <header>
+        <h2>Sekretesspolicy - PlugIt+</h2>
+    </header>
+
+    <div class="container">
+        <p>PlugIt+ värnar om din integritet och följer GDPR. Nedan förklarar vi hur vi samlar in, använder och skyddar dina uppgifter.</p>
+
+        <h3>1. Vilka uppgifter vi samlar in</h3>
+        <p>Vi samlar in uppgifter som du själv anger när du registrerar dig eller använder appen: namn, e-postadress, ämnen, uppgifter/prov och klassinformation.</p>
+
+        <h3>2. Varför vi samlar in uppgifter</h3>
+        <ul>
+            <li>För att du ska kunna skapa och hantera klasser och uppgifter/prov.</li>
+            <li>För att hålla reda på vem som är administratör i en klass.</li>
+            <li>För att skicka meddelanden om ändringar eller uppdateringar (om vi lägger till meddelandefunktion).</li>
+        </ul>
+
+        <h3>3. Hur länge uppgifterna sparas</h3>
+        <p>Vi sparar uppgifterna så länge du har ett konto hos oss eller tills du väljer att radera ditt konto.</p>
+
+        <h3>4. Din kontroll över uppgifterna</h3>
+        <ul>
+            <li>Du kan när som helst ändra namn och e-post i din profil.</li>
+            <li>Du kan radera ditt konto, vilket tar bort alla kopplade uppgifter.</li>
+            <li>Du kan ladda ner en kopia av dina uppgifter.</li>
+        </ul>
+
+        <h3>5. Säkerhet</h3>
+        <p>Vi använder säker lagring av lösenord och begränsar åtkomst till uppgifter till dig som användare och administratörer av klasser.</p>
+
+        <h3>6. Kontakt</h3>
+        <p>Om du har frågor om dina uppgifter eller vår hantering av dem, kontakta oss via e-post: <a href="mailto:24jawo@stockholmscience.se">24jawo@stockholmscience.se</a></p>
+
+        <div style="text-align:center; margin-top:20px;">
+            <a href="{{ url_for('dashboard') }}">Tillbaka till Dashboard</a>
+        </div>
+    </div>
+</body>
+</html>
+""")
+
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
 HOME_TEMPLATE = """
@@ -774,6 +841,10 @@ REGISTER_TEMPLATE = """
             <input type="text" name="name" placeholder="Namn" required>
             <input type="email" name="email" placeholder="E-post" required>
             <input type="password" name="password" placeholder="Lösenord" required>
+            <label>
+                <input type="checkbox" name="accept_gdpr" required>
+                Jag accepterar <a href="{{ url_for('privacy_policy') }}" target="_blank">sekretesspolicyn</a>.
+            </label>
             <button type="submit">Registrera</button>
         </form>
         <div class="login-link">
@@ -1042,6 +1113,14 @@ DASH_TEMPLATE = """
                 {% endfor %}
                 </ul>
             </div>
+
+            <div class="section">
+                <h3>Integritet & GDPR</h3>
+                <a href="{{ url_for('privacy_policy') }}">Visa sekretesspolicy</a><br>
+                <a href="{{ url_for('download_user_data') }}">Ladda ner dina uppgifter</a><br>
+                <a href="{{ url_for('delete_account') }}" onclick="return confirm('Är du säker på att du vill radera ditt konto? Detta kan inte ångras.')">Radera konto</a>
+            </div>
+            
         </div>
     </div>
 </body>
@@ -1632,6 +1711,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
