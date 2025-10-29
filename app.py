@@ -9,6 +9,7 @@ from flask import Flask, render_template_string, request, redirect, url_for, ses
 from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask import Response
 
 # --- Flask-Login (för användarhantering) ---
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
@@ -691,7 +692,7 @@ def privacy_policy():
         <p>Om du har frågor om dina uppgifter eller vår hantering av dem, kontakta oss via e-post: <a href="mailto:24jawo@stockholmscience.se">24jawo@stockholmscience.se</a></p>
 
         <div style="text-align:center; margin-top:20px;">
-            <a href="{{ url_for('dashboard') }}">Tillbaka till Dashboard</a>
+            <a href="{{ url_for('index') }}">Tillbaka till Dashboard</a>
         </div>
     </div>
 </body>
@@ -1726,6 +1727,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
