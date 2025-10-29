@@ -698,6 +698,22 @@ def privacy_policy():
 </html>
 """)
 
+@app.route('/profile/download')
+@login_required
+def download_user_data():
+    user = current_user()
+
+    # Här skapar vi en textfil med användarens info
+    data = f"Namn: {user.name}\nE-post: {user.email}\nRegistreringsdatum: {user.created_at}\n"
+    
+    # Om du har andra relaterade data, t.ex. klasser eller uppgifter, kan du lägga till dem också
+    
+    return Response(
+        data,
+        mimetype='text/plain',
+        headers={'Content-Disposition': f'attachment;filename={user.name}_data.txt'}
+    )
+
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
 HOME_TEMPLATE = """
@@ -1118,7 +1134,6 @@ DASH_TEMPLATE = """
                 <h3>Integritet & GDPR</h3>
                 <a href="{{ url_for('privacy_policy') }}">Visa sekretesspolicy</a><br>
                 <a href="{{ url_for('download_user_data') }}">Ladda ner dina uppgifter</a><br>
-                <a href="{{ url_for('delete_account') }}" onclick="return confirm('Är du säker på att du vill radera ditt konto? Detta kan inte ångras.')">Radera konto</a>
             </div>
             
         </div>
@@ -1711,6 +1726,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
