@@ -704,7 +704,7 @@ def privacy_policy():
 def download_user_data():
     user = current_user()
 
-    data = f"Namn: {user.name}\nE-post: {user.email}\nRegistreringsdatum: {user.created_at.strftime('%Y-%m-%d %H:%M:%S') if user.created_at else 'N/A'}\n"
+    data = f"Namn: {user.name}\nE-post: {user.email}\n"
 
     return Response(
         data,
@@ -1724,6 +1724,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
