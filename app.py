@@ -133,8 +133,14 @@ def edit_profile():
 @login_required
 def delete_profile():
     user = current_user()
+
+    # Ta bort klasser där användaren är admin
+    for cls in Class.query.filter_by(admin_user_id=user.id).all():
+        db.session.delete(cls)
+    
     db.session.delete(user)
     db.session.commit()
+    logout_user()
     flash("Ditt konto har raderats.")
     return redirect(url_for('index'))
 
@@ -1615,6 +1621,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
