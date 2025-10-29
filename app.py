@@ -1,11 +1,17 @@
+# --- Standardbibliotek ---
+from datetime import datetime, timedelta
+from uuid import uuid4
+import os
+from functools import wraps
+
+# --- Flask-bibliotek ---
 from flask import Flask, render_template_string, request, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
 from werkzeug.security import generate_password_hash, check_password_hash
-from functools import wraps
-from datetime import datetime, timedelta
-from uuid import uuid4
-import os
+
+# --- Flask-Login (för användarhantering) ---
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 
 # ---------- Konfiguration ----------
 DATABASE = 'mvp.db'
@@ -99,6 +105,39 @@ def generate_join_code():
     return uuid4().hex[:6].upper()
 
 # ---------- Routes ----------
+@app.route('/profile')
+@login_required
+def profile():
+    user = current_user()
+    return render_template_string(PROFILE_TEMPLATE, user=user)
+
+@app.route('/profile/edit', methods=['POST'])
+@login_required
+def edit_profile():
+    user = current_user()
+    new_name = request.form.get('name', '').strip()
+    new_email = request.form.get('email', '').strip()
+
+    if not new_name or not new_email:
+        flash("Fyll i både namn och e-post.")
+        return redirect(url_for('profile'))
+
+    user.name = new_name
+    user.email = new_email
+    # Om du sparar lösenord: user.password = generate_password_hash(new_password)
+    db.session.commit()
+    flash("Dina uppgifter har uppdaterats.")
+    return redirect(url_for('profile'))
+
+@app.route('/profile/delete', methods=['POST'])
+@login_required
+def delete_profile():
+    user = current_user()
+    db.session.delete(user)
+    db.session.commit()
+    flash("Ditt konto har raderats.")
+    return redirect(url_for('index'))
+
 @app.route('/')
 def index():
     user = current_user()
@@ -1511,6 +1550,67 @@ EDIT_ASSIGNMENT_TEMPLATE = """
 </html>
 """
 
+PROFILE_TEMPLATE = """
+<!doctype html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>Din profil</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+        header { background-color: #007bff; color: #fff; padding: 15px 20px; text-align: center; }
+        header h2 { margin: 0; }
+        .container { display: flex; justify-content: center; padding: 20px; }
+        .card { background-color: #fff; width: 600px; border-radius: 8px; box-shadow: 0px 4px 12px rgba(0,0,0,0.1); padding: 20px; }
+        h3 { margin-top: 0; color: #333; }
+        form input[type="text"], form input[type="email"], form input[type="password"] { width: 65%; padding: 8px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #ccc; }
+        form button { padding: 8px 12px; border: none; background-color: #28a745; color: #fff; border-radius: 4px; cursor: pointer; margin-right: 5px; }
+        form button:hover { background-color: #218838; }
+        .delete-btn { background-color: #dc3545; }
+        .delete-btn:hover { background-color: #c82333; }
+        .flash-message { color: red; text-align: center; margin-bottom: 10px; }
+        .back-link { display: block; text-align: center; margin-top: 15px; }
+        .back-link a { color: #007bff; text-decoration: none; }
+        .back-link a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <header>
+        <h2>Din profil</h2>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="flash-message">
+                  {% for message in messages %}
+                    {{ message }}<br>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+
+            <h3>Ändra uppgifter</h3>
+            <form method="post" action="{{ url_for('edit_profile') }}">
+                <input type="text" name="name" value="{{ user.name }}" placeholder="Namn" required>
+                <input type="email" name="email" value="{{ user.email }}" placeholder="E-post" required>
+                <button type="submit">Spara ändringar</button>
+            </form>
+
+            <h3>Radera konto</h3>
+            <form method="post" action="{{ url_for('delete_profile') }}">
+                <button type="submit" class="delete-btn" onclick="return confirm('Är du säker på att du vill radera ditt konto? Detta går inte att ångra.')">Radera konto</button>
+            </form>
+
+            <div class="back-link">
+                <a href="{{ url_for('index') }}">Tillbaka till startsidan</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+"""
 
 
 
