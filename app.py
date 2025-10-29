@@ -704,8 +704,26 @@ def privacy_policy():
 def download_user_data():
     user = current_user()
 
+    # Grundinfo om användaren
     data = f"Namn: {user.name}\nE-post: {user.email}\n"
+    if hasattr(user, 'created_at') and user.created_at:
+        data += f"Registreringsdatum: {user.created_at.strftime('%Y-%m-%d %H:%M')}\n"
+    data += "\n"
 
+    # Klasser användaren är medlem i
+    data += "Klasser:\n"
+    for cls in user.classes:  # Antar att du har en relation User.classes
+        data += f"- {cls.name} (kod: {cls.join_code})\n"
+    data += "\n"
+
+    # Uppgifter/prov som användaren har skapat
+    data += "Uppgifter / Prov:\n"
+    assignments = Assignment.query.filter_by(created_by=user.id).all()
+    for a in assignments:
+        deadline_str = a.deadline.strftime('%Y-%m-%d %H:%M') if a.deadline else "Ingen deadline"
+        data += f"- {a.title} — Ämne: {a.subject.name} — Klass: {a.subject.cls.name} — Typ: {a.type} — Deadline: {deadline_str}\n"
+
+    # Skapa textfilen som response
     return Response(
         data,
         mimetype='text/plain',
@@ -1724,6 +1742,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
