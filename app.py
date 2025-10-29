@@ -704,11 +704,8 @@ def privacy_policy():
 def download_user_data():
     user = current_user()
 
-    # Här skapar vi en textfil med användarens info
-    data = f"Namn: {user.name}\nE-post: {user.email}\nRegistreringsdatum: {user.created_at}\n"
-    
-    # Om du har andra relaterade data, t.ex. klasser eller uppgifter, kan du lägga till dem också
-    
+    data = f"Namn: {user.name}\nE-post: {user.email}\nRegistreringsdatum: {user.created_at.strftime('%Y-%m-%d %H:%M:%S') if user.created_at else 'N/A'}\n"
+
     return Response(
         data,
         mimetype='text/plain',
@@ -1727,6 +1724,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
