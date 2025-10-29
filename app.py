@@ -99,7 +99,7 @@ def generate_join_code():
     return uuid4().hex[:6].upper()
 
 # ---------- Routes ----------
-@app.route('/')
+@app.route('/dashboard')
 def index():
     user = current_user()
     if not user:
@@ -1510,6 +1510,7 @@ EDIT_ASSIGNMENT_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
