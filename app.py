@@ -1552,7 +1552,7 @@ EDIT_ASSIGNMENT_TEMPLATE = """
             {% endif %}
 
             <div class="back-link">
-                <a href="{{ url_for('view_subject', subject_id=subject.id) }}">Avbryt / Tillbaka</a>
+                <a href="{{ url_for('index', subject_id=subject.id) }}">Avbryt / Tillbaka</a>
             </div>
         </div>
     </div>
@@ -1621,6 +1621,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
