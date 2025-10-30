@@ -692,7 +692,7 @@ def privacy_policy():
         <p>Om du har frågor om dina uppgifter eller vår hantering av dem, kontakta oss via e-post: <a href="mailto:24jawo@stockholmscience.se">24jawo@stockholmscience.se</a></p>
 
         <div style="text-align:center; margin-top:20px;">
-            <a href="{{ url_for('index') }}">Tillbaka till Dashboard</a>
+            <a href="{{ url_for('index') }}">Tillbaka</a>
         </div>
     </div>
 </body>
@@ -1724,6 +1724,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
