@@ -210,6 +210,8 @@ def index():
     # Sortera efter deadline (närmast först)
     assignments_display.sort(key=lambda x: x['deadline'] or datetime.max)
 
+    today = datetime.now().strftime('%Y-%m-%d')
+
     return render_template_string(DASH_TEMPLATE, user=user, classes=classes, assignments=assignments_display[:50])
 
 @app.route('/register', methods=['GET','POST'])
@@ -1097,8 +1099,10 @@ DASH_TEMPLATE = """
               {% endif %}
             {% endwith %}
 
-            <div class="section">
+            <div class="section" style="display: flex; justify-content: space-between; align-items: center;">
                 <h3>Dina klasser</h3>
+                <span style="font-weight: bold; color: #007bff;">{{ today }}</span>
+            </div>
                 <ul>
                 {% for c in classes %}
                     <li style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0;">
@@ -1759,6 +1763,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
