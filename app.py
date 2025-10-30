@@ -10,6 +10,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Response
+from flask_migrate import Migrate
 
 # --- Flask-Login (för användarhantering) ---
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
@@ -32,6 +33,8 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 db = SQLAlchemy(app)
 app.config['SESSION_SQLALCHEMY'] = db
 Session(app)
+
+migrate = Migrate(app, db)
 
 # ---------- Models ----------
 class User(db.Model):
@@ -75,6 +78,7 @@ class Assignment(db.Model):
     deadline = db.Column(db.DateTime)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
     subject = db.relationship('Subject', back_populates='assignments')
+    archived = db.Column(db.Boolean, default=False)
 
 # ---------- Auth helpers ----------
 def current_user():
@@ -154,7 +158,9 @@ def delete_profile():
 
 @app.route('/')
 def index():
+    archive_old_assignments()
     user = current_user()
+    assignments = Assignment.query.filter_by(archived=False).all()
     if not user:
         return render_template_string(HOME_TEMPLATE)
 
@@ -487,6 +493,7 @@ def view_subject(subject_id):
     user = current_user()
     is_admin = (cls.admin_user_id == user.id)
     assignments = subject.assignments
+    assignments = Assignment.query.filter_by(subject_id=subject.id, archived=False).all()
     return render_template_string(SUBJECT_TEMPLATE, subject=subject, class_data=cls, assignments=assignments, is_admin=is_admin)
 
 @app.route('/subject/<int:subject_id>/edit', methods=['GET','POST'])
@@ -711,6 +718,19 @@ def download_user_data():
         mimetype='text/plain',
         headers={'Content-Disposition': f'attachment;filename={user.name}_data.txt'}
     )
+
+def archive_old_assignments():
+    now = datetime.now()
+    assignments = Assignment.query.filter_by(archived=False).all()
+
+    for a in assignments:
+        if a.deadline:
+            if a.type == 'assignment' and now > a.deadline:
+                a.archived = True
+            elif a.type == 'exam' and now.date() > a.deadline.date():
+                a.archived = True
+
+    db.session.commit()
 
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
@@ -1724,6 +1744,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
