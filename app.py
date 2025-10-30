@@ -1133,7 +1133,7 @@ DASH_TEMPLATE = """
                 <h3>Kommande uppgifter</h3>
                 <ul>
                 {% for a in assignments %}
-                    <li style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0;">
+                    <li style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-radius: 6px; background-color: {{ a['color'] }};">
                         <span>
                             <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }} ({{ a['class_name'] }})
                             {% if a['deadline'] %}
@@ -1757,6 +1757,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
