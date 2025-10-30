@@ -194,7 +194,7 @@ def index():
                 elif days_left > 0:
                     color = "#e51f1f"  # nära deadline
                 elif days_left < 0:
-                    color = "#c4a602"
+                    color = "#6a6af7"
 
                 assignments_display.append({
                     'id': a.id,
@@ -1759,6 +1759,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
