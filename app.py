@@ -1102,7 +1102,7 @@ DASH_TEMPLATE = """
             <div class="section" style="margin-bottom: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <h3 style="margin: 0;">Dina klasser</h3>
-                    <span style="font-weight: bold; color: #007bff;">{{ today }}</span>
+                    <span style="font-weight: bold; color: #007bff;">Dagens datum: {{ today }}</span>
                 </div>
             
                 <ul>
@@ -1765,6 +1765,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
