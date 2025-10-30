@@ -161,9 +161,15 @@ def index():
 
     classes = [uc.cls for uc in user.classes]
     assignments_display = []
+    now = datetime.now()
+    
     for cls in classes:
         for subj in cls.subjects:
             for a in subj.assignments:
+                if a.type == 'Uppgift' and a.deadline and a.deadline < now:
+                    continue
+                if a.type == 'Prov' and a.deadline and a.deadline.date() < now.date():
+                    continue
                 assignments_display.append({
                     'id': a.id,
                     'title': a.title,
@@ -1725,6 +1731,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
