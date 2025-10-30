@@ -5,3 +5,4 @@ Flask-Session
 flask_sqlalchemy
 psycopg2-binary
 Flask-Login
+Flask-Migrate
