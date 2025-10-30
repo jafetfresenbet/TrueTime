@@ -153,6 +153,8 @@ def delete_profile():
     flash("Ditt konto har raderats.")
     return redirect(url_for('index'))
 
+from datetime import datetime
+
 @app.route('/')
 def index():
     user = current_user()
@@ -162,14 +164,36 @@ def index():
     classes = [uc.cls for uc in user.classes]
     assignments_display = []
     now = datetime.now()
-    
+
     for cls in classes:
         for subj in cls.subjects:
             for a in subj.assignments:
+                # Filtrera bort gamla uppgifter/prov
                 if a.type == 'Uppgift' and a.deadline and a.deadline < now:
                     continue
                 if a.type == 'Prov' and a.deadline and a.deadline.date() < now.date():
                     continue
+
+                # Beräkna dagar kvar till deadline
+                days_left = None
+                if a.deadline:
+                    delta = a.deadline - now
+                    days_left = delta.days + (delta.seconds / 86400)  # inkl. timmar
+
+                # Färg baserat på hur nära deadline är
+                if days_left is None:
+                    color = "#f8f9fa"
+                elif days_left > 14:
+                    color = "#44ce1b"  # långt borta
+                elif days_left > 7:
+                    color = "#bbdb44"
+                elif days_left > 3:
+                    color = "#f7e379"
+                elif days_left > 1:
+                    color = "#f2a134"
+                else:
+                    color = "#e51f1f"  # nära deadline
+
                 assignments_display.append({
                     'id': a.id,
                     'title': a.title,
@@ -177,9 +201,11 @@ def index():
                     'deadline': a.deadline,
                     'subject_name': subj.name,
                     'class_name': cls.name,
-                    'created_by': a.created_by
+                    'created_by': a.created_by,
+                    'color': color
                 })
 
+    # Sortera efter deadline (närmast först)
     assignments_display.sort(key=lambda x: x['deadline'] or datetime.max)
 
     return render_template_string(DASH_TEMPLATE, user=user, classes=classes, assignments=assignments_display[:50])
@@ -1731,6 +1757,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
