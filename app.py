@@ -1099,8 +1099,8 @@ DASH_TEMPLATE = """
               {% endif %}
             {% endwith %}
 
-            <div class="section">
-                <h3>Dina klasser</h3>
+            <div class="section" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h3 style="margin: 0;">Dina klasser</h3>
                 <span style="font-weight: bold; color: #007bff;">{{ today }}</span>
                 <ul>
                 {% for c in classes %}
@@ -1762,6 +1762,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
