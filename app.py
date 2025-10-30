@@ -212,7 +212,7 @@ def index():
 
     today = datetime.now().strftime('%Y-%m-%d')
 
-    return render_template_string(DASH_TEMPLATE, user=user, classes=classes, assignments=assignments_display[:50])
+    return render_template_string(DASH_TEMPLATE, user=user, classes=classes, assignments=assignments_display[:50], today=today)
 
 @app.route('/register', methods=['GET','POST'])
 def register():
@@ -1099,9 +1099,12 @@ DASH_TEMPLATE = """
               {% endif %}
             {% endwith %}
 
-            <div class="section" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h3 style="margin: 0;">Dina klasser</h3>
-                <span style="font-weight: bold; color: #007bff;">{{ today }}</span>
+            <div class="section" style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3 style="margin: 0;">Dina klasser</h3>
+                    <span style="font-weight: bold; color: #007bff;">{{ today }}</span>
+                </div>
+            
                 <ul>
                 {% for c in classes %}
                     <li style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0;">
@@ -1762,6 +1765,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
