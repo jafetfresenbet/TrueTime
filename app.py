@@ -1067,7 +1067,7 @@ DASH_TEMPLATE = """
             border-radius: 4px;
         }
         .flash-message {
-            color: red;
+            color: green;
             text-align: center;
             margin-bottom: 10px;
         }
@@ -1231,7 +1231,7 @@ CREATE_CLASS_TEMPLATE = """
             background-color: #218838;
         }
         .flash-message {
-            color: red;
+            color: green;
             text-align: center;
             margin-bottom: 10px;
         }
@@ -1323,7 +1323,7 @@ JOIN_CLASS_TEMPLATE = """
             background-color: #0056b3;
         }
         .flash-message {
-            color: red;
+            color: green;
             text-align: center;
             margin-bottom: 10px;
         }
@@ -1438,7 +1438,7 @@ CLASS_TEMPLATE = """
             border-radius: 4px;
         }
         .flash-message {
-            color: red;
+            color: green;
             text-align: center;
             margin-bottom: 10px;
         }
@@ -1539,7 +1539,7 @@ SUBJECT_TEMPLATE = """
         h3 { margin-top: 0; color: #333; }
         ul { list-style: none; padding-left: 0; }
         li { background-color: #f8f9fa; margin: 5px 0; padding: 10px; border-radius: 4px; }
-        .flash-message { color: red; text-align: center; margin-bottom: 10px; }
+        .flash-message { color: green; text-align: center; margin-bottom: 10px; }
         form input[type="text"], form input[type="datetime-local"], form select { width: 65%; padding: 8px; margin-right: 5px; border-radius: 4px; border: 1px solid #ccc; }
         form button { padding: 8px 12px; border: none; background-color: #28a745; color: #fff; border-radius: 4px; cursor: pointer; }
         form button:hover { background-color: #218838; }
@@ -1627,7 +1627,7 @@ EDIT_ASSIGNMENT_TEMPLATE = """
         h3 { margin-top: 0; color: #333; }
         ul { list-style: none; padding-left: 0; }
         li { background-color: #f8f9fa; margin: 5px 0; padding: 10px; border-radius: 4px; }
-        .flash-message { color: red; text-align: center; margin-bottom: 10px; }
+        .flash-message { color: green; text-align: center; margin-bottom: 10px; }
         form input[type="text"], form input[type="date"], form input[type="datetime-local"], form select { width: 65%; padding: 8px; margin-right: 5px; border-radius: 4px; border: 1px solid #ccc; }
         form button { padding: 8px 12px; border: none; background-color: #28a745; color: #fff; border-radius: 4px; cursor: pointer; }
         form button:hover { background-color: #218838; }
@@ -1718,7 +1718,7 @@ PROFILE_TEMPLATE = """
         form button:hover { background-color: #218838; }
         .delete-btn { background-color: #dc3545; }
         .delete-btn:hover { background-color: #c82333; }
-        .flash-message { color: red; text-align: center; margin-bottom: 10px; }
+        .flash-message { color: green; text-align: center; margin-bottom: 10px; }
         .back-link { display: block; text-align: center; margin-top: 15px; }
         .back-link a { color: #007bff; text-decoration: none; }
         .back-link a:hover { text-decoration: underline; }
@@ -1765,6 +1765,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
