@@ -128,7 +128,7 @@ def edit_profile():
 
     if new_password:
         if new_password != confirm_password:
-            flash("Lösenorden matchar inte.")
+            flash("Lösenorden matchar inte.", "error")
             return redirect(url_for('profile'))
         user.password = generate_password_hash(new_password)
 
@@ -1765,6 +1765,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
