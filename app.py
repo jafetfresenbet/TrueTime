@@ -726,7 +726,7 @@ def privacy_policy():
         <p>Vi använder säker lagring av lösenord och begränsar åtkomst till uppgifter till dig som användare och administratörer av klasser.</p>
 
         <h3>6. Kontakt</h3>
-        <p>Om du har frågor om dina uppgifter eller vår hantering av dem, kontakta oss via e-post: <a href="mailto:24jawo@stockholmscience.se">24jawo@stockholmscience.se</a></p>
+        <p>Om du har frågor om dina uppgifter eller vår hantering av dem, kontakta oss via e-post: <a href="mailto:truetimeuf@gmail.com">truetimeuf@gmail.com</a></p>
 
         <div style="text-align:center; margin-top:20px;">
             <a href="{{ url_for('index') }}">Tillbaka</a>
@@ -1765,6 +1765,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
