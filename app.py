@@ -1170,7 +1170,7 @@ DASH_TEMPLATE = """
             </div>
 
             <div class="section">
-                <h3>Integritet & GDPR</h3>
+                <h3>Integritet & Användarvillkor</h3>
                 <a href="{{ url_for('privacy_policy') }}">Visa sekretesspolicy</a><br>
                 <a href="{{ url_for('download_user_data') }}">Ladda ner dina uppgifter</a><br>
             </div>
@@ -1765,6 +1765,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
