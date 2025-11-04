@@ -188,7 +188,7 @@ def index():
                 elif days_left > 7:
                     color = "#bbdb44"
                 elif days_left > 3:
-                    color = "#f7e379"
+                    color = "#fad928"
                 elif days_left > 1:
                     color = "#f2a134"
                 elif days_left > 0:
@@ -1765,6 +1765,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
