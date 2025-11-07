@@ -550,7 +550,7 @@ def view_subject(subject_id):
             elif days_left > 0:
                 color = "#e51f1f"  # nära deadline
             elif days_left < 0:
-                color = "#6a6af7"e
+                color = "#6a6af7"
 
         assignments_display.append({
             'id': a.id,
@@ -1820,6 +1820,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
