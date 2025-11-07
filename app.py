@@ -516,6 +516,8 @@ def leave_class(class_id):
 
     return redirect(url_for('index'))
 
+from datetime import datetime, timedelta
+
 @app.route('/subject/<int:subject_id>')
 @login_required
 def view_subject(subject_id):
@@ -523,8 +525,52 @@ def view_subject(subject_id):
     cls = subject.cls
     user = current_user()
     is_admin = (cls.admin_user_id == user.id)
-    assignments = subject.assignments
-    return render_template_string(SUBJECT_TEMPLATE, subject=subject, class_data=cls, assignments=assignments, is_admin=is_admin)
+
+    # Samla uppgifter/prov med färg baserat på deadline
+    assignments_display = []
+    for a in subject.assignments:
+        # Beräkna färg beroende på hur nära deadlinen är
+        if a.deadline:
+            now = datetime.now()
+            if a.type == 'assignment':
+                delta = a.deadline - now
+            else:  # exam
+                delta = (a.deadline + timedelta(days=1)) - now
+            days_left = delta.total_seconds() / 86400
+            if days_left is None:
+                    color = "#f8f9fa"
+            elif days_left > 14:
+                color = "#44ce1b"  # långt borta
+            elif days_left > 7:
+                color = "#bbdb44"
+            elif days_left > 3:
+                color = "#fad928"
+            elif days_left > 1:
+                color = "#f2a134"
+            elif days_left > 0:
+                color = "#e51f1f"  # nära deadline
+            elif days_left < 0:
+                color = "#6a6af7"e
+
+        assignments_display.append({
+            'id': a.id,
+            'title': a.title,
+            'type': a.type,
+            'deadline': a.deadline,
+            'created_by': a.created_by,
+            'color': color
+        })
+
+    # Sortera uppgifter/prov efter deadline (närmast först)
+    assignments_display.sort(key=lambda x: x['deadline'] or datetime.max)
+
+    return render_template_string(
+        SUBJECT_TEMPLATE,
+        subject=subject,
+        class_data=cls,
+        assignments=assignments_display,
+        is_admin=is_admin
+    )
 
 @app.route('/subject/<int:subject_id>/edit', methods=['GET','POST'])
 @login_required
@@ -1568,7 +1614,16 @@ SUBJECT_TEMPLATE = """
             <h3>Uppgifter / Inlämningar / Prov</h3>
             <ul>
             {% for assignment in assignments %}
-                <li>{{ assignment['title'] }} – Deadline: {{ assignment['deadline'] }} – Typ: {{ assignment['type'] }}</li>
+                <li style="background-color: {{ assignment['color'] }}; margin: 5px 0; padding: 10px; border-radius: 4px;">
+                    <strong>{{ assignment['title'] }}</strong> —
+                    {% if assignment['deadline'] %}
+                        {% if assignment['type'] == 'assignment' %}
+                            deadline: {{ assignment['deadline'].strftime('%Y/%m/%d %H:%M') }}
+                        {% else %}
+                            datum: {{ assignment['deadline'].strftime('%Y/%m/%d') }}
+                        {% endif %}
+                    {% endif %}
+                </li>
             {% else %}
                 <li>Inga uppgifter tillagda ännu.</li>
             {% endfor %}
@@ -1765,6 +1820,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
