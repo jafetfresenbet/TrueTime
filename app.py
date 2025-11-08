@@ -1222,7 +1222,7 @@ DASH_TEMPLATE = """
             </div>
 
             <div class="section">
-                <h3>Här kan du hålla koll på PlugIt+ uppdateringar</h3>
+                <h3>Följ oss på sociala medier:</h3>
                 <a href="https://www.instagram.com/truetimeuf/" target="_blank">Instagram</a><br>
                 <a href="https://www.tiktok.com/@truetimeuf" target="_blank">TikTok</a><br>
                 <a href="https://www.youtube.com/@TrueTimeUF" target="_blank">YouTube</a><br>
@@ -1827,6 +1827,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
