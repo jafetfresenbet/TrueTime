@@ -408,6 +408,7 @@ def edit_class(class_id):
 <!doctype html>
 <html lang="sv">
 <head>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <meta charset="UTF-8">
     <title>Ändra klass - PlugIt+</title>
     <style>
@@ -1827,6 +1828,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
