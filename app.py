@@ -526,7 +526,7 @@ def view_subject(subject_id):
     cls = subject.cls
     user = current_user()
     is_admin = (cls.admin_user_id == user.id)
-
+    
     # Samla uppgifter/prov med färg baserat på deadline
     assignments_display = []
     for a in subject.assignments:
@@ -536,8 +536,8 @@ def view_subject(subject_id):
             if a.type == 'assignment':
                 delta = a.deadline - now
             else:  # exam
-                delta = (a.deadline + timedelta(days=1)) - now
-            days_left = delta.total_seconds() / 86400
+                delta = a.deadline - now
+            days_left = delta.days + (delta.seconds / 86400)
             if days_left is None:
                     color = "#f8f9fa"
             elif days_left > 14:
@@ -1828,6 +1828,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
