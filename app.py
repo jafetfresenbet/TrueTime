@@ -1732,8 +1732,7 @@ EDIT_ASSIGNMENT_TEMPLATE = """
                     type="{% if assignment.type == 'exam' %}date{% else %}datetime-local{% endif %}" 
                     name="deadline" 
                     id="deadline_input"
-                    value="{% if assignment.type == 'exam' %}{{ assignment.deadline.strftime('%Y-%m-%d') }}{% else %}{{ assignment.deadline.strftime('%Y-%m-%dT%H:%M') }}{% endif %}"
-                    required
+                    value="{% if assignment.deadline %}{% if assignment.type == 'exam' %}{{ assignment.deadline.strftime('%Y-%m-%d') }}{% else %}{{ assignment.deadline.strftime('%Y-%m-%dT%H:%M') }}{% endif %}{% else %}{% endif %}"
                 >
 
                 <button type="submit">Spara ändringar</button>
@@ -1827,6 +1826,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
