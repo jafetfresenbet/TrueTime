@@ -530,17 +530,14 @@ def view_subject(subject_id):
     # Samla uppgifter/prov med färg baserat på deadline
     assignments_display = []
     for a in subject.assignments:
-        # Beräkna färg beroende på hur nära deadlinen är
+        # Standardfärg
+        color = "#f8f9fa"
+    
         if a.deadline:
             now = datetime.now()
-            if a.type == 'assignment':
-                delta = a.deadline - now
-            else:  # exam
-                delta = a.deadline - now
+            delta = a.deadline - now
             days_left = delta.days + (delta.seconds / 86400)
-            if days_left is None:
-                    color = "#f8f9fa"
-            elif days_left > 14:
+            if days_left > 14:
                 color = "#44ce1b"  # långt borta
             elif days_left > 7:
                 color = "#bbdb44"
@@ -552,7 +549,7 @@ def view_subject(subject_id):
                 color = "#e51f1f"  # nära deadline
             elif days_left < 0:
                 color = "#6a6af7"
-
+    
         assignments_display.append({
             'id': a.id,
             'title': a.title,
@@ -1830,6 +1827,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
