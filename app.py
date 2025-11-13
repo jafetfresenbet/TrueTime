@@ -672,11 +672,17 @@ def edit_assignment(assignment_id):
             flash("Fyll i ett namn för uppgiften/provet.")
             return redirect(url_for('edit_assignment', assignment_id=assignment_id))
 
-        # Hantera datum
-        if new_type == 'exam':
-            new_deadline = datetime.strptime(deadline_str, '%Y-%m-%d')
+        if deadline_str:  # Kolla att strängen inte är tom
+            try:
+                if new_type == 'exam':
+                    new_deadline = datetime.strptime(deadline_str, '%Y-%m-%d')
+                else:
+                    new_deadline = datetime.strptime(deadline_str, '%Y-%m-%dT%H:%M')
+            except ValueError:
+                flash("Fel datumformat.")
+                return redirect(url_for('edit_assignment', assignment_id=assignment_id))
         else:
-            new_deadline = datetime.strptime(deadline_str, '%Y-%m-%dT%H:%M')
+            new_deadline = None  # Om tom, sätt deadline till None
 
         assignment.title = new_title
         assignment.type = new_type
@@ -1826,6 +1832,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
