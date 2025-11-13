@@ -255,29 +255,36 @@ def register():
             flash("E-post redan registrerad.")
             return redirect(url_for('register'))
 
-        # Skapa användare med confirmed=False
-        user = User(
-            name=name,
-            email=email,
-            password_hash=generate_password_hash(password),
-            confirmed=False
-        )
-        db.session.add(user)
-        db.session.commit()
+        try:
+            # Skapa användare med confirmed=False
+            user = User(
+                name=name,
+                email=email,
+                password_hash=generate_password_hash(password),
+                confirmed=False
+            )
 
-        # Skapa token och spara
-        token = serializer.dumps(user.email, salt='email-confirm')
-        user.confirmation_token = token
-        db.session.commit()
+            # Skapa token och spara direkt i objektet
+            token = serializer.dumps(user.email, salt='email-confirm')
+            user.confirmation_token = token
 
-        # Skicka bekräftelsemail
-        confirm_url = url_for('confirm_email', token=token, _external=True)
-        msg = Message("Bekräfta din e-post", recipients=[user.email])
-        msg.body = f"Hej {user.name},\n\nKlicka på länken för att bekräfta ditt konto:\n{confirm_url}\n\nOm du inte registrerat dig kan du ignorera detta mail."
-        mail.send(msg)
+            # Lägg till och commit
+            db.session.add(user)
+            db.session.commit()
 
-        flash("Registrering lyckades! Kontrollera din e-post för att bekräfta ditt konto.")
-        return redirect(url_for('login'))
+            # Skicka bekräftelsemail
+            confirm_url = url_for('confirm_email', token=token, _external=True)
+            msg = Message("Bekräfta din e-post", recipients=[user.email])
+            msg.body = f"Hej {user.name},\n\nKlicka på länken för att bekräfta ditt konto:\n{confirm_url}\n\nOm du inte registrerat dig kan du ignorera detta mail."
+            mail.send(msg)
+
+            flash("Registrering lyckades! Kontrollera din e-post för att bekräfta ditt konto.")
+            return redirect(url_for('login'))
+
+        except Exception as e:
+            db.session.rollback()  # viktigt!
+            flash(f"Ett fel uppstod vid registrering: {str(e)}")
+            return redirect(url_for('register'))
 
     return render_template_string(REGISTER_TEMPLATE)
 
@@ -1894,6 +1901,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
