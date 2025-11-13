@@ -1624,12 +1624,14 @@ SUBJECT_TEMPLATE = """
             {% for assignment in assignments %}
                 <li style="background-color: {{ assignment['color'] }}; margin: 5px 0; padding: 10px; border-radius: 4px;">
                     <strong>{{ assignment['title'] }}</strong> —
-                    {% if assignment['deadline'] %}
+                    {% if assignment['deadline'] is not none %}
                         {% if assignment['type'] == 'assignment' %}
                             deadline: {{ assignment['deadline'].strftime('%Y/%m/%d %H:%M') }}
                         {% else %}
                             datum: {{ assignment['deadline'].strftime('%Y/%m/%d') }}
                         {% endif %}
+                    {% else %}
+                        Ingen deadline
                     {% endif %}
                 </li>
             {% else %}
@@ -1828,6 +1830,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
