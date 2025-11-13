@@ -34,6 +34,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 
 db = SQLAlchemy(app)
 app.config['SESSION_SQLALCHEMY'] = db
+migrate = Migrate(app, db)
 Session(app)
 
 
@@ -60,7 +61,7 @@ class User(db.Model):
     email = db.Column(db.String, unique=True, nullable=False)
     password_hash = db.Column(db.String, nullable=False)
     confirmed = db.Column(db.Boolean, default=False)
-    confirmation_token = db.Column(db.String(100), nullable=True)
+    confirmation_token = db.Column(db.String(256), nullable=True)
     classes = db.relationship('UserClass', back_populates='user', cascade="all, delete-orphan")
 
 class Class(db.Model):
@@ -1893,6 +1894,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
