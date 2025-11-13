@@ -238,6 +238,12 @@ def index():
 @app.route('/register', methods=['GET','POST'])
 def register():
     if request.method == 'POST':
+        # Se till att sessionen är ren
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+
         name = request.form['name'].strip()
         email = request.form['email'].strip().lower()
         password = request.form['password']
@@ -1901,6 +1907,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
