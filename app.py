@@ -19,7 +19,7 @@ from itsdangerous import URLSafeTimedSerializer
 
 # ---------- Konfiguration ----------
 DATABASE = 'mvp.db'
-SECRET_KEY = 'byt-denna-till-nagot-hemligt-i-produkt'
+SECRET_KEY = 'BlirDetTrueTimePåStrawberryArenaNästaÅr?'
 DEBUG = True
 
 app = Flask(__name__)
@@ -1907,6 +1907,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
