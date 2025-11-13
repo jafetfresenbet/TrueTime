@@ -14,6 +14,8 @@ from flask_migrate import Migrate
 
 # --- Flask-Login (för användarhantering) ---
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask_mail import Mail, Message
+from itsdangerous import URLSafeTimedSerializer
 
 # ---------- Konfiguration ----------
 DATABASE = 'mvp.db'
@@ -34,6 +36,22 @@ db = SQLAlchemy(app)
 app.config['SESSION_SQLALCHEMY'] = db
 Session(app)
 
+
+
+# Mail-konfiguration
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'  # eller din mailserver
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_USERNAME'] = 'din_email@gmail.com'
+app.config['MAIL_PASSWORD'] = 'ditt_email_lösenord'
+app.config['MAIL_DEFAULT_SENDER'] = 'din_email@gmail.com'
+
+mail = Mail(app)
+
+# Serializer för token
+serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+
 # ---------- Models ----------
 class User(db.Model):
     __tablename__ = 'users'
@@ -41,6 +59,8 @@ class User(db.Model):
     name = db.Column(db.String, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
     password_hash = db.Column(db.String, nullable=False)
+    confirmed = db.Column(db.Boolean, default=False)
+    confirmation_token = db.Column(db.String(100), nullable=True)
     classes = db.relationship('UserClass', back_populates='user', cascade="all, delete-orphan")
 
 class Class(db.Model):
@@ -220,6 +240,12 @@ def register():
         name = request.form['name'].strip()
         email = request.form['email'].strip().lower()
         password = request.form['password']
+
+        accept_gdpr = request.form.get('accept_gdpr')
+        if not accept_gdpr:
+            flash("Du måste acceptera sekretesspolicyn för att registrera dig.")
+            return redirect(url_for('register'))
+
         if not name or not email or not password:
             flash("Fyll i alla fält.")
             return redirect(url_for('register'))
@@ -228,17 +254,29 @@ def register():
             flash("E-post redan registrerad.")
             return redirect(url_for('register'))
 
-        user = User(name=name, email=email, password_hash=generate_password_hash(password))
+        # Skapa användare med confirmed=False
+        user = User(
+            name=name,
+            email=email,
+            password_hash=generate_password_hash(password),
+            confirmed=False
+        )
         db.session.add(user)
         db.session.commit()
-        login_user(user)
-        flash("Registrerad och inloggad!")
-        return redirect(url_for('index'))
 
-        accept_gdpr = request.form.get('accept_gdpr')
-        if not accept_gdpr:
-            flash("Du måste acceptera sekretesspolicyn för att registrera dig.")
-            return redirect(url_for('register'))
+        # Skapa token och spara
+        token = serializer.dumps(user.email, salt='email-confirm')
+        user.confirmation_token = token
+        db.session.commit()
+
+        # Skicka bekräftelsemail
+        confirm_url = url_for('confirm_email', token=token, _external=True)
+        msg = Message("Bekräfta din e-post", recipients=[user.email])
+        msg.body = f"Hej {user.name},\n\nKlicka på länken för att bekräfta ditt konto:\n{confirm_url}\n\nOm du inte registrerat dig kan du ignorera detta mail."
+        mail.send(msg)
+
+        flash("Registrering lyckades! Kontrollera din e-post för att bekräfta ditt konto.")
+        return redirect(url_for('login'))
 
     return render_template_string(REGISTER_TEMPLATE)
 
@@ -251,6 +289,10 @@ def login():
         if not user or not check_password_hash(user.password_hash, password):
             flash("Fel e-post eller lösenord.")
             return redirect(url_for('login'))
+        
+        if not user.confirmed:
+            flash("Du måste bekräfta din e-post innan du kan logga in. Kontrollera din inbox.")
+            return redirect(url_for('login'))
         login_user(user)
         flash("Inloggad.")
         return redirect(url_for('index'))
@@ -261,6 +303,25 @@ def logout():
     logout_user()
     flash("Utloggad.")
     return redirect(url_for('index'))
+
+
+@app.route('/confirm/<token>')
+def confirm_email(token):
+    try:
+        email = serializer.loads(token, salt='email-confirm', max_age=3600)  # giltig 1h
+    except:
+        flash("Bekräftelselänken är ogiltig eller har gått ut.")
+        return redirect(url_for('login'))
+
+    user = User.query.filter_by(email=email).first_or_404()
+    if user.confirmed:
+        flash("Kontot är redan bekräftat.")
+    else:
+        user.confirmed = True
+        db.session.commit()
+        flash("Din e-post har bekräftats! Du kan nu logga in.")
+
+    return redirect(url_for('login'))
 
 # ---------- Klass-routes ----------
 @app.route('/create_class', methods=['GET','POST'])
@@ -1832,6 +1893,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
