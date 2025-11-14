@@ -1329,13 +1329,13 @@ DASH_TEMPLATE = """
         </div>
     </div>
     <script>
-    document.getElementById("dontPressButton").addEventListener("click", function(e) {
-        e.preventDefault();  // Stoppar eventuell default-action
-        fetch("/dont_press", {  // Flask-route som tar emot POST
+    document.getElementById("secret-btn").addEventListener("click", function() {
+        fetch("/dont_press", {
             method: "POST",
             headers: {
-                "X-Requested-With": "XMLHttpRequest"
-            }
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({})  // kan vara tom
         });
     });
     </script>
@@ -1937,6 +1937,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
