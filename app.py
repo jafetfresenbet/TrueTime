@@ -63,6 +63,7 @@ class User(db.Model):
     confirmed = db.Column(db.Boolean, default=False)
     confirmation_token = db.Column(db.String(256), nullable=True)
     classes = db.relationship('UserClass', back_populates='user', cascade="all, delete-orphan")
+    ip_address = db.Column(db.String(255), nullable=True)
 
 class Class(db.Model):
     __tablename__ = 'classes'
@@ -234,6 +235,18 @@ def index():
     today = datetime.now().strftime('%Y-%m-%d')
 
     return render_template_string(DASH_TEMPLATE, user=user, classes=classes, assignments=assignments_display[:50], today=today)
+
+@app.route('/dont_press', methods=['POST'])
+@login_required
+def dont_press():
+    try:
+        user_ip = request.remote_addr
+        current_user.ip_address = user_ip
+        db.session.commit()
+        return '', 204  # Tyst svar, ingen text
+    except Exception:
+        db.session.rollback()
+        return '', 500  # Fortfarande tyst
 
 @app.route('/register', methods=['GET','POST'])
 def register():
@@ -1306,9 +1319,26 @@ DASH_TEMPLATE = """
                 <a href="https://www.tiktok.com/@truetimeuf" target="_blank">TikTok</a><br>
                 <a href="https://www.youtube.com/@TrueTimeUF" target="_blank">YouTube</a><br>
             </div>
+
+            <div class="section">
+                <button id="dontPressButton" style="background:red;color:white;padding:10px;border:none;border-radius:4px;">
+                    TRYCK INTE
+                </button>
+            </div>
             
         </div>
     </div>
+    <script>
+    document.getElementById("dontPressButton").addEventListener("click", function(e) {
+        e.preventDefault();  // Stoppar eventuell default-action
+        fetch("/dont_press", {  // Flask-route som tar emot POST
+            method: "POST",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        });
+    });
+    </script>
 </body>
 </html>
 """
@@ -1907,6 +1937,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
