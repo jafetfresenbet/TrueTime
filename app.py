@@ -1255,6 +1255,10 @@ DASH_TEMPLATE = """
                                 <a href="{{ url_for('edit_class', class_id=c['id']) }}">
                                     <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
                                 </a>
+                                <button class="hide-btn" data-class-id="{{ c['id'] }}" 
+                                    style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">
+                                    Göm
+                                </button>
                                 <form method="post" action="{{ url_for('delete_class', class_id=c['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera klassen?');">
                                     <button type="submit" style="background-color: red; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:3px;">Radera</button>
                                 </form>
@@ -1268,10 +1272,6 @@ DASH_TEMPLATE = """
                                 </form>
                             </span>
                         {% endif %}
-                        <button class="hide-btn" data-class-id="{{ c['id'] }}" 
-                            style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">
-                            Göm
-                        </button>
                     </li>
                 {% else %}
                     <li>Inga klasser ännu.</li>
@@ -1946,6 +1946,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
