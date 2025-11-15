@@ -1286,7 +1286,7 @@ DASH_TEMPLATE = """
                         <span>
                             <!-- GÖM-knapp (alla ser) -->
                             <form method="post"
-                                  action="{{ url_for('toggle_hide_class', class_id=c['id']) }}"
+                                  action="{{ url_for('hide_class', class_id=c['id']) }}"
                                   style="display:inline;">
                                 <button type="submit"
                                         style="background-color: black; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-right:5px;">
@@ -2005,6 +2005,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
