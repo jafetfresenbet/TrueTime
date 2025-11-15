@@ -1268,7 +1268,7 @@ DASH_TEMPLATE = """
                 <ul>
                 {% for c in classes %}
                     {% set is_hidden = c['id'] in hidden_classes %}
-                    <li style="
+                    <li id="class-{{ c['id'] }}" style="
                         display: flex;
                         justify-content: space-between;
                         align-items: center;
@@ -1279,14 +1279,12 @@ DASH_TEMPLATE = """
                     ">
                         <span>
                             <a href="{{ url_for('view_class', class_id=c['id']) }}" style="color: inherit;">
-                                {{ c['name'] }}
+                                {{ c['name'] }} (kod: {{ c['join_code'] }})
                             </a>
-                            (kod: {{ c['join_code'] }})
                         </span>
                 
                         <span>
-                
-                            <!-- GÖM/ VISA KNAPP (syns för alla) -->
+                            <!-- GÖM-knapp (alla ser) -->
                             <form method="post"
                                   action="{{ url_for('toggle_hide_class', class_id=c['id']) }}"
                                   style="display:inline;">
@@ -1297,43 +1295,31 @@ DASH_TEMPLATE = """
                             </form>
                 
                             {% if user['id'] == c['admin_user_id'] %}
-                                <!-- ADMIN KNAPPAR -->
                                 <a href="{{ url_for('edit_class', class_id=c['id']) }}">
-                                    <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">
-                                        Ändra
-                                    </button>
+                                    <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
                                 </a>
                                 <form method="post"
                                       action="{{ url_for('delete_class', class_id=c['id']) }}"
                                       style="display:inline;"
                                       onsubmit="return confirm('Är du säker på att du vill radera klassen?');">
-                                    <button type="submit"
-                                            style="background-color: red; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:3px;">
-                                        Radera
-                                    </button>
+                                    <button type="submit" style="background-color: red; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:3px;">Radera</button>
                                 </form>
                             {% else %}
-                                <!-- ICKE-ADMIN KNAPP -->
                                 <form method="post"
                                       action="{{ url_for('leave_class', class_id=c['id']) }}"
                                       style="display:inline;"
                                       onsubmit="return confirm('Vill du lämna klassen?');">
-                                    <button type="submit"
-                                            style="background-color: orange; color: white; border: none; padding: 3px 8px; border-radius:4px;">
-                                        Lämna
-                                    </button>
+                                    <button type="submit" style="background-color: orange; color: white; border: none; padding: 3px 8px; border-radius:4px;">Lämna</button>
                                 </form>
                             {% endif %}
                         </span>
-                    </li>
-                {% endfor %}
-                    
+                
                         <!-- Assignments för den här klassen -->
                         <ul class="assignments" id="assignments-{{ c['id'] }}">
                             {% for a in assignments if a['class_id'] == c['id'] %}
                                 <li style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-radius: 6px; background-color: {{ a['color'] }};">
                                     <span>
-                                        <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }} 
+                                        <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }}
                                         {% if a['deadline'] %}
                                             — deadline: {{ a['deadline'].strftime('%Y/%m/%d %H:%M') }}
                                         {% endif %}
@@ -2019,6 +2005,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
