@@ -10,6 +10,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Response
+from flask import session, jsonify
 from flask_migrate import Migrate
 
 # --- Flask-Login (för användarhantering) ---
@@ -388,6 +389,15 @@ def view_class(class_id):
     subjects = cls.subjects
     is_admin = (cls.admin_user_id == user.id)
     return render_template_string(CLASS_TEMPLATE, class_data=cls, subjects=subjects, is_admin=is_admin)
+
+@app.route('/hide_class/<int:class_id>', methods=['POST'])
+@login_required
+def hide_class(class_id):
+    hidden = session.get('hidden_classes', [])
+    if class_id not in hidden:
+        hidden.append(class_id)
+    session['hidden_classes'] = hidden
+    return jsonify({'status': 'ok'})
 
 # ---------- Subject routes ----------
 @app.route('/class/<int:class_id>/add_subject', methods=['POST'])
@@ -1232,7 +1242,10 @@ DASH_TEMPLATE = """
             
                 <ul>
                 {% for c in classes %}
-                    <li style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0;">
+                    <li id="class-{{ c['id'] }}" 
+                        style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0; 
+                               background-color: {% if c['id'] in session.get('hidden_classes', []) %}black{% else %}#f8f9fa{% endif %}; 
+                               color: {% if c['id'] in session.get('hidden_classes', []) %}white{% else %}black{% endif %};">
                         <span>
                             <a href="{{ url_for('view_class', class_id=c['id']) }}">{{ c['name'] }}</a> 
                             (kod: {{ c['join_code'] }})
@@ -1255,6 +1268,10 @@ DASH_TEMPLATE = """
                                 </form>
                             </span>
                         {% endif %}
+                        <button class="hide-btn" data-class-id="{{ c['id'] }}" 
+                            style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">
+                            Göm
+                        </button>
                     </li>
                 {% else %}
                     <li>Inga klasser ännu.</li>
@@ -1266,7 +1283,8 @@ DASH_TEMPLATE = """
                 <h3>Kommande uppgifter</h3>
                 <ul>
                 {% for a in assignments %}
-                    <li style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-radius: 6px; background-color: {{ a['color'] }};">
+                    <li class="assignment-for-class" data-class-id="{{ a['class_id'] }}" 
+                        style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-radius: 6px; background-color: {{ a['color'] }};">
                         <span>
                             <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }} ({{ a['class_name'] }})
                             {% if a['deadline'] %}
@@ -1309,6 +1327,27 @@ DASH_TEMPLATE = """
             
         </div>
     </div>
+    <script>
+    document.querySelectorAll('.hide-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const classId = this.getAttribute('data-class-id');
+            fetch(`/hide_class/${classId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        // Byt bakgrund och textfärg på klassen
+                        const li = document.getElementById(`class-${classId}`);
+                        li.style.backgroundColor = 'black';
+                        li.style.color = 'white';
+    
+                        // Dölj alla assignments kopplade till denna klass
+                        document.querySelectorAll(`.assignment-for-class[data-class-id="${classId}"]`)
+                                .forEach(a => a.style.display = 'none');
+                    }
+                });
+        });
+    });
+    </script>
 </body>
 </html>
 """
@@ -1907,6 +1946,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
