@@ -1242,30 +1242,33 @@ DASH_TEMPLATE = """
             
                 <ul>
                 {% for c in classes %}
-                    <li class="class-item" id="class-{{ c['id'] }}" style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0;">
-                        <span>
-                            <a href="{{ url_for('view_class', class_id=c['id']) }}">{{ c['name'] }}</a> 
-                            (kod: {{ c['join_code'] }})
-                        </span>
-                        <span>
-                            {% if user['id'] == c['admin_user_id'] %}
-                                <button class="hide-btn" data-class-id="{{ c['id'] }}" 
-                                    style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">
-                                    Göm
-                                </button>
-                                <a href="{{ url_for('edit_class', class_id=c['id']) }}">
-                                    <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
-                                </a>
-                            {% else %}
-                                <button class="hide-btn" data-class-id="{{ c['id'] }}" 
-                                    style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">
-                                    Göm
-                                </button>
-                                <form method="post" action="{{ url_for('leave_class', class_id=c['id']) }}" style="display:inline;" onsubmit="return confirm('Vill du lämna klassen?');">
-                                    <button type="submit" style="background-color: orange; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Lämna</button>
-                                </form>
-                            {% endif %}
-                        </span>
+                    <li class="class-item" id="class-{{ c['id'] }}" 
+                        style="display: flex; flex-direction: column; justify-content: flex-start; padding: 5px 0; border-bottom: 1px solid #ccc;">
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>
+                                <a href="{{ url_for('view_class', class_id=c['id']) }}">{{ c['name'] }}</a> 
+                                (kod: {{ c['join_code'] }})
+                            </span>
+                    
+                            <!-- Göm-knappen till vänster -->
+                            <button class="hide-btn" data-class-id="{{ c['id'] }}" 
+                                style="background-color: brown; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-right:5px;">
+                                Göm
+                            </button>
+                    
+                            <span>
+                                {% if user['id'] == c['admin_user_id'] %}
+                                    <a href="{{ url_for('edit_class', class_id=c['id']) }}">
+                                        <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
+                                    </a>
+                                {% else %}
+                                    <form method="post" action="{{ url_for('leave_class', class_id=c['id']) }}" style="display:inline;" onsubmit="return confirm('Vill du lämna klassen?');">
+                                        <button type="submit" style="background-color: orange; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Lämna</button>
+                                    </form>
+                                {% endif %}
+                            </span>
+                        </div>
                     
                         <!-- Assignments för den här klassen -->
                         <ul class="assignments" id="assignments-{{ c['id'] }}">
@@ -1350,10 +1353,12 @@ DASH_TEMPLATE = """
             }
     
             // Toggle synlighet på assignments
-            if (assignmentsElem.style.display === 'none') {
-                assignmentsElem.style.display = '';
-            } else {
-                assignmentsElem.style.display = 'none';
+            if (assignmentsElem) {
+                if (assignmentsElem.style.display === 'none') {
+                    assignmentsElem.style.display = '';
+                } else {
+                    assignmentsElem.style.display = 'none';
+                }
             }
         });
     });
@@ -1956,6 +1961,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
