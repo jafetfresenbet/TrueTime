@@ -10,7 +10,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Response
-from flask import session, jsonify
 from flask_migrate import Migrate
 
 # --- Flask-Login (för användarhantering) ---
@@ -45,9 +44,9 @@ app.config['MAIL_SERVER'] = 'smtp.gmail.com'  # eller din mailserver
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
-app.config['MAIL_USERNAME'] = 'truetimeuf@gmail.com'
-app.config['MAIL_PASSWORD'] = 'wgnm afub tvkk wbge'
-app.config['MAIL_DEFAULT_SENDER'] = 'truetimeuf@gmail.com'
+app.config['MAIL_USERNAME'] = 'jafet.haileslassie@gmail.com'
+app.config['MAIL_PASSWORD'] = 'xyhk kwht mmmc locc'
+app.config['MAIL_DEFAULT_SENDER'] = 'jafet.haileslassie@gmail.com'
 
 mail = Mail(app)
 
@@ -183,40 +182,30 @@ def index():
     if not user:
         return render_template_string(HOME_TEMPLATE)
 
-    # Alla klasser användaren är med i
     classes = [uc.cls for uc in user.classes]
-
-    # 🟦 Initiera "hidden_classes" om den saknas
-    if 'hidden_classes' not in session:
-        session['hidden_classes'] = []  
-
-    hidden_classes = session.get('hidden_classes', [])
-
     assignments_display = []
     now = datetime.now()
 
-    # 🟦 Bygg assignments från användarens klasser
     for cls in classes:
         for subj in cls.subjects:
             for a in subj.assignments:
-
                 # Filtrera bort gamla uppgifter/prov
                 if a.type == 'Uppgift' and a.deadline and a.deadline < now:
                     continue
                 if a.type == 'Prov' and a.deadline and a.deadline.date() < now.date():
                     continue
 
-                # Beräkna dagar kvar
+                # Beräkna dagar kvar till deadline
                 days_left = None
                 if a.deadline:
                     delta = a.deadline - now
-                    days_left = delta.days + (delta.seconds / 86400)
+                    days_left = delta.days + (delta.seconds / 86400)  # inkl. timmar
 
-                # Färgkodning
+                # Färg baserat på hur nära deadline är
                 if days_left is None:
                     color = "#f8f9fa"
                 elif days_left > 14:
-                    color = "#44ce1b"
+                    color = "#44ce1b"  # långt borta
                 elif days_left > 7:
                     color = "#bbdb44"
                 elif days_left > 3:
@@ -224,8 +213,8 @@ def index():
                 elif days_left > 1:
                     color = "#f2a134"
                 elif days_left > 0:
-                    color = "#e51f1f"
-                else:
+                    color = "#e51f1f"  # nära deadline
+                elif days_left < 0:
                     color = "#6a6af7"
 
                 assignments_display.append({
@@ -235,29 +224,16 @@ def index():
                     'deadline': a.deadline,
                     'subject_name': subj.name,
                     'class_name': cls.name,
-                    'class_id': cls.id,
                     'created_by': a.created_by,
                     'color': color
                 })
 
-    # 🟦 FILTRERA BORT UPPGIFTER FRÅN GÖMDA KLASSER
-    assignments_display = [
-        a for a in assignments_display
-        if a['class_id'] not in hidden_classes
-    ]
-
-    # 🟦 Sortera efter deadline
+    # Sortera efter deadline (närmast först)
     assignments_display.sort(key=lambda x: x['deadline'] or datetime.max)
 
     today = datetime.now().strftime('%Y-%m-%d')
 
-    return render_template_string(
-        DASH_TEMPLATE,
-        user=user,
-        classes=classes,
-        assignments=assignments_display[:50],
-        today=today
-    )
+    return render_template_string(DASH_TEMPLATE, user=user, classes=classes, assignments=assignments_display[:50], today=today)
 
 @app.route('/register', methods=['GET','POST'])
 def register():
@@ -412,17 +388,6 @@ def view_class(class_id):
     subjects = cls.subjects
     is_admin = (cls.admin_user_id == user.id)
     return render_template_string(CLASS_TEMPLATE, class_data=cls, subjects=subjects, is_admin=is_admin)
-
-@app.route('/hide_class/<int:class_id>', methods=['POST'])
-@login_required
-def hide_class(class_id):
-    hidden = session.get('hidden_classes', [])
-    if class_id not in hidden:
-        hidden.append(class_id)
-    else:
-        hidden.remove(class_id)  # tryck igen = visa klassen
-    session['hidden_classes'] = hidden
-    return '', 204  # Tyst svar
 
 # ---------- Subject routes ----------
 @app.route('/class/<int:class_id>/add_subject', methods=['POST'])
@@ -1267,66 +1232,29 @@ DASH_TEMPLATE = """
             
                 <ul>
                 {% for c in classes %}
-                    {% set is_hidden = c['id'] in hidden_classes %}
-                    <li id="class-{{ c['id'] }}" style="
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        padding: 5px 0;
-                        background-color: {% if is_hidden %}black{% else %}#f8f9fa{% endif %};
-                        color: {% if is_hidden %}white{% else %}black{% endif %};
-                        border-radius: 4px;
-                    ">
+                    <li style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0;">
                         <span>
-                            <a href="{{ url_for('view_class', class_id=c['id']) }}" style="color: inherit;">
-                                {{ c['name'] }} (kod: {{ c['join_code'] }})
-                            </a>
+                            <a href="{{ url_for('view_class', class_id=c['id']) }}">{{ c['name'] }}</a> 
+                            (kod: {{ c['join_code'] }})
                         </span>
-                
-                        <span>
-                            <!-- GÖM-knapp (alla ser) -->
-                            <form method="post"
-                                  action="{{ url_for('hide_class', class_id=c['id']) }}"
-                                  style="display:inline;">
-                                <button type="submit"
-                                        style="background-color: black; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-right:5px;">
-                                    {% if is_hidden %}Visa{% else %}Göm{% endif %}
-                                </button>
-                            </form>
-                
-                            {% if user['id'] == c['admin_user_id'] %}
+                        {% if user['id'] == c['admin_user_id'] %}
+                            <span>
                                 <a href="{{ url_for('edit_class', class_id=c['id']) }}">
                                     <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
                                 </a>
-                                <form method="post"
-                                      action="{{ url_for('delete_class', class_id=c['id']) }}"
-                                      style="display:inline;"
-                                      onsubmit="return confirm('Är du säker på att du vill radera klassen?');">
+                                <form method="post" action="{{ url_for('delete_class', class_id=c['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera klassen?');">
                                     <button type="submit" style="background-color: red; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:3px;">Radera</button>
                                 </form>
-                            {% else %}
-                                <form method="post"
-                                      action="{{ url_for('leave_class', class_id=c['id']) }}"
-                                      style="display:inline;"
-                                      onsubmit="return confirm('Vill du lämna klassen?');">
-                                    <button type="submit" style="background-color: orange; color: white; border: none; padding: 3px 8px; border-radius:4px;">Lämna</button>
+                            </span>
+                        {% else %}
+                            <span>
+                                <form method="post" action="{{ url_for('leave_class', class_id=c['id']) }}" style="display:inline;" onsubmit="return confirm('Vill du lämna klassen?');">
+                                    <button type="submit" style="background-color: orange; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">
+                                        Lämna
+                                    </button>
                                 </form>
-                            {% endif %}
-                        </span>
-                
-                        <!-- Assignments för den här klassen -->
-                        <ul class="assignments" id="assignments-{{ c['id'] }}">
-                            {% for a in assignments if a['class_id'] == c['id'] %}
-                                <li style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-radius: 6px; background-color: {{ a['color'] }};">
-                                    <span>
-                                        <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }}
-                                        {% if a['deadline'] %}
-                                            — deadline: {{ a['deadline'].strftime('%Y/%m/%d %H:%M') }}
-                                        {% endif %}
-                                    </span>
-                                </li>
-                            {% endfor %}
-                        </ul>
+                            </span>
+                        {% endif %}
                     </li>
                 {% else %}
                     <li>Inga klasser ännu.</li>
@@ -1338,8 +1266,7 @@ DASH_TEMPLATE = """
                 <h3>Kommande uppgifter</h3>
                 <ul>
                 {% for a in assignments %}
-                    <li class="assignment-for-class" data-class-id="{{ a['class_id'] }}" 
-                        style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-radius: 6px; background-color: {{ a['color'] }};">
+                    <li style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-radius: 6px; background-color: {{ a['color'] }};">
                         <span>
                             <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }} ({{ a['class_name'] }})
                             {% if a['deadline'] %}
@@ -1382,31 +1309,6 @@ DASH_TEMPLATE = """
             
         </div>
     </div>
-    <script>
-    document.querySelectorAll('.hide-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const classId = btn.getAttribute('data-class-id');
-            const classElem = document.getElementById(`class-${classId}`);
-            const assignmentsElem = document.getElementById(`assignments-${classId}`);
-    
-            // Toggle bakgrundsfärg
-            if (classElem.style.backgroundColor === 'black') {
-                classElem.style.backgroundColor = '';
-            } else {
-                classElem.style.backgroundColor = 'black';
-            }
-    
-            // Toggle synlighet på assignments
-            if (assignmentsElem) {
-                if (assignmentsElem.style.display === 'none') {
-                    assignmentsElem.style.display = '';
-                } else {
-                    assignmentsElem.style.display = 'none';
-                }
-            }
-        });
-    });
-    </script>
 </body>
 </html>
 """
@@ -2005,15 +1907,6 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
-
-
-
-
-
-
-
-
-
 
 
 
