@@ -1242,36 +1242,44 @@ DASH_TEMPLATE = """
             
                 <ul>
                 {% for c in classes %}
-                    <li id="class-{{ c['id'] }}" 
-                        style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0; 
-                               background-color: {% if c['id'] in session.get('hidden_classes', []) %}black{% else %}#f8f9fa{% endif %}; 
-                               color: {% if c['id'] in session.get('hidden_classes', []) %}white{% else %}black{% endif %};">
+                    <li class="class-item" id="class-{{ c['id'] }}" style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0;">
                         <span>
                             <a href="{{ url_for('view_class', class_id=c['id']) }}">{{ c['name'] }}</a> 
                             (kod: {{ c['join_code'] }})
                         </span>
-                        {% if user['id'] == c['admin_user_id'] %}
-                            <span>
-                                <a href="{{ url_for('edit_class', class_id=c['id']) }}">
-                                    <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
-                                </a>
+                        <span>
+                            {% if user['id'] == c['admin_user_id'] %}
                                 <button class="hide-btn" data-class-id="{{ c['id'] }}" 
                                     style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">
                                     Göm
                                 </button>
-                                <form method="post" action="{{ url_for('delete_class', class_id=c['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera klassen?');">
-                                    <button type="submit" style="background-color: red; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:3px;">Radera</button>
-                                </form>
-                            </span>
-                        {% else %}
-                            <span>
+                                <a href="{{ url_for('edit_class', class_id=c['id']) }}">
+                                    <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
+                                </a>
+                            {% else %}
+                                <button class="hide-btn" data-class-id="{{ c['id'] }}" 
+                                    style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">
+                                    Göm
+                                </button>
                                 <form method="post" action="{{ url_for('leave_class', class_id=c['id']) }}" style="display:inline;" onsubmit="return confirm('Vill du lämna klassen?');">
-                                    <button type="submit" style="background-color: orange; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">
-                                        Lämna
-                                    </button>
+                                    <button type="submit" style="background-color: orange; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Lämna</button>
                                 </form>
-                            </span>
-                        {% endif %}
+                            {% endif %}
+                        </span>
+                    
+                        <!-- Assignments för den här klassen -->
+                        <ul class="assignments" id="assignments-{{ c['id'] }}">
+                            {% for a in assignments if a['class_id'] == c['id'] %}
+                                <li style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-radius: 6px; background-color: {{ a['color'] }};">
+                                    <span>
+                                        <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }} 
+                                        {% if a['deadline'] %}
+                                            — deadline: {{ a['deadline'].strftime('%Y/%m/%d %H:%M') }}
+                                        {% endif %}
+                                    </span>
+                                </li>
+                            {% endfor %}
+                        </ul>
                     </li>
                 {% else %}
                     <li>Inga klasser ännu.</li>
@@ -1329,22 +1337,24 @@ DASH_TEMPLATE = """
     </div>
     <script>
     document.querySelectorAll('.hide-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const classId = this.getAttribute('data-class-id');
-            fetch(`/hide_class/${classId}`, { method: 'POST' })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'ok') {
-                        // Byt bakgrund och textfärg på klassen
-                        const li = document.getElementById(`class-${classId}`);
-                        li.style.backgroundColor = 'black';
-                        li.style.color = 'white';
+        btn.addEventListener('click', () => {
+            const classId = btn.getAttribute('data-class-id');
+            const classElem = document.getElementById(`class-${classId}`);
+            const assignmentsElem = document.getElementById(`assignments-${classId}`);
     
-                        // Dölj alla assignments kopplade till denna klass
-                        document.querySelectorAll(`.assignment-for-class[data-class-id="${classId}"]`)
-                                .forEach(a => a.style.display = 'none');
-                    }
-                });
+            // Toggle bakgrundsfärg
+            if (classElem.style.backgroundColor === 'black') {
+                classElem.style.backgroundColor = '';
+            } else {
+                classElem.style.backgroundColor = 'black';
+            }
+    
+            // Toggle synlighet på assignments
+            if (assignmentsElem.style.display === 'none') {
+                assignmentsElem.style.display = '';
+            } else {
+                assignmentsElem.style.display = 'none';
+            }
         });
     });
     </script>
@@ -1946,6 +1956,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
