@@ -1250,23 +1250,35 @@ DASH_TEMPLATE = """
                                 <a href="{{ url_for('view_class', class_id=c['id']) }}">{{ c['name'] }}</a> 
                                 (kod: {{ c['join_code'] }})
                             </span>
-                    
-                            <!-- Göm-knappen till vänster -->
-                            <button class="hide-btn" data-class-id="{{ c['id'] }}" 
-                                style="background-color: brown; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-right:5px;">
-                                Göm
-                            </button>
-                    
+                            
                             <span>
                                 {% if user['id'] == c['admin_user_id'] %}
+                                    <!-- Admin: Ändra-knapp -->
                                     <a href="{{ url_for('edit_class', class_id=c['id']) }}">
-                                        <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
+                                        <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">
+                                            Ändra
+                                        </button>
                                     </a>
+                                    <!-- Radera-knapp -->
+                                    <form method="post" action="{{ url_for('delete_class', class_id=c['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera klassen?');">
+                                        <button type="submit" style="background-color: red; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:3px;">
+                                            Radera
+                                        </button>
+                                    </form>
                                 {% else %}
+                                    <!-- Icke-admin: Lämna-knapp -->
                                     <form method="post" action="{{ url_for('leave_class', class_id=c['id']) }}" style="display:inline;" onsubmit="return confirm('Vill du lämna klassen?');">
-                                        <button type="submit" style="background-color: orange; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Lämna</button>
+                                        <button type="submit" style="background-color: orange; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">
+                                            Lämna
+                                        </button>
                                     </form>
                                 {% endif %}
+                            
+                                <!-- ALLA: Göm-knapp -->
+                                <button class="hide-btn" data-class-id="{{ c['id'] }}" 
+                                    style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">
+                                    Göm
+                                </button>
                             </span>
                         </div>
                     
