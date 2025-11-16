@@ -1945,8 +1945,10 @@ PROFILE_TEMPLATE = """
                 <input type="password" name="confirm_password" placeholder="Bekräfta nytt lösenord">
 
                 <input type="text" name="phone_number" placeholder="Telefonnummer" value="{{ user.phone_number or '' }}">
-                <input type="checkbox" name="notify_sms" {% if user.notify_sms %}checked{% endif %}> 
-                Ta emot SMS-notifieringar
+                <div>
+                    <input type="checkbox" name="notify_sms" id="notify_sms" {% if user.notify_sms %}checked{% endif %}>
+                    <label for="notify_sms">Skicka SMS-notiser</label>
+                </div>
                 
                 <button type="submit">Spara ändringar</button>
             </form>
@@ -1964,6 +1966,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
