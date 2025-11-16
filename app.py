@@ -205,6 +205,7 @@ def edit_profile():
 
     user.name = new_name
     user.email = new_email
+    user.phone_number = new_phone
     db.session.commit()
     flash("Dina uppgifter har uppdaterats.")
     return redirect(url_for('profile'))
@@ -1959,6 +1960,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
