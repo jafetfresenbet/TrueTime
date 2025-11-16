@@ -191,6 +191,7 @@ def edit_profile():
     new_email = request.form.get('email', '').strip()
     new_password = request.form.get('password', '').strip()
     confirm_password = request.form.get('confirm_password', '').strip()
+    new_phone = request.form.get('phone_number', '').strip()
 
     if not new_name or not new_email:
         flash("Fyll i både namn och e-post.")
@@ -1940,9 +1941,7 @@ PROFILE_TEMPLATE = """
                 <input type="password" name="password" placeholder="Nytt lösenord (lämna tomt om du inte vill byta)">
                 <input type="password" name="confirm_password" placeholder="Bekräfta nytt lösenord">
 
-                <label>Telefonnummer:</label>
-                <input type="text" name="phone_number" value="{{ user['phone_number'] or '' }}">
-                <button type="submit">Spara</button>
+                <input type="text" name="phone_number" placeholder="Telefonnummer" value="{{ user['phone_number'] or '' }}">
                 
                 <button type="submit">Spara ändringar</button>
             </form>
@@ -1960,6 +1959,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
