@@ -17,6 +17,8 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 
+from apscheduler.schedulers.background import BackgroundScheduler
+
 # ---------- Konfiguration ----------
 DATABASE = 'mvp.db'
 SECRET_KEY = 'BlirDetTrueTimePåStrawberryArenaNästaÅr?'
@@ -50,6 +52,10 @@ app.config['MAIL_DEFAULT_SENDER'] = 'jafet.haileslassie@gmail.com'
 
 mail = Mail(app)
 
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=send_deadline_notifications, trigger="interval", hours=1)
+scheduler.start()
+
 # Serializer för token
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 
@@ -59,6 +65,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
+    phone_number = db.Column(db.String)
     password_hash = db.Column(db.String, nullable=False)
     confirmed = db.Column(db.Boolean, default=False)
     confirmation_token = db.Column(db.String(256), nullable=True)
@@ -97,6 +104,7 @@ class Assignment(db.Model):
     deadline = db.Column(db.DateTime)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
     subject = db.relationship('Subject', back_populates='assignments')
+    sent_notifications = db.Column(db.String, default="")
 
 # ---------- Auth helpers ----------
 def current_user():
@@ -126,6 +134,47 @@ def login_required(f):
 # ---------- Utils ----------
 def generate_join_code():
     return uuid4().hex[:6].upper()
+
+def send_deadline_notifications():
+    now = datetime.now()
+    thresholds = [14, 7, 3, 1]  # dagar kvar
+    assignments = Assignment.query.all()
+
+    for a in assignments:
+        if not a.deadline:
+            continue
+
+        delta_days = (a.deadline.date() - now.date()).days
+        if delta_days not in thresholds:
+            continue
+
+        sent = a.sent_notifications.split(",") if a.sent_notifications else []
+        if str(delta_days) in sent:
+            continue  # redan skickad notis
+
+        # Skicka mail
+        for user in a.subject.users:  # alla som hör till ämnet
+            if user.email:
+                msg = Message(
+                    f"Påminnelse: {a.title} ({delta_days} dagar kvar)",
+                    sender=MAIL_USERNAME,
+                    recipients=[user.email]
+                )
+                msg.body = f"Din {a.type} '{a.title}' har {delta_days} dagar kvar till deadline."
+                mail.send(msg)
+
+            # Skicka SMS om telefonnummer finns
+            if user.phone_number:
+                twilio_client.messages.create(
+                    to=user.phone_number,
+                    from_=TWILIO_PHONE,
+                    body=f"Påminnelse: {a.type} '{a.title}' har {delta_days} dagar kvar!"
+                )
+
+        # Markera att notisen skickats
+        sent.append(str(delta_days))
+        a.sent_notifications = ",".join(sent)
+        db.session.commit()
 
 # ---------- Routes ----------
 @app.route('/profile')
@@ -1890,6 +1939,10 @@ PROFILE_TEMPLATE = """
                 
                 <input type="password" name="password" placeholder="Nytt lösenord (lämna tomt om du inte vill byta)">
                 <input type="password" name="confirm_password" placeholder="Bekräfta nytt lösenord">
+
+                <label>Telefonnummer:</label>
+                <input type="text" name="phone_number" value="{{ user['phone_number'] or '' }}">
+                <button type="submit">Spara</button>
                 
                 <button type="submit">Spara ändringar</button>
             </form>
@@ -1907,6 +1960,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
