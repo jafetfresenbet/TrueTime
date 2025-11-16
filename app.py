@@ -61,7 +61,8 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
-    phone_number = db.Column(db.String)
+    phone_number = db.Column(db.String(20))
+    notify_sms = db.Column(db.Boolean, default=False)
     password_hash = db.Column(db.String, nullable=False)
     confirmed = db.Column(db.Boolean, default=False)
     confirmation_token = db.Column(db.String(256), nullable=True)
@@ -192,6 +193,7 @@ def edit_profile():
     new_password = request.form.get('password', '').strip()
     confirm_password = request.form.get('confirm_password', '').strip()
     new_phone = request.form.get('phone_number', '').strip()
+    user.notify_sms = bool(request.form.get('notify_sms'))
 
     if not new_name or not new_email:
         flash("Fyll i både namn och e-post.")
@@ -1942,7 +1944,11 @@ PROFILE_TEMPLATE = """
                 <input type="password" name="password" placeholder="Nytt lösenord (lämna tomt om du inte vill byta)">
                 <input type="password" name="confirm_password" placeholder="Bekräfta nytt lösenord">
 
-                <input type="text" name="phone_number" placeholder="Telefonnummer" value="{{ user['phone_number'] or '' }}">
+                <input type="text" name="phone_number" placeholder="Telefonnummer" value="{{ user.phone_number or '' }}">
+                <label>
+                    <input type="checkbox" name="notify_sms" {% if user.notify_sms %}checked{% endif %}>
+                    Ta emot SMS-notifieringar
+                </label>
                 
                 <button type="submit">Spara ändringar</button>
             </form>
@@ -1960,6 +1966,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
