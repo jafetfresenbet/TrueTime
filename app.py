@@ -52,10 +52,6 @@ app.config['MAIL_DEFAULT_SENDER'] = 'jafet.haileslassie@gmail.com'
 
 mail = Mail(app)
 
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=send_deadline_notifications, trigger="interval", hours=1)
-scheduler.start()
-
 # Serializer för token
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 
@@ -175,6 +171,10 @@ def send_deadline_notifications():
         sent.append(str(delta_days))
         a.sent_notifications = ",".join(sent)
         db.session.commit()
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=send_deadline_notifications, trigger="interval", hours=1)
+scheduler.start()
 
 # ---------- Routes ----------
 @app.route('/profile')
@@ -1960,6 +1960,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
