@@ -1951,8 +1951,12 @@ PROFILE_TEMPLATE = """
                 </div>
                 
                 <button type="submit">Spara ändringar</button>
-            </form>
 
+                <div>
+                    
+                </div>
+            
+            </form>
             <h3>Radera konto</h3>
             <form method="post" action="{{ url_for('delete_profile') }}">
                 <button type="submit" class="delete-btn" onclick="return confirm('Är du säker på att du vill radera ditt konto? Detta går inte att ångra.')">Radera konto</button>
@@ -1966,6 +1970,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
