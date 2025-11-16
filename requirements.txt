@@ -8,3 +8,5 @@ Flask-Login
 Flask-Migrate
 Flask-Mail
 itsdangerous
+twilio
+APScheduler
