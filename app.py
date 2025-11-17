@@ -109,11 +109,6 @@ class Assignment(db.Model):
     sent_notifications = db.Column(db.String, default=False)
 
 # ---------- Auth helpers ----------
-def send_sms(to_number, carrier_domain, message):
-    to_email = f"{to_number}@{carrier_domain}"
-    msg = Message(subject="", recipients=[to_email], body=message)
-    mail.send(msg)
-    return True
 
 def check_threshold(user, value):
     threshold = 100
@@ -965,32 +960,6 @@ def download_user_data():
         mimetype='text/plain',
         headers={'Content-Disposition': f'attachment;filename={user.name}_data.txt'}
     )
-
-@app.route("/test-mail")
-def test_mail():
-    msg = Message(
-        subject="Test Mail från TrueTime",
-        recipients=["24jawo@stockholmscience.se"],
-        body="Detta är ett testmail från Flask!"
-    )
-    mail.send(msg)
-    return "Mail skickat!"
-
-@app.route("/test_sms", methods=["GET", "POST"])
-def test_sms():
-    number = "46760576531"          # e.g. "0701234567"
-    carrier = "sms.telia.se"        # e.g. "sms.telia.se"
-    message = "Hello from Flask"        # e.g. "Hello from Flask!"
-
-    if not number:
-        return jsonify({"error": "Missing number"}), 400
-
-    carriers = ["sms.telia.se", "tele2sms.se", "sms.telenor.se", "comviq.se"]
-
-    for carrier in carriers:
-        send_sms(number, carrier, message)  # your email-to-SMS function
-
-    return jsonify({"success": True, "sent_to": [f"{number}@{c}" for c in carriers]})
 
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
@@ -2030,6 +1999,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
