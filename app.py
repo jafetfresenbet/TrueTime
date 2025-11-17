@@ -21,7 +21,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from flask_rq2 import RQ
 
 from flask_mail import Message
-from app import mail
 from twilio.rest import Client
 from app import routes
 
@@ -2000,6 +1999,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
