@@ -1981,7 +1981,7 @@ PROFILE_TEMPLATE = """
                 <input type="text" name="phone_number" placeholder="Telefonnummer" value="{{ user.phone_number or '' }}">
                 <div>
                     <input type="checkbox" name="notify_sms" id="notify_sms" {% if user.notify_sms %}checked{% endif %}>
-                    <label for="notify_sms">Skicka SMS-notiser</label>
+                    <label for="notify_sms">Skicka SMS-notiser (fungerar ej)</label>
                     <button type="submit">Spara ändringar</button>
                 </div>
             
@@ -1999,6 +1999,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
