@@ -51,9 +51,9 @@ app.config['MAIL_SERVER'] = 'smtp.gmail.com'  # eller din mailserver
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
-app.config['MAIL_USERNAME'] = 'jafet.haileslassie@gmail.com'
-app.config['MAIL_PASSWORD'] = 'xyhk kwht mmmc locc'
-app.config['MAIL_DEFAULT_SENDER'] = 'jafet.haileslassie@gmail.com'
+app.config['MAIL_USERNAME'] = 'truetimeuf@gmail.com'
+app.config['MAIL_PASSWORD'] = 'ehlw jugt pivk iksz'
+app.config['MAIL_DEFAULT_SENDER'] = 'truetimeuf@gmail.com'
 
 mail = Mail(app)
 
@@ -1998,6 +1998,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
