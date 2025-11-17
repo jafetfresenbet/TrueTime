@@ -1,4 +1,4 @@
-# --- Standardbibliotek ---
+f# --- Standardbibliotek ---
 from datetime import datetime, timedelta
 from uuid import uuid4
 import os
@@ -1948,12 +1948,7 @@ PROFILE_TEMPLATE = """
                 <div>
                     <input type="checkbox" name="notify_sms" id="notify_sms" {% if user.notify_sms %}checked{% endif %}>
                     <label for="notify_sms">Skicka SMS-notiser</label>
-                </div>
-                
-                <button type="submit">Spara ändringar</button>
-
-                <div>
-                     
+                    <button type="submit">Spara ändringar</button>
                 </div>
             
             </form>
@@ -1970,6 +1965,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
