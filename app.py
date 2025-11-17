@@ -976,7 +976,7 @@ def test_mail():
     mail.send(msg)
     return "Mail skickat!"
 
-@app.route("/test_sms", methods=["POST"])
+@app.route("/test_sms", methods=["GET", "POST"])
 def test_sms():
     data = request.json
     number = "0760576531"          # e.g. "0701234567"
@@ -2027,6 +2027,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
