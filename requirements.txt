@@ -10,3 +10,4 @@ Flask-Mail
 itsdangerous
 twilio
 APScheduler
+Flask-RQ2
