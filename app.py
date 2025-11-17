@@ -106,7 +106,10 @@ class Assignment(db.Model):
     deadline = db.Column(db.DateTime)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
     subject = db.relationship('Subject', back_populates='assignments')
-    sent_notifications = db.Column(db.String, default=False)
+    notification_sent_14 = db.Column(db.Boolean, default=False)
+    notification_sent_7 = db.Column(db.Boolean, default=False)
+    notification_sent_3 = db.Column(db.Boolean, default=False)
+    notification_sent_1 = db.Column(db.Boolean, default=False)
 
 # ---------- Auth helpers ----------
 
@@ -2035,6 +2038,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
