@@ -19,7 +19,6 @@ from itsdangerous import URLSafeTimedSerializer
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask_rq2 import RQ
-from app import app
 
 from app import rq
 from flask_mail import Message
@@ -2001,6 +2000,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
