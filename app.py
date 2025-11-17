@@ -305,35 +305,33 @@ from datetime import datetime
 
 @app.route('/')
 def index():
-    user = current_user()
-    if not user:
+    user = current_user  # <-- remove the ()
+    if not user.is_authenticated:
         return render_template_string(HOME_TEMPLATE)
-
+    
     classes = [uc.cls for uc in user.classes]
     assignments_display = []
     now = datetime.now()
-
+    
     for cls in classes:
         for subj in cls.subjects:
             for a in subj.assignments:
-                # Filtrera bort gamla uppgifter/prov
                 if a.type == 'Uppgift' and a.deadline and a.deadline < now:
                     continue
                 if a.type == 'Prov' and a.deadline and a.deadline.date() < now.date():
                     continue
 
-                # Beräkna dagar kvar till deadline
                 days_left = None
                 if a.deadline:
                     delta = a.deadline - now
-                    days_left = delta.days + (delta.seconds / 86400)  # inkl. timmar
+                    days_left = delta.days + (delta.seconds / 86400)
                     check_days_left_threshold(user, a, days_left)
-
-                # Färg baserat på hur nära deadline är
+                
+                # Color logic...
                 if days_left is None:
                     color = "#f8f9fa"
                 elif days_left > 14:
-                    color = "#44ce1b"  # långt borta
+                    color = "#44ce1b"
                 elif days_left > 7:
                     color = "#bbdb44"
                 elif days_left > 3:
@@ -341,9 +339,9 @@ def index():
                 elif days_left > 1:
                     color = "#f2a134"
                 elif days_left > 0:
-                    color = "#e51f1f"  # nära deadline
+                    color = "#e51f1f"
                 elif days_left < 0:
-                    color = "#6a6af7"
+                    color = "#090980"
 
                 assignments_display.append({
                     'id': a.id,
@@ -355,14 +353,11 @@ def index():
                     'created_by': a.created_by,
                     'color': color
                 })
-
-    # Sortera efter deadline (närmast först)
+    
     assignments_display.sort(key=lambda x: x['deadline'] or datetime.max)
-
     today = datetime.now().strftime('%Y-%m-%d')
-
+    
     return render_template_string(DASH_TEMPLATE, user=user, classes=classes, assignments=assignments_display[:50], today=today)
-
 @app.route('/register', methods=['GET','POST'])
 def register():
     if request.method == 'POST':
@@ -2040,6 +2035,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
