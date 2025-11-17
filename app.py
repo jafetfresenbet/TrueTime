@@ -47,13 +47,13 @@ app.config['RQ_REDIS_URL'] = 'redis://localhost:6379/0'
 rq = RQ(app)
 
 # Mail-konfiguration
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'  # eller din mailserver
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USE_SSL'] = False
-app.config['MAIL_USERNAME'] = 'truetimeuf@gmail.com'
-app.config['MAIL_PASSWORD'] = 'ehlw jugt pivk iksz'
-app.config['MAIL_DEFAULT_SENDER'] = 'truetimeuf@gmail.com'
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS') == 'True'
+app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL') == 'True'
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER')
 
 mail = Mail(app)
 
@@ -959,6 +959,16 @@ def download_user_data():
         mimetype='text/plain',
         headers={'Content-Disposition': f'attachment;filename={user.name}_data.txt'}
     )
+
+@app.route("/test-mail")
+def test_mail():
+    msg = Message(
+        subject="Test Mail från TrueTime",
+        recipients=["din-mail@gmail.com"],
+        body="Detta är ett testmail från Flask!"
+    )
+    mail.send(msg)
+    return "Mail skickat!"
 
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
@@ -1998,6 +2008,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
