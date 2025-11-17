@@ -163,6 +163,41 @@ def login_required(f):
     return decorated
 
 # ---------- Utils ----------
+def check_days_left_threshold(user, assignment, days_left):
+    thresholds = {
+        14: "14 dagar kvar",
+        7: "7 dagar kvar",
+        3: "3 dagar kvar",
+        1: "1 dag kvar",
+    }
+
+    # Map threshold → db field
+    field_map = {
+        14: "notification_sent_14",
+        7: "notification_sent_7",
+        3: "notification_sent_3",
+        1: "notification_sent_1",
+    }
+
+    if days_left in thresholds:
+        field = field_map[days_left]
+
+        # Check if already sent
+        if not getattr(assignment, field):
+            # Send the email
+            subject = f"Påminnelse: {assignment.title}"
+            body = f"Hej {user.name}, det är nu {thresholds[days_left]} för uppgiften/provet '{assignment.title}'."
+
+            mail.send_message(
+                subject=subject,
+                recipients=[user.email],
+                body=body
+            )
+
+            # Mark as sent
+            setattr(assignment, field, True)
+            db.session.commit()
+
 def generate_join_code():
     return uuid4().hex[:6].upper()
 
@@ -287,6 +322,7 @@ def index():
                 if a.deadline:
                     delta = a.deadline - now
                     days_left = delta.days + (delta.seconds / 86400)  # inkl. timmar
+                    check_days_left_threshold(current_user, assignment, days_left)
 
                 # Färg baserat på hur nära deadline är
                 if days_left is None:
@@ -1999,6 +2035,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
