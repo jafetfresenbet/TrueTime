@@ -23,6 +23,7 @@ from flask_rq2 import RQ
 from flask_mail import Message
 from app import mail
 from twilio.rest import Client
+from app import routes
 
 # ---------- Konfiguration ----------
 DATABASE = 'mvp.db'
@@ -1999,6 +2000,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
