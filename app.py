@@ -18,6 +18,13 @@ from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 
 from apscheduler.schedulers.background import BackgroundScheduler
+from flask_rq2 import RQ
+from app import app
+
+from app import rq
+from flask_mail import Message
+from app import mail, app
+from twilio.rest import Client
 
 # ---------- Konfiguration ----------
 DATABASE = 'mvp.db'
@@ -39,7 +46,8 @@ app.config['SESSION_SQLALCHEMY'] = db
 migrate = Migrate(app, db)
 Session(app)
 
-
+app.config['RQ_REDIS_URL'] = 'redis://localhost:6379/0'
+rq = RQ(app)
 
 # Mail-konfiguration
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'  # eller din mailserver
@@ -104,6 +112,34 @@ class Assignment(db.Model):
     sent_notifications = db.Column(db.String, default="")
 
 # ---------- Auth helpers ----------
+def check_threshold(user, value):
+    threshold = 100
+    if value >= threshold:
+        message = f"Hej {user.name}, ditt värde har nått {value}!"
+        send_email_job.queue(user.id, "Threshold uppnådd", message)
+        send_sms_job.queue(user.id, message)
+
+@rq.job
+def send_email_job(user_id, subject, body):
+    from models import User
+    user = User.query.get(user_id)
+    if user:
+        msg = Message(subject, recipients=[user.email], body=body)
+        mail.send(msg)
+
+@rq.job
+def send_sms_job(user_id, body):
+    from models import User
+    user = User.query.get(user_id)
+    user = User.query.get(user_id)
+    if user and user.notify_sms and user.phone_number:
+        client = Client(app.config['TWILIO_SID'], app.config['TWILIO_AUTH_TOKEN'])
+        client.messages.create(
+            body=body,
+            from_=app.config['TWILIO_PHONE_NUMBER'],
+            to=user.phone_number
+        )
+
 def current_user():
     uid = session.get('user_id')
     if uid:
@@ -1965,6 +2001,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
