@@ -174,7 +174,7 @@ def check_days_left_threshold(user, assignment, days_left):
         1: "1 dag kvar",
     }
 
-    # Map threshold → db field
+    # Map threshold → assignment attribute
     field_map = {
         14: "notification_sent_14",
         7: "notification_sent_7",
@@ -182,14 +182,16 @@ def check_days_left_threshold(user, assignment, days_left):
         1: "notification_sent_1",
     }
 
-    if days_left in thresholds:
-        field = field_map[days_left]
+    # Round days_left down to nearest integer
+    days_left_int = int(days_left)
 
-        # Check if already sent
+    if days_left_int in thresholds:
+        field = field_map[days_left_int]
+
+        # Only send if not already sent
         if not getattr(assignment, field):
-            # Send the email
             subject = f"Påminnelse: {assignment.title}"
-            body = f"Hej {user.name}, det är nu {thresholds[days_left]} för uppgiften/provet '{assignment.title}'."
+            body = f"Hej {user.name}, det är nu {thresholds[days_left_int]} för uppgiften/provet '{assignment.title}'."
 
             mail.send_message(
                 subject=subject,
@@ -2038,6 +2040,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
