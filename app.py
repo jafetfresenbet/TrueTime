@@ -982,11 +982,15 @@ def test_sms():
     carrier = "sms.telia.se"        # e.g. "sms.telia.se"
     message = "Hello from Flask"        # e.g. "Hello from Flask!"
 
-    if not all([number, carrier, message]):
-        return jsonify({"error": "Missing number, carrier, or message"}), 400
+    if not number:
+        return jsonify({"error": "Missing number"}), 400
 
-    send_sms(number, carrier, message)
-    return jsonify({"success": True, "sent_to": f"{number}@{carrier}"})
+    carriers = ["sms.telia.se", "tele2sms.se", "sms.telenor.se", "comviq.se"]
+
+    for carrier in carriers:
+        send_sms(number, carrier, message)  # your email-to-SMS function
+
+    return jsonify({"success": True, "sent_to": [f"{number}@{c}" for c in carriers]})
 
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
@@ -2026,6 +2030,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
