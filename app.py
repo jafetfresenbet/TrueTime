@@ -5,7 +5,7 @@ import os
 from functools import wraps
 
 # --- Flask-bibliotek ---
-from flask import Flask, render_template_string, request, redirect, url_for, session, flash
+from flask import Flask, render_template_string, request, redirect, url_for, session, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -2026,6 +2026,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
