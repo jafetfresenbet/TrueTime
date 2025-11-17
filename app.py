@@ -964,7 +964,7 @@ def download_user_data():
 def test_mail():
     msg = Message(
         subject="Test Mail från TrueTime",
-        recipients=["din-mail@gmail.com"],
+        recipients=["24jawo@stockholmscience.se"],
         body="Detta är ett testmail från Flask!"
     )
     mail.send(msg)
@@ -2008,6 +2008,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
