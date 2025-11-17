@@ -1,4 +1,4 @@
-f# --- Standardbibliotek ---
+# --- Standardbibliotek ---
 from datetime import datetime, timedelta
 from uuid import uuid4
 import os
@@ -1965,6 +1965,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
