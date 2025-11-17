@@ -327,7 +327,7 @@ def index():
                 if a.deadline:
                     delta = a.deadline - now
                     days_left = delta.days + (delta.seconds / 86400)  # inkl. timmar
-                    check_days_left_threshold(current_user, a, days_left)
+                    check_days_left_threshold(user, a, days_left)
 
                 # Färg baserat på hur nära deadline är
                 if days_left is None:
@@ -2040,6 +2040,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
