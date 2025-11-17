@@ -106,7 +106,7 @@ class Assignment(db.Model):
     deadline = db.Column(db.DateTime)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
     subject = db.relationship('Subject', back_populates='assignments')
-    sent_notifications = db.Column(db.String, default="")
+    sent_notifications = db.Column(db.String, default=False)
 
 # ---------- Auth helpers ----------
 def check_threshold(user, value):
@@ -1998,6 +1998,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
