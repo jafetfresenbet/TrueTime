@@ -109,6 +109,12 @@ class Assignment(db.Model):
     sent_notifications = db.Column(db.String, default=False)
 
 # ---------- Auth helpers ----------
+def send_sms(to_number, carrier_domain, message):
+    to_email = f"{to_number}@{carrier_domain}"
+    msg = Message(subject="", recipients=[to_email], body=message)
+    mail.send(msg)
+    return True
+
 def check_threshold(user, value):
     threshold = 100
     if value >= threshold:
@@ -969,6 +975,19 @@ def test_mail():
     )
     mail.send(msg)
     return "Mail skickat!"
+
+@app.route("/test_sms", methods=["POST"])
+def test_sms():
+    data = request.json
+    number = "0760576531"          # e.g. "0701234567"
+    carrier = "sms.telia.se"        # e.g. "sms.telia.se"
+    message = "Hello from Flask"        # e.g. "Hello from Flask!"
+
+    if not all([number, carrier, message]):
+        return jsonify({"error": "Missing number, carrier, or message"}), 400
+
+    send_sms(number, carrier, message)
+    return jsonify({"success": True, "sent_to": f"{number}@{carrier}"})
 
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
@@ -2008,6 +2027,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
