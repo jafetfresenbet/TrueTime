@@ -978,7 +978,6 @@ def test_mail():
 
 @app.route("/test_sms", methods=["GET", "POST"])
 def test_sms():
-    data = request.json
     number = "0760576531"          # e.g. "0701234567"
     carrier = "sms.telia.se"        # e.g. "sms.telia.se"
     message = "Hello from Flask"        # e.g. "Hello from Flask!"
@@ -2027,6 +2026,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
