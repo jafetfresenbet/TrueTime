@@ -20,9 +20,8 @@ from itsdangerous import URLSafeTimedSerializer
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask_rq2 import RQ
 
-from app import rq
 from flask_mail import Message
-from app import mail, app
+from app import mail
 from twilio.rest import Client
 
 # ---------- Konfiguration ----------
@@ -2000,6 +1999,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
