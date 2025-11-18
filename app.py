@@ -356,6 +356,7 @@ def index():
     
     assignments_display.sort(key=lambda x: x['deadline'] or datetime.max)
     today = datetime.now().strftime('%Y-%m-%d')
+    print("DEBUG current_user =", current_user, type(current_user))
     
     return render_template_string(DASH_TEMPLATE, user=user, classes=classes, assignments=assignments_display[:50], today=today)
 @app.route('/register', methods=['GET','POST'])
@@ -2035,6 +2036,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
