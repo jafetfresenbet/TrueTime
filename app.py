@@ -305,9 +305,10 @@ from datetime import datetime
 
 @app.route('/')
 def index():
-    user = current_user  # <-- remove the ()
-    if not user.is_authenticated:
+    if not current_user.is_authenticated:
         return render_template_string(HOME_TEMPLATE)
+
+    user = current_user
     
     classes = [uc.cls for uc in user.classes]
     assignments_display = []
@@ -2036,6 +2037,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
