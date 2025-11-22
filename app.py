@@ -270,14 +270,22 @@ def index():
                 if a.type == 'Prov' and a.deadline and a.deadline.date() < now.date():
                     continue
     
-                # Compute days_left for color logic
+                # Compute days_left for threshold logic (UNCHANGED)
                 if a.deadline:
-                    days_left = compute_days_left(a.deadline)
+                    days_left_int = compute_days_left(a.deadline)   # used for threshold only
                     check_days_left_threshold(user, a)
                 else:
+                    days_left_int = None
+                
+                # Compute days_left for COLOR (MATCH view_subject)
+                if a.deadline:
+                    now = datetime.now()
+                    delta = a.deadline - now
+                    days_left = delta.days + (delta.seconds / 86400)   # float-based
+                else:
                     days_left = None
-    
-                # Color logic
+                
+                # Color logic (MATCH view_subject)
                 if days_left is None:
                     color = "#f8f9fa"
                 elif days_left > 14:
@@ -291,7 +299,7 @@ def index():
                 elif days_left > 0:
                     color = "#e51f1f"
                 elif days_left < 0:
-                    color = "#090980"
+                    color = "#6a6af7"  # same as view_subject
 
                 assignments_display.append({
                     'id': a.id,
@@ -1986,6 +1994,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
