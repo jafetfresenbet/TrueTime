@@ -1,5 +1,3 @@
-from flask_login import current_user
-
 # --- Standardbibliotek ---
 from datetime import datetime, timedelta
 from uuid import uuid4
@@ -15,7 +13,6 @@ from flask import Response
 from flask_migrate import Migrate
 
 # --- Flask-Login (för användarhantering) ---
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 
@@ -126,7 +123,7 @@ def send_email_job(user_id, subject, body):
         msg = Message(subject, recipients=[user.email], body=body)
         mail.send(msg)
 
-def get_current_user_info():
+def current_user():
     uid = session.get('user_id')
     if uid:
         return User.query.get(uid)
@@ -256,10 +253,10 @@ from datetime import datetime
 
 @app.route('/')
 def index():
-    if not current_user.is_authenticated:
+    if not current_user():
         return render_template_string(HOME_TEMPLATE)
 
-    user = current_user
+    user = current_user()
     
     classes = [uc.cls for uc in user.classes]
     assignments_display = []
@@ -1986,6 +1983,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
