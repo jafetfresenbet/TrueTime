@@ -269,12 +269,15 @@ def index():
                     continue
                 if a.type == 'Prov' and a.deadline and a.deadline.date() < now.date():
                     continue
-
-                days_left = None
+    
+                # Compute days_left for color logic
                 if a.deadline:
+                    days_left = compute_days_left(a.deadline)
                     check_days_left_threshold(user, a)
-                
-                # Color logic...
+                else:
+                    days_left = None
+    
+                # Color logic
                 if days_left is None:
                     color = "#f8f9fa"
                 elif days_left > 14:
@@ -1983,6 +1986,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
