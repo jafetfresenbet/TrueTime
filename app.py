@@ -1,3 +1,5 @@
+from flask_login import current_user
+
 # --- Standardbibliotek ---
 from datetime import datetime, timedelta
 from uuid import uuid4
@@ -13,7 +15,7 @@ from flask import Response
 from flask_migrate import Migrate
 
 # --- Flask-Login (för användarhantering) ---
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 
@@ -124,7 +126,7 @@ def send_email_job(user_id, subject, body):
         msg = Message(subject, recipients=[user.email], body=body)
         mail.send(msg)
 
-def current_user():
+def get_current_user_info():
     uid = session.get('user_id')
     if uid:
         return User.query.get(uid)
@@ -1984,6 +1986,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
