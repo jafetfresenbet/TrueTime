@@ -67,7 +67,6 @@ class User(db.Model):
     name = db.Column(db.String, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
     phone_number = db.Column(db.String(20))
-    notify_sms = db.Column(db.Boolean, default=False)
     password_hash = db.Column(db.String, nullable=False)
     confirmed = db.Column(db.Boolean, default=False)
     confirmation_token = db.Column(db.String(256), nullable=True)
@@ -106,10 +105,7 @@ class Assignment(db.Model):
     deadline = db.Column(db.DateTime)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
     subject = db.relationship('Subject', back_populates='assignments')
-    notification_sent_14 = db.Column(db.Boolean, default=False)
-    notification_sent_7 = db.Column(db.Boolean, default=False)
-    notification_sent_3 = db.Column(db.Boolean, default=False)
-    notification_sent_1 = db.Column(db.Boolean, default=False)
+    sent_notifications = db.Column(db.String, default="")
 
 # ---------- Auth helpers ----------
 
@@ -127,19 +123,6 @@ def send_email_job(user_id, subject, body):
     if user:
         msg = Message(subject, recipients=[user.email], body=body)
         mail.send(msg)
-
-@rq.job
-def send_sms_job(user_id, body):
-    from models import User
-    user = User.query.get(user_id)
-    user = User.query.get(user_id)
-    if user and user.notify_sms and user.phone_number:
-        client = Client(app.config['TWILIO_SID'], app.config['TWILIO_AUTH_TOKEN'])
-        client.messages.create(
-            body=body,
-            from_=app.config['TWILIO_PHONE_NUMBER'],
-            to=user.phone_number
-        )
 
 def current_user():
     uid = session.get('user_id')
@@ -166,86 +149,53 @@ def login_required(f):
     return decorated
 
 # ---------- Utils ----------
-def check_days_left_threshold(user, assignment, days_left):
-    thresholds = {
-        14: "14 dagar kvar",
-        7: "7 dagar kvar",
-        3: "3 dagar kvar",
-        1: "1 dag kvar",
-    }
+def compute_days_left(deadline):
+    now = datetime.now()
+    delta = deadline - now
+    return int(delta.total_seconds() // 86400)  # floor to whole days
 
-    # Map threshold → assignment attribute
-    field_map = {
-        14: "notification_sent_14",
-        7: "notification_sent_7",
-        3: "notification_sent_3",
-        1: "notification_sent_1",
-    }
+def check_days_left_threshold(user, assignment):
+    if not assignment.deadline:
+        return
 
-    # Round days_left down to nearest integer
-    days_left_int = int(days_left)
+    thresholds = [14, 7, 3, 1]
+    days_left = compute_days_left(assignment.deadline)
 
-    if days_left_int in thresholds:
-        field = field_map[days_left_int]
+    if days_left not in thresholds:
+        return
 
-        # Only send if not already sent
-        if not getattr(assignment, field):
-            subject = f"Påminnelse: {assignment.title}"
-            body = f"Hej {user.name}, det är nu {thresholds[days_left_int]} för uppgiften/provet '{assignment.title}'."
+    sent = assignment.sent_notifications.split(",") if assignment.sent_notifications else []
+    if str(days_left) in sent:
+        return  # already sent
 
-            mail.send_message(
-                subject=subject,
-                recipients=[user.email],
-                body=body
-            )
+    # build email
+    subject = f"Påminnelse: {assignment.title}"
+    body = f"Hej {user.name}, det är nu {days_left} dagar kvar för '{assignment.title}'."
 
-            # Mark as sent
-            setattr(assignment, field, True)
-            db.session.commit()
+    mail.send_message(
+        subject=subject,
+        recipients=[user.email],
+        body=body
+    )
+
+    # mark as sent
+    sent.append(str(days_left))
+    assignment.sent_notifications = ",".join(sent)
+    db.session.commit()
 
 def generate_join_code():
     return uuid4().hex[:6].upper()
 
 def send_deadline_notifications():
-    now = datetime.now()
-    thresholds = [14, 7, 3, 1]  # dagar kvar
     assignments = Assignment.query.all()
 
     for a in assignments:
         if not a.deadline:
             continue
 
-        delta_days = (a.deadline.date() - now.date()).days
-        if delta_days not in thresholds:
-            continue
-
-        sent = a.sent_notifications.split(",") if a.sent_notifications else []
-        if str(delta_days) in sent:
-            continue  # redan skickad notis
-
-        # Skicka mail
-        for user in a.subject.users:  # alla som hör till ämnet
-            if user.email:
-                msg = Message(
-                    f"Påminnelse: {a.title} ({delta_days} dagar kvar)",
-                    sender=MAIL_USERNAME,
-                    recipients=[user.email]
-                )
-                msg.body = f"Din {a.type} '{a.title}' har {delta_days} dagar kvar till deadline."
-                mail.send(msg)
-
-            # Skicka SMS om telefonnummer finns
-            if user.phone_number:
-                twilio_client.messages.create(
-                    to=user.phone_number,
-                    from_=TWILIO_PHONE,
-                    body=f"Påminnelse: {a.type} '{a.title}' har {delta_days} dagar kvar!"
-                )
-
-        # Markera att notisen skickats
-        sent.append(str(delta_days))
-        a.sent_notifications = ",".join(sent)
-        db.session.commit()
+        for uc in a.subject.cls.members:
+            user = uc.user
+            check_days_left_threshold(user, a)
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=send_deadline_notifications, trigger="interval", hours=1)
@@ -267,7 +217,6 @@ def edit_profile():
     new_password = request.form.get('password', '').strip()
     confirm_password = request.form.get('confirm_password', '').strip()
     new_phone = request.form.get('phone_number', '').strip()
-    user.notify_sms = bool(request.form.get('notify_sms'))
 
     if not new_name or not new_email:
         flash("Fyll i både namn och e-post.")
@@ -324,9 +273,7 @@ def index():
 
                 days_left = None
                 if a.deadline:
-                    delta = a.deadline - now
-                    days_left = delta.days + (delta.seconds / 86400)
-                    check_days_left_threshold(user, a, days_left)
+                    check_days_left_threshold(user, a)
                 
                 # Color logic...
                 if days_left is None:
@@ -2037,6 +1984,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
