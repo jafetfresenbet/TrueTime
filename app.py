@@ -1973,12 +1973,7 @@ PROFILE_TEMPLATE = """
                 <input type="password" name="password" placeholder="Nytt lösenord (lämna tomt om du inte vill byta)">
                 <input type="password" name="confirm_password" placeholder="Bekräfta nytt lösenord">
 
-                <input type="text" name="phone_number" placeholder="Telefonnummer" value="{{ user.phone_number or '' }}">
-                <div>
-                    <input type="checkbox" name="notify_sms" id="notify_sms" {% if user.notify_sms %}checked{% endif %}>
-                    <label for="notify_sms">Skicka SMS-notiser (fungerar ej)</label>
-                    <button type="submit">Spara ändringar</button>
-                </div>
+                <button type="submit">Spara ändringar</button>
             
             </form>
             <h3>Radera konto</h3>
@@ -1994,6 +1989,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
