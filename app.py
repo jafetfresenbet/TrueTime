@@ -169,7 +169,7 @@ def check_days_left_threshold(user, assignment):
 
     # build email
     subject = f"Påminnelse: {assignment.title}"
-    body = f"Hej {user.name}, det är nu {days_left} dagar kvar för '{assignment.title}'."
+    body = f"Hej {user.name}, det är nu {days_left + 1} dagar kvar för '{assignment.title}'."
 
     mail.send_message(
         subject=subject,
@@ -1989,6 +1989,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
