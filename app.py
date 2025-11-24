@@ -273,7 +273,6 @@ def index():
                 # Compute days_left for threshold logic (UNCHANGED)
                 if a.deadline:
                     days_left_int = compute_days_left(a.deadline)   # used for threshold only
-                    check_days_left_threshold(user, a)
                 else:
                     days_left_int = None
                 
@@ -1989,6 +1988,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
