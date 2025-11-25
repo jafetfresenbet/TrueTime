@@ -530,7 +530,7 @@ def view_class(class_id):
     return render_template_string(
         CLASS_TEMPLATE,
         class_data=cls,
-        subjects = class_data.subjects,
+        subjects = cls.subjects,
         is_admin=is_admin
     )
 
@@ -2149,6 +2149,7 @@ INVITE_ADMIN_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
