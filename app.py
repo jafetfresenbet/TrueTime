@@ -192,8 +192,10 @@ def send_deadline_notifications():
         if not a.deadline:
             continue
 
-        for uc in a.subject.cls.members:
-            user = uc.user
+        # Hämta alla användare som är med i klassen
+        cls_members = a.subject.cls.members  # lista av ClassUser
+        for member in cls_members:
+            user = member.user  # säkerställ att det finns en relation till User
             check_days_left_threshold(user, a)
 
 scheduler = BackgroundScheduler()
@@ -1988,6 +1990,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
