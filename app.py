@@ -13,6 +13,7 @@ from flask import Response
 from flask_migrate import Migrate
 
 # --- Flask-Login (för användarhantering) ---
+from flask_login import current_user
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 
@@ -1000,7 +1001,7 @@ def download_user_data():
 @app.route('/class/<int:class_id>/invite_admin', methods=['GET', 'POST'])
 def invite_admin(class_id):
     # Hämta inloggad användare
-    user = get_current_user()
+    user = current_user
     # Kontrollera att användaren är admin
     if not is_user_admin(user['id'], class_id):
         flash("Endast admin kan bjuda in andra admins.")
@@ -2127,6 +2128,7 @@ INVITE_ADMIN_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
