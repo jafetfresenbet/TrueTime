@@ -106,25 +106,20 @@ class Assignment(db.Model):
     sent_notifications = db.Column(db.String, default="")
 
 class AssignmentNotification(db.Model):
-    __tablename__ = 'assignment_notifications'
-    id = db.Column(db.Integer, primary_key=True)
-    assignment_id = db.Column(db.Integer, db.ForeignKey('assignments.id', ondelete='CASCADE'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-    days_left = db.Column(db.Integer, nullable=False)  # ex 14,7,3,1
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    # valfritt: unikt index så vi inte får dubbletter
-    __table_args__ = (db.UniqueConstraint('assignment_id', 'user_id', 'days_left', name='_assignment_user_days_uc'),)
-
-class AssignmentNotification(db.Model):
     __tablename__ = "assignment_notifications"
+    __table_args__ = {"extend_existing": True}  # <--- allows reuse if table already exists
 
     id = db.Column(db.Integer, primary_key=True)
-    assignment_id = db.Column(db.Integer, db.ForeignKey("assignments.id"), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    days_left = db.Column(db.Integer, nullable=False)
-    sent_at = db.Column(db.DateTime, default=datetime.now)
+    assignment_id = db.Column(db.Integer, db.ForeignKey("assignments.id", ondelete="CASCADE"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    days_left = db.Column(db.Integer, nullable=False)  # 14, 7, 3, 1
+    sent_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    # Optional: unique constraint so we don't get duplicates
+    __table_args__ = (
+        db.UniqueConstraint('assignment_id', 'user_id', 'days_left', name='_assignment_user_days_uc'),
+        {"extend_existing": True}
+    )
 # ---------- Auth helpers ----------
 def check_days_left_threshold(user, assignment):
     if not assignment.deadline:
@@ -2012,6 +2007,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
