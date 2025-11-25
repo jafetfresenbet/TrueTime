@@ -16,7 +16,6 @@ from flask_migrate import Migrate
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 
-from apscheduler.schedulers.background import BackgroundScheduler
 from flask_rq2 import RQ
 
 from flask_mail import Message
@@ -953,10 +952,6 @@ def download_user_data():
         headers={'Content-Disposition': f'attachment;filename={user.name}_data.txt'}
     )
 
-
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=send_deadline_notifications, trigger="interval", minutes=30)
-scheduler.start()
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
 HOME_TEMPLATE = """
@@ -1990,6 +1985,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
