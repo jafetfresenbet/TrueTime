@@ -302,6 +302,9 @@ def index():
     classes = [uc.cls for uc in user.classes]
     assignments_display = []
     now = datetime.now()
+
+    # Lista med class IDs där användaren är admin
+    admin_class_ids = [ca.class_id for ca in ClassAdmin.query.filter_by(user_id=user.id).all()]
     
     for cls in classes:
         for subj in cls.subjects:
@@ -356,7 +359,14 @@ def index():
     today = datetime.now().strftime('%Y-%m-%d')
     print("DEBUG current_user =", current_user, type(current_user))
     
-    return render_template_string(DASH_TEMPLATE, user=user, classes=classes, assignments=assignments_display[:50], today=today)
+    return render_template_string(
+        DASH_TEMPLATE,
+        user=user,
+        classes=classes,
+        assignments=assignments_display[:50],
+        today=today,
+        admin_class_ids=admin_class_ids
+    )
 @app.route('/register', methods=['GET','POST'])
 def register():
     if request.method == 'POST':
@@ -520,7 +530,7 @@ def view_class(class_id):
     return render_template_string(
         CLASS_TEMPLATE,
         class_data=cls,
-        subjects=subjects,
+        subjects = class_data.subjects,
         is_admin=is_admin
     )
 
@@ -1422,7 +1432,7 @@ DASH_TEMPLATE = """
                             <a href="{{ url_for('view_class', class_id=c['id']) }}">{{ c['name'] }}</a> 
                             (kod: {{ c['join_code'] }})
                         </span>
-                        {% if is_admin %}
+                        {% if c.id in admin_class_ids %}
                             <span>
                                 <a href="{{ url_for('edit_class', class_id=c['id']) }}">
                                     <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
@@ -2139,6 +2149,7 @@ INVITE_ADMIN_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
