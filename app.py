@@ -116,8 +116,16 @@ class AssignmentNotification(db.Model):
     # valfritt: unikt index så vi inte får dubbletter
     __table_args__ = (db.UniqueConstraint('assignment_id', 'user_id', 'days_left', name='_assignment_user_days_uc'),)
 
-# ---------- Auth helpers ----------
+class AssignmentNotification(db.Model):
+    __tablename__ = "assignment_notifications"
 
+    id = db.Column(db.Integer, primary_key=True)
+    assignment_id = db.Column(db.Integer, db.ForeignKey("assignments.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    days_left = db.Column(db.Integer, nullable=False)
+    sent_at = db.Column(db.DateTime, default=datetime.now)
+
+# ---------- Auth helpers ----------
 def check_days_left_threshold(user, assignment):
     if not assignment.deadline:
         return
@@ -128,45 +136,42 @@ def check_days_left_threshold(user, assignment):
     if days_left not in thresholds:
         return
 
-    # Kolla om den här användaren redan fått notisen för detta assignment + dagar kvar
-    existing = AssignmentNotification.query.filter_by(
+    # Check if this user already received this threshold
+    already_sent = AssignmentNotification.query.filter_by(
         assignment_id=assignment.id,
         user_id=user.id,
         days_left=days_left
     ).first()
-
-    if existing:
+    
+    if already_sent:
         return  # already sent to this user
 
-    # build email
+    # Send the email
     subject = f"Påminnelse: {assignment.title}"
     body = f"Hej {user.name}, det är nu {days_left} dagar kvar för '{assignment.title}'."
 
-    try:
-        mail.send_message(
-            subject=subject,
-            recipients=[user.email],
-            body=body
-        )
-    except Exception as e:
-        # logga felet men låt det inte blocka resten; returnera utan att markera som skickad
-        app.logger.exception("Misslyckades med att skicka notis till %s: %s", user.email, str(e))
-        return
+    mail.send_message(
+        subject=subject,
+        recipients=[user.email],
+        body=body
+    )
 
-    # mark as sent for this user
-    note = AssignmentNotification(
+    # Record the notification
+    new_record = AssignmentNotification(
         assignment_id=assignment.id,
         user_id=user.id,
         days_left=days_left
     )
-    db.session.add(note)
+    db.session.add(new_record)
     db.session.commit()
 
 def send_deadline_notifications():
     assignments = Assignment.query.all()
+
     for a in assignments:
         if not a.deadline:
             continue
+
         for uc in a.subject.cls.members:
             user = uc.user
             check_days_left_threshold(user, a)
@@ -2007,6 +2012,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
