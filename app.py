@@ -124,13 +124,13 @@ class ClassMember(db.Model):
     __tablename__ = 'class_members'  # Pekar på tabellen du redan har
 
     id = db.Column(db.Integer, primary_key=True)
-    class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=False)
+    class_id = db.Column(db.Integer, db.ForeignKey('classes.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     role = db.Column(db.String(10), nullable=False)  # 'member' eller 'admin'
 
     # Relationer (valfritt men praktiskt)
-    cls = db.relationship('Class', backref='members')
-    user = db.relationship('User', backref='classes')
+    cls = db.relationship('Class', backref=db.backref('memberships', lazy=True))
+    user = db.relationship('User', backref=db.backref('class_memberships', lazy=True))
 # ---------- Auth helpers ----------
 def check_days_left_threshold(user, assignment):
     if not assignment.deadline:
@@ -2127,6 +2127,7 @@ INVITE_ADMIN_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
