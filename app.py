@@ -18,6 +18,7 @@ from itsdangerous import URLSafeTimedSerializer
 
 from flask_rq2 import RQ
 
+from flask_mail import Message
 from twilio.rest import Client
 
 # ---------- Konfiguration ----------
@@ -119,18 +120,6 @@ class AssignmentNotification(db.Model):
         db.UniqueConstraint('assignment_id', 'user_id', 'days_left', name='_assignment_user_days_uc'),
         {"extend_existing": True}
     )
-
-class ClassMember(db.Model):
-    __tablename__ = 'class_members'  # Pekar på tabellen du redan har
-
-    id = db.Column(db.Integer, primary_key=True)
-    class_id = db.Column(db.Integer, db.ForeignKey('classes.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    role = db.Column(db.String(10), nullable=False)  # 'member' eller 'admin'
-
-    # Relationer (valfritt men praktiskt)
-    cls = db.relationship('Class', backref=db.backref('memberships', lazy=True))
-    user = db.relationship('User', backref=db.backref('class_memberships', lazy=True))
 # ---------- Auth helpers ----------
 def check_days_left_threshold(user, assignment):
     if not assignment.deadline:
@@ -221,17 +210,6 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated
 
-def is_user_admin(user_id, class_id):
-    member = ClassMember.query.filter_by(
-        user_id=user_id,
-        class_id=class_id
-    ).first()
-
-    if not member:
-        return False
-
-    return member.role == "admin"
-
 # ---------- Utils ----------
 def compute_days_left(deadline):
     now = datetime.now()
@@ -302,11 +280,6 @@ def index():
     classes = [uc.cls for uc in user.classes]
     assignments_display = []
     now = datetime.now()
-
-    admin_class_ids = [
-        cm.class_id
-        for cm in db.session.query(ClassMember).filter_by(user_id=user.id, role='admin').all()
-    ]
     
     for cls in classes:
         for subj in cls.subjects:
@@ -361,14 +334,7 @@ def index():
     today = datetime.now().strftime('%Y-%m-%d')
     print("DEBUG current_user =", current_user, type(current_user))
     
-    return render_template_string(
-        DASH_TEMPLATE,
-        user=user,
-        classes=classes,
-        assignments=assignments_display[:50],
-        today=today,
-        admin_class_ids=admin_class_ids
-    )
+    return render_template_string(DASH_TEMPLATE, user=user, classes=classes, assignments=assignments_display[:50], today=today)
 @app.route('/register', methods=['GET','POST'])
 def register():
     if request.method == 'POST':
@@ -516,25 +482,12 @@ def join_class():
 def view_class(class_id):
     user = current_user()
     cls = Class.query.get_or_404(class_id)
-    # Kolla om användaren är medlem
-    member_record = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first()
-    if not member_record:
+    if not any(uc.cls.id == cls.id for uc in user.classes):
         flash("Du är inte medlem i den här klassen.")
         return redirect(url_for('index'))
-
-    member_record = ClassMember.query.filter_by(
-        user_id=user.id,
-        class_id=cls.id
-    ).first()
-    
-    is_admin = (member_record and member_record.role == "admin")
-    
-    return render_template_string(
-        CLASS_TEMPLATE,
-        class_data=cls,
-        subjects = cls.subjects,
-        is_admin=is_admin
-    )
+    subjects = cls.subjects
+    is_admin = (cls.admin_user_id == user.id)
+    return render_template_string(CLASS_TEMPLATE, class_data=cls, subjects=subjects, is_admin=is_admin)
 
 # ---------- Subject routes ----------
 @app.route('/class/<int:class_id>/add_subject', methods=['POST'])
@@ -1021,56 +974,6 @@ def download_user_data():
         headers={'Content-Disposition': f'attachment;filename={user.name}_data.txt'}
     )
 
-@app.route('/class/<int:class_id>/invite_admin', methods=['GET', 'POST'])
-def invite_admin(class_id):
-    # Hämta inloggad användare
-    user = current_user()
-    # Kontrollera att användaren är admin
-    if not is_user_admin(user.id, class_id):
-        flash("Endast admin kan bjuda in andra admins.")
-        return redirect(url_for('view_class', class_id=class_id))
-
-    if request.method == 'POST':
-        email = request.form['email']
-        # Hämta användare baserat på mail
-        invited_user = db.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
-        if not invited_user:
-            flash("Ingen användare med den e-posten hittades.")
-            return redirect(url_for('invite_admin', class_id=class_id))
-
-        # Skapa token
-        token = serializer.dumps({'user_id': invited_user['id'], 'class_id': class_id})
-
-        # Skicka mail
-        link = url_for('accept_admin', token=token, _external=True)
-        msg = Message(subject=f"Du är inbjuden som admin i klass!",
-                      sender=app.config['MAIL_USERNAME'],
-                      recipients=[email],
-                      html=INVITE_ADMIN_TEMPLATE.replace("{{ link }}", link))
-        mail.send(msg)
-
-        flash("Inbjudan skickad!")
-        return redirect(url_for('view_class', class_id=class_id))
-
-    return render_template_string(INVITE_ADMIN_TEMPLATE)
-
-@app.route('/accept_admin/<token>')
-def accept_admin(token):
-    try:
-        data = serializer.loads(token, max_age=3600*24*7)  # 7 dagar giltigt
-        user_id = data['user_id']
-        class_id = data['class_id']
-
-        # Uppdatera roll i class_members
-        db.execute("UPDATE class_members SET roll = 'admin' WHERE user_id = ? AND class_id = ?", (user_id, class_id))
-        db.commit()
-
-        flash('Du är nu admin i denna klass!')
-        return redirect(url_for('view_class', class_id=class_id))
-    except Exception as e:
-        flash('Länken är ogiltig eller har gått ut.')
-        return redirect(url_for('index'))
-
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
 HOME_TEMPLATE = """
@@ -1434,7 +1337,7 @@ DASH_TEMPLATE = """
                             <a href="{{ url_for('view_class', class_id=c['id']) }}">{{ c['name'] }}</a> 
                             (kod: {{ c['join_code'] }})
                         </span>
-                        {% if c.id in admin_class_ids %}
+                        {% if user['id'] == c['admin_user_id'] %}
                             <span>
                                 <a href="{{ url_for('edit_class', class_id=c['id']) }}">
                                     <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
@@ -1794,22 +1697,20 @@ CLASS_TEMPLATE = """
 <body>
     <header>
         <h2>{{ class_data['name'] }}</h2>
-        {% if class_data['id'] in admin_class_ids %}
+        {% if is_admin %}
             <p>Join-kod: {{ class_data['join_code'] }}</p>
         {% endif %}
     </header>
 
     <nav>
         <a href="{{ url_for('index') }}">Tillbaka till översikten</a>
-        {% if class_data['id'] in admin_class_ids %}
+        {% if is_admin %}
+            <!-- Byt ut länk mot formulär med POST -->
             <form method="post" action="{{ url_for('add_subject', class_id=class_data['id']) }}">
                 <input type="text" name="subject_name" placeholder="Ämnesnamn" required>
                 <button type="submit">Lägg till ämne</button>
             </form>
 
-            <form method="get" action="{{ url_for('invite_admin', class_id=class_data['id']) }}">
-                <button type="submit">Bjud in admin</button>
-            </form>
         {% endif %}
     </nav>
 
@@ -1833,7 +1734,7 @@ CLASS_TEMPLATE = """
                         <span>
                             <a href="{{ url_for('view_subject', subject_id=subject['id']) }}">{{ subject['name'] }}</a>
                         </span>
-                        {% if class_data['id'] in admin_class_ids %}
+                        {% if is_admin %}
                         <span>
                             <a href="{{ url_for('edit_subject', subject_id=subject['id']) }}">
                                 <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px;">Ändra</button>
@@ -1916,7 +1817,7 @@ SUBJECT_TEMPLATE = """
             {% endfor %}
             </ul>
 
-            {% if c.id in admin_class_ids %}
+            {% if is_admin %}
             <form method="post" action="{{ url_for('add_assignment', subject_id=subject['id']) }}">
                 <input type="text" name="title" placeholder="Uppgiftsnamn" required>
             
@@ -1998,7 +1899,7 @@ EDIT_ASSIGNMENT_TEMPLATE = """
 
             <h3>Ändra uppgift / Prov</h3>
 
-            {% if c.id in admin_class_ids %}
+            {% if is_admin %}
             <form method="post" action="">
                 <input type="text" name="title" value="{{ assignment.title }}" required>
 
@@ -2106,64 +2007,6 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
-
-INVITE_ADMIN_TEMPLATE = """
-<!doctype html>
-<html lang="sv">
-<head>
-    <meta charset="UTF-8">
-    <title>Bjud in admin - PlugIt+</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .invite-card { background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0px 4px 12px rgba(0,0,0,0.1); width: 400px; text-align: center; }
-        .invite-card h2 { margin-bottom: 20px; color: #333; }
-        .invite-card input[type="email"] { width: 100%; padding: 10px; margin: 10px 0 20px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .invite-card button { width: 100%; padding: 10px; background-color: #28a745; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-        .invite-card button:hover { background-color: #218838; }
-        .flash-message { color: green; text-align: center; margin-bottom: 10px; }
-        .back-link { display: block; text-align: center; margin-top: 15px; }
-        .back-link a { color: #007bff; text-decoration: none; }
-        .back-link a:hover { text-decoration: underline; }
-    </style>
-</head>
-<body>
-    <div class="invite-card">
-        <h2>Bjud in ny admin</h2>
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            <div class="flash-message">
-              {% for message in messages %}
-                {{ message }}<br>
-              {% endfor %}
-            </div>
-          {% endif %}
-        {% endwith %}
-        <form method="post">
-            <input type="email" name="email" placeholder="Ange e-post på användaren" required>
-            <button type="submit">Skicka inbjudan</button>
-        </form>
-        <div class="back-link">
-            <a href="{{ url_for('view_class', class_id=request.view_args['class_id']) }}">Tillbaka till klassen</a>
-        </div>
-    </div>
-</body>
-</html>
-"""
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
