@@ -119,6 +119,18 @@ class AssignmentNotification(db.Model):
         db.UniqueConstraint('assignment_id', 'user_id', 'days_left', name='_assignment_user_days_uc'),
         {"extend_existing": True}
     )
+
+class ClassMember(db.Model):
+    __tablename__ = 'class_members'  # Pekar på tabellen du redan har
+
+    id = db.Column(db.Integer, primary_key=True)
+    class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    role = db.Column(db.String(10), nullable=False)  # 'member' eller 'admin'
+
+    # Relationer (valfritt men praktiskt)
+    cls = db.relationship('Class', backref='members')
+    user = db.relationship('User', backref='classes')
 # ---------- Auth helpers ----------
 def check_days_left_threshold(user, assignment):
     if not assignment.deadline:
@@ -492,7 +504,7 @@ def view_class(class_id):
         return redirect(url_for('index'))
 
     # Kontrollera roll
-    is_admin = member_record.roll == 'admin'
+    is_admin = (member_record.roll == 'admin')
 
     subjects = cls.subjects
     # Hämta alla medlemmar
@@ -2115,6 +2127,7 @@ INVITE_ADMIN_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
