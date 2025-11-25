@@ -105,6 +105,17 @@ class Assignment(db.Model):
     subject = db.relationship('Subject', back_populates='assignments')
     sent_notifications = db.Column(db.String, default="")
 
+class AssignmentNotification(db.Model):
+    __tablename__ = 'assignment_notifications'
+    id = db.Column(db.Integer, primary_key=True)
+    assignment_id = db.Column(db.Integer, db.ForeignKey('assignments.id', ondelete='CASCADE'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    days_left = db.Column(db.Integer, nullable=False)  # ex 14,7,3,1
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # valfritt: unikt index så vi inte får dubbletter
+    __table_args__ = (db.UniqueConstraint('assignment_id', 'user_id', 'days_left', name='_assignment_user_days_uc'),)
+
 # ---------- Auth helpers ----------
 
 def check_threshold(user, value):
@@ -162,25 +173,39 @@ def check_days_left_threshold(user, assignment):
     if days_left not in thresholds:
         return
 
-    sent = assignment.sent_notifications.split(",") if assignment.sent_notifications else []
-    if str(days_left) in sent:
-        return  # already sent
+    # Kolla om den här användaren redan fått notisen för detta assignment + dagar kvar
+    existing = AssignmentNotification.query.filter_by(
+        assignment_id=assignment.id,
+        user_id=user.id,
+        days_left=days_left
+    ).first()
+
+    if existing:
+        return  # already sent to this user
 
     # build email
     subject = f"Påminnelse: {assignment.title}"
     body = f"Hej {user.name}, det är nu {days_left} dagar kvar för '{assignment.title}'."
 
-    mail.send_message(
-        subject=subject,
-        recipients=[user.email],
-        body=body
+    try:
+        mail.send_message(
+            subject=subject,
+            recipients=[user.email],
+            body=body
+        )
+    except Exception as e:
+        # logga felet men låt det inte blocka resten; returnera utan att markera som skickad
+        app.logger.exception("Misslyckades med att skicka notis till %s: %s", user.email, str(e))
+        return
+
+    # mark as sent for this user
+    note = AssignmentNotification(
+        assignment_id=assignment.id,
+        user_id=user.id,
+        days_left=days_left
     )
-
-    # mark as sent
-    sent.append(str(days_left))
-    assignment.sent_notifications = ",".join(sent)
+    db.session.add(note)
     db.session.commit()
-
 def generate_join_code():
     return uuid4().hex[:6].upper()
 
@@ -1985,6 +2010,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
