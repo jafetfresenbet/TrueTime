@@ -1001,7 +1001,7 @@ def download_user_data():
 @app.route('/class/<int:class_id>/invite_admin', methods=['GET', 'POST'])
 def invite_admin(class_id):
     # Hämta inloggad användare
-    user = current_user
+    user = current_user()
     # Kontrollera att användaren är admin
     if not is_user_admin(user.id, class_id):
         flash("Endast admin kan bjuda in andra admins.")
@@ -2128,6 +2128,7 @@ INVITE_ADMIN_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
