@@ -1794,15 +1794,14 @@ CLASS_TEMPLATE = """
 <body>
     <header>
         <h2>{{ class_data['name'] }}</h2>
-        {% if c.id in admin_class_ids %}
+        {% if class_data['id'] in admin_class_ids %}
             <p>Join-kod: {{ class_data['join_code'] }}</p>
         {% endif %}
     </header>
 
     <nav>
         <a href="{{ url_for('index') }}">Tillbaka till översikten</a>
-        {% if c.id in admin_class_ids %}
-            <!-- Byt ut länk mot formulär med POST -->
+        {% if class_data['id'] in admin_class_ids %}
             <form method="post" action="{{ url_for('add_subject', class_id=class_data['id']) }}">
                 <input type="text" name="subject_name" placeholder="Ämnesnamn" required>
                 <button type="submit">Lägg till ämne</button>
@@ -1811,7 +1810,6 @@ CLASS_TEMPLATE = """
             <form method="get" action="{{ url_for('invite_admin', class_id=class_data['id']) }}">
                 <button type="submit">Bjud in admin</button>
             </form>
-
         {% endif %}
     </nav>
 
@@ -1835,7 +1833,7 @@ CLASS_TEMPLATE = """
                         <span>
                             <a href="{{ url_for('view_subject', subject_id=subject['id']) }}">{{ subject['name'] }}</a>
                         </span>
-                        {% if c.id in admin_class_ids %}
+                        {% if class_data['id'] in admin_class_ids %}
                         <span>
                             <a href="{{ url_for('edit_subject', subject_id=subject['id']) }}">
                                 <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px;">Ändra</button>
@@ -2151,6 +2149,7 @@ INVITE_ADMIN_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
