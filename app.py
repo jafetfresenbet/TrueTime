@@ -198,10 +198,6 @@ def send_deadline_notifications():
             user = member.user  # säkerställ att det finns en relation till User
             check_days_left_threshold(user, a)
 
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=send_deadline_notifications, trigger="interval", hours=1)
-scheduler.start()
-
 # ---------- Routes ----------
 @app.route('/profile')
 @login_required
@@ -957,6 +953,10 @@ def download_user_data():
         headers={'Content-Disposition': f'attachment;filename={user.name}_data.txt'}
     )
 
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=send_deadline_notifications, trigger="interval", minutes=30)
+scheduler.start()
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
 HOME_TEMPLATE = """
@@ -1990,6 +1990,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
