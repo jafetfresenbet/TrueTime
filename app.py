@@ -13,7 +13,6 @@ from flask import Response
 from flask_migrate import Migrate
 
 # --- Flask-Login (för användarhantering) ---
-from flask_login import current_user
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 
@@ -223,8 +222,15 @@ def login_required(f):
     return decorated
 
 def is_user_admin(user_id, class_id):
-    member = db.execute("SELECT roll FROM class_members WHERE user_id = ? AND class_id = ?", (user_id, class_id)).fetchone()
-    return member and member['roll'] == 'admin'
+    member = ClassMember.query.filter_by(
+        user_id=user_id,
+        class_id=class_id
+    ).first()
+
+    if not member:
+        return False
+
+    return member.role == "admin"
 
 # ---------- Utils ----------
 def compute_days_left(deadline):
@@ -504,14 +510,19 @@ def view_class(class_id):
         flash("Du är inte medlem i den här klassen.")
         return redirect(url_for('index'))
 
-    # Kontrollera roll
-    is_admin = (member_record.role == 'admin')
-
-    subjects = cls.subjects
-    # Hämta alla medlemmar
-    members = ClassMember.query.filter_by(class_id=cls.id).all()
-
-    return render_template_string(CLASS_TEMPLATE, class_data=cls, subjects=subjects, is_admin=is_admin, members=members)
+    member_record = ClassMember.query.filter_by(
+        user_id=user.id,
+        class_id=cls.id
+    ).first()
+    
+    is_admin = (member_record and member_record.role == "admin")
+    
+    return render_template_string(
+        CLASS_TEMPLATE,
+        class_data=cls,
+        subjects=subjects,
+        is_admin=is_admin
+    )
 
 # ---------- Subject routes ----------
 @app.route('/class/<int:class_id>/add_subject', methods=['POST'])
@@ -2128,6 +2139,7 @@ INVITE_ADMIN_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
