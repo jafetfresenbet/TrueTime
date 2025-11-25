@@ -974,6 +974,37 @@ def download_user_data():
         headers={'Content-Disposition': f'attachment;filename={user.name}_data.txt'}
     )
 
+@app.route('/class/<int:class_id>/add_admin', methods=['GET', 'POST'])
+def add_admin(class_id):
+    if not current_user():
+        return redirect(url_for('index'))
+
+    # Kontrollera om nuvarande användare är admin
+    member = ClassMember.query.filter_by(user_id=current_user().id, class_id=class_id).first()
+    if not member or member.role != 'admin':
+        return "Du har inte behörighet att lägga till admins.", 403
+
+    if request.method == 'POST':
+        new_user_id = int(request.form['user_id'])  # användarens ID som ska bli admin
+        new_member = ClassMember.query.filter_by(user_id=new_user_id, class_id=class_id).first()
+        if new_member:
+            new_member.role = 'admin'
+        else:
+            # skapa medlem och sätt som admin direkt
+            new_member = ClassMember(user_id=new_user_id, class_id=class_id, role='admin')
+            db.session.add(new_member)
+        db.session.commit()
+        return f"Användare {new_user_id} har lagts till som admin."
+
+    # GET request visar formuläret
+    return render_template_string('''
+        <h2>Lägg till admin i klassen</h2>
+        <form method="POST">
+            Användar-ID: <input type="number" name="user_id" required>
+            <input type="submit" value="Lägg till admin">
+        </form>
+    ''')
+
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
 HOME_TEMPLATE = """
@@ -2007,6 +2038,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
