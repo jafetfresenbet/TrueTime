@@ -504,7 +504,7 @@ def view_class(class_id):
         return redirect(url_for('index'))
 
     # Kontrollera roll
-    is_admin = (member_record.roll == 'admin')
+    is_admin = (member_record.role == 'admin')
 
     subjects = cls.subjects
     # Hämta alla medlemmar
@@ -2127,6 +2127,7 @@ INVITE_ADMIN_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
