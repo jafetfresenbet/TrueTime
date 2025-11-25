@@ -303,8 +303,10 @@ def index():
     assignments_display = []
     now = datetime.now()
 
-    # Lista med class IDs där användaren är admin
-    admin_class_ids = [ca.class_id for ca in ClassAdmin.query.filter_by(user_id=user.id).all()]
+    admin_class_ids = [
+        cm.class_id
+        for cm in db.session.query(ClassMember).filter_by(user_id=user.id, role='admin').all()
+    ]
     
     for cls in classes:
         for subj in cls.subjects:
@@ -1792,14 +1794,14 @@ CLASS_TEMPLATE = """
 <body>
     <header>
         <h2>{{ class_data['name'] }}</h2>
-        {% if is_admin %}
+        {% if c.id in admin_class_ids %}
             <p>Join-kod: {{ class_data['join_code'] }}</p>
         {% endif %}
     </header>
 
     <nav>
         <a href="{{ url_for('index') }}">Tillbaka till översikten</a>
-        {% if is_admin %}
+        {% if c.id in admin_class_ids %}
             <!-- Byt ut länk mot formulär med POST -->
             <form method="post" action="{{ url_for('add_subject', class_id=class_data['id']) }}">
                 <input type="text" name="subject_name" placeholder="Ämnesnamn" required>
@@ -1833,7 +1835,7 @@ CLASS_TEMPLATE = """
                         <span>
                             <a href="{{ url_for('view_subject', subject_id=subject['id']) }}">{{ subject['name'] }}</a>
                         </span>
-                        {% if is_admin %}
+                        {% if c.id in admin_class_ids %}
                         <span>
                             <a href="{{ url_for('edit_subject', subject_id=subject['id']) }}">
                                 <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px;">Ändra</button>
@@ -1916,7 +1918,7 @@ SUBJECT_TEMPLATE = """
             {% endfor %}
             </ul>
 
-            {% if is_admin %}
+            {% if c.id in admin_class_ids %}
             <form method="post" action="{{ url_for('add_assignment', subject_id=subject['id']) }}">
                 <input type="text" name="title" placeholder="Uppgiftsnamn" required>
             
@@ -1998,7 +2000,7 @@ EDIT_ASSIGNMENT_TEMPLATE = """
 
             <h3>Ändra uppgift / Prov</h3>
 
-            {% if is_admin %}
+            {% if c.id in admin_class_ids %}
             <form method="post" action="">
                 <input type="text" name="title" value="{{ assignment.title }}" required>
 
@@ -2149,6 +2151,7 @@ INVITE_ADMIN_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
