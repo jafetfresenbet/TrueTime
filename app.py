@@ -118,6 +118,59 @@ class AssignmentNotification(db.Model):
 
 # ---------- Auth helpers ----------
 
+def check_days_left_threshold(user, assignment):
+    if not assignment.deadline:
+        return
+
+    thresholds = [14, 7, 3, 1]
+    days_left = compute_days_left(assignment.deadline)
+
+    if days_left not in thresholds:
+        return
+
+    # Kolla om den här användaren redan fått notisen för detta assignment + dagar kvar
+    existing = AssignmentNotification.query.filter_by(
+        assignment_id=assignment.id,
+        user_id=user.id,
+        days_left=days_left
+    ).first()
+
+    if existing:
+        return  # already sent to this user
+
+    # build email
+    subject = f"Påminnelse: {assignment.title}"
+    body = f"Hej {user.name}, det är nu {days_left} dagar kvar för '{assignment.title}'."
+
+    try:
+        mail.send_message(
+            subject=subject,
+            recipients=[user.email],
+            body=body
+        )
+    except Exception as e:
+        # logga felet men låt det inte blocka resten; returnera utan att markera som skickad
+        app.logger.exception("Misslyckades med att skicka notis till %s: %s", user.email, str(e))
+        return
+
+    # mark as sent for this user
+    note = AssignmentNotification(
+        assignment_id=assignment.id,
+        user_id=user.id,
+        days_left=days_left
+    )
+    db.session.add(note)
+    db.session.commit()
+
+def send_deadline_notifications():
+    assignments = Assignment.query.all()
+    for a in assignments:
+        if not a.deadline:
+            continue
+        for uc in a.subject.cls.members:
+            user = uc.user
+            check_days_left_threshold(user, a)
+
 def check_threshold(user, value):
     threshold = 100
     if value >= threshold:
@@ -163,64 +216,8 @@ def compute_days_left(deadline):
     delta = deadline - now
     return int(delta.total_seconds() // 86400)  # floor to whole days
 
-def check_days_left_threshold(user, assignment):
-    if not assignment.deadline:
-        return
-
-    thresholds = [14, 7, 3, 1]
-    days_left = compute_days_left(assignment.deadline)
-
-    if days_left not in thresholds:
-        return
-
-    # Kolla om den här användaren redan fått notisen för detta assignment + dagar kvar
-    existing = AssignmentNotification.query.filter_by(
-        assignment_id=assignment.id,
-        user_id=user.id,
-        days_left=days_left
-    ).first()
-
-    if existing:
-        return  # already sent to this user
-
-    # build email
-    subject = f"Påminnelse: {assignment.title}"
-    body = f"Hej {user.name}, det är nu {days_left} dagar kvar för '{assignment.title}'."
-
-    try:
-        mail.send_message(
-            subject=subject,
-            recipients=[user.email],
-            body=body
-        )
-    except Exception as e:
-        # logga felet men låt det inte blocka resten; returnera utan att markera som skickad
-        app.logger.exception("Misslyckades med att skicka notis till %s: %s", user.email, str(e))
-        return
-
-    # mark as sent for this user
-    note = AssignmentNotification(
-        assignment_id=assignment.id,
-        user_id=user.id,
-        days_left=days_left
-    )
-    db.session.add(note)
-    db.session.commit()
 def generate_join_code():
     return uuid4().hex[:6].upper()
-
-def send_deadline_notifications():
-    assignments = Assignment.query.all()
-
-    for a in assignments:
-        if not a.deadline:
-            continue
-
-        # Hämta alla användare som är med i klassen
-        cls_members = a.subject.cls.members  # lista av ClassUser
-        for member in cls_members:
-            user = member.user  # säkerställ att det finns en relation till User
-            check_days_left_threshold(user, a)
 
 # ---------- Routes ----------
 @app.route('/profile')
@@ -2010,6 +2007,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
