@@ -120,6 +120,19 @@ class AssignmentNotification(db.Model):
         db.UniqueConstraint('assignment_id', 'user_id', 'days_left', name='_assignment_user_days_uc'),
         {"extend_existing": True}
     )
+
+class ClassMember(db.Model):
+    __tablename__ = 'class_members'
+
+    id = db.Column(db.Integer, primary_key=True)
+    class_id = db.Column(db.Integer, db.ForeignKey('classes.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    role = db.Column(db.String(20), nullable=False, default='member')
+
+    # Relationships (optional but recommended)
+    user = db.relationship('User', backref='class_memberships', lazy=True)
+    class_obj = db.relationship('Class', backref='memberships', lazy=True)
+
 # ---------- Auth helpers ----------
 def check_days_left_threshold(user, assignment):
     if not assignment.deadline:
@@ -2007,6 +2020,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
