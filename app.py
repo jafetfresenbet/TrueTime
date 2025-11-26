@@ -503,9 +503,13 @@ def join_class():
 def view_class(class_id):
     user = current_user()
     cls = Class.query.get_or_404(class_id)
-    if not any(uc.cls.id == cls.id for uc in user.classes):
+
+    # Check membership in class_members table
+    membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first()
+    if not membership:
         flash("Du är inte medlem i den här klassen.")
         return redirect(url_for('index'))
+
     subjects = cls.subjects
     is_admin = (cls.admin_user_id == user.id)
     return render_template_string(CLASS_TEMPLATE, class_data=cls, subjects=subjects, is_admin=is_admin)
@@ -2038,6 +2042,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
