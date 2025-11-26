@@ -296,6 +296,8 @@ def index():
     now = datetime.now()
     
     for cls in classes:
+        if not cls:  # safety check
+            continue
         for subj in cls.subjects:
             for a in subj.assignments:
                 if a.type == 'Uppgift' and a.deadline and a.deadline < now:
@@ -2046,6 +2048,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
