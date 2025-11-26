@@ -218,7 +218,7 @@ def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if not current_user():
-            flash("Du måste logga in först.")
+            flash("Du måste logga in först.", "error")
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated
@@ -363,15 +363,15 @@ def register():
 
         accept_gdpr = request.form.get('accept_gdpr')
         if not accept_gdpr:
-            flash("Du måste acceptera sekretesspolicyn för att registrera dig.")
+            flash("Du måste acceptera sekretesspolicyn för att registrera dig.", "error")
             return redirect(url_for('register'))
 
         if not name or not email or not password:
-            flash("Fyll i alla fält.")
+            flash("Fyll i alla fält.", "error")
             return redirect(url_for('register'))
 
         if User.query.filter_by(email=email).first():
-            flash("E-post redan registrerad.")
+            flash("E-post redan registrerad.", "error")
             return redirect(url_for('register'))
 
         try:
@@ -397,12 +397,12 @@ def register():
             msg.body = f"Hej {user.name},\n\nKlicka på länken för att bekräfta ditt konto:\n{confirm_url}\n\nOm du inte registrerat dig kan du ignorera detta mail."
             mail.send(msg)
 
-            flash("Registrering lyckades! Kontrollera din e-post för att bekräfta ditt konto.")
+            flash("Registrering lyckades! Kontrollera din e-post för att bekräfta ditt konto.", "success")
             return redirect(url_for('login'))
 
         except Exception as e:
             db.session.rollback()  # viktigt!
-            flash(f"Ett fel uppstod vid registrering: {str(e)}")
+            flash(f"Ett fel uppstod vid registrering: {str(e)}", "error")
             return redirect(url_for('register'))
 
     return render_template_string(REGISTER_TEMPLATE)
@@ -1108,24 +1108,28 @@ REGISTER_TEMPLATE = """
             text-decoration: underline;
         }
         .flash-message {
-            color: red;
             text-align: center;
             margin-bottom: 10px;
+            font-weight: bold;
         }
+        .flash-message.error { color: #a10000; }
+        .flash-message.success { color: #1a7f37; }
+        .flash-message.warning { color: #7c6f00; }
+        .flash-message.info { color: #004085; }
     </style>
 </head>
 <body>
     <div class="register-card">
         <h2>Registrera</h2>
-        {% with messages = get_flashed_messages() %}
+
+        {% with messages = get_flashed_messages(with_categories=True) %}
           {% if messages %}
-            <div class="flash-message">
-              {% for message in messages %}
-                {{ message }}<br>
-              {% endfor %}
-            </div>
+            {% for category, message in messages %}
+              <div class="flash-message {{ category }}">{{ message }}</div>
+            {% endfor %}
           {% endif %}
         {% endwith %}
+
         <form method="post">
             <input type="text" name="name" placeholder="Namn" required>
             <input type="email" name="email" placeholder="E-post" required>
@@ -1136,6 +1140,7 @@ REGISTER_TEMPLATE = """
             </label>
             <button type="submit">Registrera</button>
         </form>
+
         <div class="login-link">
             Har du redan konto? <a href="{{ url_for('login') }}">Logga in här</a>
         </div>
@@ -1206,29 +1211,34 @@ LOGIN_TEMPLATE = """
             text-decoration: underline;
         }
         .flash-message {
-            color: red;
             text-align: center;
             margin-bottom: 10px;
+            font-weight: bold;
         }
+        .flash-message.error { color: #a10000; }
+        .flash-message.success { color: #1a7f37; }
+        .flash-message.warning { color: #7c6f00; }
+        .flash-message.info { color: #004085; }
     </style>
 </head>
 <body>
     <div class="login-card">
         <h2>Logga in</h2>
-        {% with messages = get_flashed_messages() %}
+
+        {% with messages = get_flashed_messages(with_categories=True) %}
           {% if messages %}
-            <div class="flash-message">
-              {% for message in messages %}
-                {{ message }}<br>
-              {% endfor %}
-            </div>
+            {% for category, message in messages %}
+              <div class="flash-message {{ category }}">{{ message }}</div>
+            {% endfor %}
           {% endif %}
         {% endwith %}
+
         <form method="post">
             <input type="email" name="email" placeholder="E-post" required>
             <input type="password" name="password" placeholder="Lösenord" required>
             <button type="submit">Logga in</button>
         </form>
+
         <div class="register-link">
             Har du inget konto? <a href="{{ url_for('register') }}">Registrera här</a>
         </div>
@@ -2020,6 +2030,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
