@@ -468,7 +468,7 @@ def create_class():
 
         # Lägg till admin som medlem med role='admin'
         if not UserClass.query.filter_by(user_id=user.id, class_id=new_class.id).first():
-            membership = UserClass(user_id=user.id, class_id=new_class.id, role='admin')
+            membership = ClassMember(user_id=user.id, class_id=new_class.id, role='admin')
             db.session.add(membership)
             db.session.commit()
 
@@ -489,8 +489,8 @@ def join_class():
             return redirect(url_for('join_class'))
 
         # Lägg till medlem med role='member', om de inte redan finns
-        if not UserClass.query.filter_by(user_id=user.id, class_id=cls.id).first():
-            db.session.add(UserClass(user_id=user.id, class_id=cls.id, role='member'))
+        if not ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first():
+            db.session.add(ClassMember(user_id=user.id, class_id=cls.id, role='member'))
             db.session.commit()
 
         flash(f"Gick med i {cls.name}")
@@ -2038,6 +2038,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
