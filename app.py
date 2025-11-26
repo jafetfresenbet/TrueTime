@@ -291,7 +291,7 @@ def index():
     user = current_user()
     
     memberships = ClassMember.query.filter_by(user_id=user.id).all()
-    classes = [m.class_obj for m in memberships]  # class_obj is the relationship in ClassMember
+    classes = [m.class_obj for m in memberships if m.class_obj is not None]
     assignments_display = []
     now = datetime.now()
     
@@ -2048,6 +2048,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
