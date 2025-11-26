@@ -460,16 +460,21 @@ def create_class():
         if not name:
             flash("Skriv ett klassnamn.")
             return redirect(url_for('create_class'))
+        
         join_code = generate_join_code()
         new_class = Class(name=name, join_code=join_code, admin_user_id=user.id)
         db.session.add(new_class)
         db.session.commit()
-        # Lägg till admin som medlem
-        membership = UserClass(user_id=user.id, class_id=new_class.id)
-        db.session.add(membership)
-        db.session.commit()
+
+        # Lägg till admin som medlem med role='admin'
+        if not UserClass.query.filter_by(user_id=user.id, class_id=new_class.id).first():
+            membership = UserClass(user_id=user.id, class_id=new_class.id, role='admin')
+            db.session.add(membership)
+            db.session.commit()
+
         flash(f"Klass skapad! Join-kod: {join_code}")
         return redirect(url_for('view_class', class_id=new_class.id))
+    
     return render_template_string(CREATE_CLASS_TEMPLATE)
 
 @app.route('/join_class', methods=['GET','POST'])
@@ -483,11 +488,14 @@ def join_class():
             flash("Ogiltig kod.")
             return redirect(url_for('join_class'))
 
+        # Lägg till medlem med role='member', om de inte redan finns
         if not UserClass.query.filter_by(user_id=user.id, class_id=cls.id).first():
-            db.session.add(UserClass(user_id=user.id, class_id=cls.id))
+            db.session.add(UserClass(user_id=user.id, class_id=cls.id, role='member'))
             db.session.commit()
+
         flash(f"Gick med i {cls.name}")
         return redirect(url_for('view_class', class_id=cls.id))
+    
     return render_template_string(JOIN_CLASS_TEMPLATE)
 
 @app.route('/class/<int:class_id>')
@@ -2030,6 +2038,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
