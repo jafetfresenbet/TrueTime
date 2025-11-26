@@ -703,13 +703,14 @@ def leave_class(class_id):
     user = current_user()
     cls = Class.query.get_or_404(class_id)
 
-    if cls.admin_user_id == user.id:
+    # Admin cannot leave their own class
+    membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first()
+    if membership and membership.role == 'admin':
         flash("Admin kan inte lämna sin egen klass.")
         return redirect(url_for('index'))
 
-    uc = UserClass.query.filter_by(class_id=class_id, user_id=user.id).first()
-    if uc:
-        db.session.delete(uc)
+    if membership:
+        db.session.delete(membership)
         db.session.commit()
         flash("Du har lämnat klassen.")
     else:
@@ -905,7 +906,9 @@ def delete_class(class_id):
     user = current_user()
     cls = Class.query.get_or_404(class_id)
 
-    if cls.admin_user_id != user.id:
+    # Only admin can delete
+    admin_membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id, role='admin').first()
+    if not admin_membership:
         flash("Endast admin kan radera klassen.")
         return redirect(url_for('view_class', class_id=class_id))
 
@@ -915,8 +918,8 @@ def delete_class(class_id):
             db.session.delete(assignment)
         db.session.delete(subject)
 
-    # Delete memberships
-    UserClass.query.filter_by(class_id=class_id).delete()
+    # Delete all memberships
+    ClassMember.query.filter_by(class_id=class_id).delete()
 
     db.session.delete(cls)
     db.session.commit()
@@ -2042,6 +2045,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
