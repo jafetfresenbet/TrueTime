@@ -1006,6 +1006,20 @@ def download_user_data():
         headers={'Content-Disposition': f'attachment;filename={user.name}_data.txt'}
     )
 
+@app.route('/class/<int:class_id>/add_admin', methods=['GET'])
+@login_required
+def add_admin_request(class_id):
+    user = current_user()
+    cls = Class.query.get_or_404(class_id)
+
+    if cls.admin_user_id != user.id:
+        flash("Endast admin kan bjuda in andra admins.")
+        return redirect(url_for('view_class', class_id=class_id))
+
+    # For now, just show a flash message
+    flash("Här ska admin-formen visas (inte implementerad än).")
+    return redirect(url_for('view_class', class_id=class_id))
+
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
 HOME_TEMPLATE = """
@@ -2064,6 +2078,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
