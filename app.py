@@ -2009,10 +2009,14 @@ PROFILE_TEMPLATE = """
         form button:hover { background-color: #218838; }
         .delete-btn { background-color: #dc3545; }
         .delete-btn:hover { background-color: #c82333; }
-        .flash-message { color: green; text-align: center; margin-bottom: 10px; }
+        .flash-message { text-align: center; margin-bottom: 10px; }
         .back-link { display: block; text-align: center; margin-top: 15px; }
         .back-link a { color: #007bff; text-decoration: none; }
         .back-link a:hover { text-decoration: underline; }
+        .flash-message.error { color: #a10000; }
+        .flash-message.success { color: #1a7f37; }
+        .flash-message.warning { color: #7c6f00; }
+        .flash-message.info { color: #004085; }
     </style>
 </head>
 <body>
@@ -2056,6 +2060,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
