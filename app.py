@@ -1006,7 +1006,7 @@ def download_user_data():
         headers={'Content-Disposition': f'attachment;filename={user.name}_data.txt'}
     )
 
-@app.route('/class/<int:class_id>/add_admin', methods=['GET'])
+@app.route('/class/<int:class_id>/add_admin', methods=['GET', 'POST'])
 @login_required
 def add_admin_request(class_id):
     user = current_user()
@@ -1016,9 +1016,35 @@ def add_admin_request(class_id):
         flash("Endast admin kan bjuda in andra admins.")
         return redirect(url_for('view_class', class_id=class_id))
 
-    # For now, just show a flash message
-    flash("Här ska admin-formen visas (inte implementerad än).")
-    return redirect(url_for('view_class', class_id=class_id))
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+        target_user = User.query.filter_by(email=email).first()
+
+        if not target_user:
+            flash("Det finns ingen användare med den e-posten.", "error")
+            return redirect(url_for('add_admin_request', class_id=class_id))
+
+        membership = ClassMember.query.filter_by(class_id=class_id, user_id=target_user.id).first()
+        if not membership:
+            flash("Användaren är inte medlem i klassen.", "error")
+            return redirect(url_for('add_admin_request', class_id=class_id))
+
+        # Generate a secure token or link here (we'll implement later)
+        flash(f"Länk skickad till {email} (funktion ej klar än).")
+        return redirect(url_for('view_class', class_id=class_id))
+
+    # GET request: show the form
+    form_html = f"""
+    <h3>Bjud in admin till {cls.name}</h3>
+    <form method="post">
+        <label for="email">E-post till användare:</label><br>
+        <input type="email" name="email" required><br><br>
+        <button type="submit">Skicka inbjudan</button>
+    </form>
+    <br>
+    <a href="{{{{ url_for('view_class', class_id={cls.id}) }}}}">Tillbaka till klassen</a>
+    """
+    return render_template_string(form_html)
 
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
@@ -2078,6 +2104,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
