@@ -291,7 +291,7 @@ def index():
 
     user = current_user()
     
-    memberships = ClassMember.query.filter_by(user_id=user.id).all()
+    membership = ClassMember.query.filter_by(user_id=user.id).all()
     is_admin = membership and membership.role == 'admin'
     
     classes = [m.class_obj for m in memberships if m.class_obj is not None]
@@ -2108,6 +2108,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
