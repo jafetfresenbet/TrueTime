@@ -515,7 +515,7 @@ def view_class(class_id):
         return redirect(url_for('index'))
 
     subjects = cls.subjects
-    is_admin = (cls.admin_user_id == user.id)
+    is_admin = membership and membership.role == 'admin'
     return render_template_string(CLASS_TEMPLATE, class_data=cls, subjects=subjects, is_admin=is_admin)
 
 # ---------- Subject routes ----------
@@ -2104,6 +2104,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
