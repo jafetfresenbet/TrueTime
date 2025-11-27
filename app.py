@@ -293,22 +293,16 @@ def index():
     
     # Get all class memberships for this user
     memberships = ClassMember.query.filter_by(user_id=user.id).all()
-    
-    # Build a list of classes with role info
-    classes_with_role = []
-    for m in memberships:
-        if m.class_obj is not None:  # skip broken references
-            classes_with_role.append({
-                'class': m.class_obj,
-                'role': m.role,
-                'is_admin': m.role == 'admin'
-            })
+    membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first()
+    classes = [m.class_obj for m in memberships if m.class_obj is not None]
 
     assignments_display = []
     now = datetime.now()
     
-    for item in classes_with_role:
-        cls = item['class']
+    for cls in classes:
+        is_admin = membership and membership.role == 'admin'
+        if not cls:
+            continue
         for subj in cls.subjects:
             for a in subj.assignments:
                 if a.type == 'Uppgift' and a.deadline and a.deadline < now:
@@ -316,11 +310,15 @@ def index():
                 if a.type == 'Prov' and a.deadline and a.deadline.date() < now.date():
                     continue
 
-                # Compute days_left for threshold logic
-                days_left = None
                 if a.deadline:
+                    days_left_int = compute_days_left(a.deadline)
+                else:
+                    days_left_int = None
+
+                if a.deadline:
+                    now = datetime.now()
                     delta = a.deadline - now
-                    days_left = delta.days + delta.seconds / 86400
+                    days_left = delta.days + (delta.seconds / 86400)
 
                 # Color logic
                 if days_left is None:
@@ -2114,6 +2112,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
