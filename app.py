@@ -292,6 +292,8 @@ def index():
     user = current_user()
     
     memberships = ClassMember.query.filter_by(user_id=user.id).all()
+    is_admin = membership and membership.role == 'admin'
+    
     classes = [m.class_obj for m in memberships if m.class_obj is not None]
     assignments_display = []
     now = datetime.now()
@@ -730,7 +732,9 @@ def view_subject(subject_id):
     subject = Subject.query.get_or_404(subject_id)
     cls = subject.cls
     user = current_user()
-    is_admin = (cls.admin_user_id == user.id)
+
+    membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first()
+    is_admin = membership and membership.role == 'admin'
     
     # Samla uppgifter/prov med färg baserat på deadline
     assignments_display = []
@@ -1426,7 +1430,7 @@ DASH_TEMPLATE = """
                             <a href="{{ url_for('view_class', class_id=c['id']) }}">{{ c['name'] }}</a> 
                             (kod: {{ c['join_code'] }})
                         </span>
-                        {% if user['id'] == c['admin_user_id'] %}
+                        {% if is_admin %}
                             <span>
                                 <a href="{{ url_for('edit_class', class_id=c['id']) }}">
                                     <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
@@ -1466,7 +1470,7 @@ DASH_TEMPLATE = """
                                 {% endif %}
                             {% endif %}
                         </span>
-                        {% if user['id'] == a['created_by'] %}
+                        {% if is_admin %}
                         <span>
                             <a href="{{ url_for('edit_assignment', assignment_id=a['id']) }}">
                                 <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
@@ -2104,6 +2108,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
