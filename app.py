@@ -243,18 +243,18 @@ def edit_profile():
     new_phone = request.form.get('phone_number', '').strip()
 
     if not new_name or not new_email:
-        flash("Fyll i både namn och e-post.")
+        flash("Fyll i både namn och e-post.", "error")
         return redirect(url_for('profile'))
 
     # Check if the new email is already used by another user
     existing_user = User.query.filter_by(email=new_email).first()
     if existing_user and existing_user.id != user.id:
-        flash("Denna e-post används redan av en annan användare.", "error")
+        flash("Denna e-post används redan av en annan användare.", "warning")
         return redirect(url_for('profile'))
 
     if new_password:
         if new_password != confirm_password:
-            flash("Lösenorden matchar inte.", "error")
+            flash("Lösenorden matchar inte.", "warning")
             return redirect(url_for('profile'))
         user.password = generate_password_hash(new_password)
 
@@ -264,7 +264,7 @@ def edit_profile():
     user.phone_number = new_phone
 
     db.session.commit()
-    flash("Dina uppgifter har uppdaterats.")
+    flash("Dina uppgifter har uppdaterats.", "success")
     return redirect(url_for('profile'))
 
 @app.route('/profile/delete', methods=['POST'])
@@ -2060,6 +2060,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
