@@ -291,38 +291,38 @@ def index():
 
     user = current_user()
     
+    # Get all class memberships for this user
     memberships = ClassMember.query.filter_by(user_id=user.id).all()
-    is_admin = memberships and membership.role == 'admin'
     
-    classes = [m.class_obj for m in memberships if m.class_obj is not None]
+    # Build a list of classes with role info
+    classes_with_role = []
+    for m in memberships:
+        if m.class_obj is not None:  # skip broken references
+            classes_with_role.append({
+                'class': m.class_obj,
+                'role': m.role,
+                'is_admin': m.role == 'admin'
+            })
+
     assignments_display = []
     now = datetime.now()
     
-    for cls in classes:
-        if not cls:  # safety check
-            continue
+    for item in classes_with_role:
+        cls = item['class']
         for subj in cls.subjects:
             for a in subj.assignments:
                 if a.type == 'Uppgift' and a.deadline and a.deadline < now:
                     continue
                 if a.type == 'Prov' and a.deadline and a.deadline.date() < now.date():
                     continue
-    
-                # Compute days_left for threshold logic (UNCHANGED)
+
+                # Compute days_left for threshold logic
+                days_left = None
                 if a.deadline:
-                    days_left_int = compute_days_left(a.deadline)   # used for threshold only
-                else:
-                    days_left_int = None
-                
-                # Compute days_left for COLOR (MATCH view_subject)
-                if a.deadline:
-                    now = datetime.now()
                     delta = a.deadline - now
-                    days_left = delta.days + (delta.seconds / 86400)   # float-based
-                else:
-                    days_left = None
-                
-                # Color logic (MATCH view_subject)
+                    days_left = delta.days + delta.seconds / 86400
+
+                # Color logic
                 if days_left is None:
                     color = "#f8f9fa"
                 elif days_left > 14:
@@ -335,8 +335,8 @@ def index():
                     color = "#f2a134"
                 elif days_left > 0:
                     color = "#e51f1f"
-                elif days_left < 0:
-                    color = "#6a6af7"  # same as view_subject
+                else:
+                    color = "#6a6af7"
 
                 assignments_display.append({
                     'id': a.id,
@@ -348,12 +348,18 @@ def index():
                     'created_by': a.created_by,
                     'color': color
                 })
-    
+
     assignments_display.sort(key=lambda x: x['deadline'] or datetime.max)
     today = datetime.now().strftime('%Y-%m-%d')
-    print("DEBUG current_user =", current_user, type(current_user))
     
-    return render_template_string(DASH_TEMPLATE, user=user, classes=classes, assignments=assignments_display[:50], today=today)
+    return render_template_string(
+        DASH_TEMPLATE,
+        user=user,
+        classes=classes_with_role,
+        assignments=assignments_display[:50],
+        today=today
+    )
+
 @app.route('/register', methods=['GET','POST'])
 def register():
     if request.method == 'POST':
@@ -2108,6 +2114,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
