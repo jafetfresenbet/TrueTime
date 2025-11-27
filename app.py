@@ -246,15 +246,23 @@ def edit_profile():
         flash("Fyll i både namn och e-post.")
         return redirect(url_for('profile'))
 
+    # Check if the new email is already used by another user
+    existing_user = User.query.filter_by(email=new_email).first()
+    if existing_user and existing_user.id != user.id:
+        flash("Denna e-post används redan av en annan användare.", "error")
+        return redirect(url_for('profile'))
+
     if new_password:
         if new_password != confirm_password:
             flash("Lösenorden matchar inte.", "error")
             return redirect(url_for('profile'))
         user.password = generate_password_hash(new_password)
 
+    # Update fields
     user.name = new_name
     user.email = new_email
     user.phone_number = new_phone
+
     db.session.commit()
     flash("Dina uppgifter har uppdaterats.")
     return redirect(url_for('profile'))
@@ -2048,6 +2056,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
