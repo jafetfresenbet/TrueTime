@@ -1760,6 +1760,10 @@ CLASS_TEMPLATE = """
                 <button type="submit">Lägg till ämne</button>
             </form>
 
+            <form action="{{ url_for('add_admin_request', class_id=class_data.id) }}" method="get" style="display:inline;">
+                <button type="submit" class="btn btn-warning">Bjud in admin</button>
+            </form>
+
         {% endif %}
     </nav>
 
@@ -2060,6 +2064,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
