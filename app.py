@@ -1013,6 +1013,13 @@ HOME_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <title>PlugIt+ - Hem</title>
+
+    <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
+    
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -2048,6 +2055,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
