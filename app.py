@@ -184,13 +184,6 @@ def send_deadline_notifications():
             user = uc.user
             check_days_left_threshold(user, a)
 
-def check_threshold(user, value):
-    threshold = 100
-    if value >= threshold:
-        message = f"Hej {user.name}, ditt värde har nått {value}!"
-        send_email_job.queue(user.id, "Threshold uppnådd", message)
-        send_sms_job.queue(user.id, message)
-
 @rq.job
 def send_email_job(user_id, subject, body):
     from models import User
@@ -2055,6 +2048,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
