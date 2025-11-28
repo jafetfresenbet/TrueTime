@@ -156,7 +156,7 @@ def check_days_left_threshold(user, assignment):
 
     # Send the email
     subject = f"Påminnelse: {assignment.title}"
-    body = f"Hej {user.name}, det är nu {days_left + 1} dagar kvar för '{assignment.title}'."
+    body = f"Hej {user.name}, det är nu {days_left + 1} dagar kvar för '{assignment.title}'./n/n Länk: truetime.onrender.com"
 
     mail.send_message(
         subject=subject,
@@ -291,36 +291,38 @@ def index():
 
     user = current_user()
 
+    # Get all memberships for this user
     memberships = ClassMember.query.filter_by(user_id=user.id).all()
     classes = [m.class_obj for m in memberships if m.class_obj is not None]
 
-    
-
-    assignments_display = []
-    now = datetime.now()
-
+    # Prepare classes with roles
+    classes_with_role = []
     for class_obj in classes:
         if not class_obj:
             continue
         membership = next((m for m in memberships if m.class_id == class_obj.id), None)
-        role = membership.role if membership else 'member'  # default
-        for subj in class_obj.subjects:
-            for a in subj.assignments:
+        role = membership.role if membership else 'member'
+        classes_with_role.append({'class': class_obj, 'role': role})
 
-                # Skip old assignments (unchanged)
+    # Prepare assignments display
+    assignments_display = []
+    now = datetime.now()
+    for item in classes_with_role:
+        cls = item['class']
+        for subj in cls.subjects:
+            for a in subj.assignments:
                 if a.type == 'Uppgift' and a.deadline and a.deadline < now:
                     continue
                 if a.type == 'Prov' and a.deadline and a.deadline.date() < now.date():
                     continue
 
-                # Compute days_left (float)
+                # Compute days_left for color
                 if a.deadline:
                     delta = a.deadline - now
                     days_left = delta.days + (delta.seconds / 86400)
                 else:
                     days_left = None
 
-                # Color logic
                 if days_left is None:
                     color = "#f8f9fa"
                 elif days_left > 14:
@@ -333,7 +335,7 @@ def index():
                     color = "#f2a134"
                 elif days_left > 0:
                     color = "#e51f1f"
-                else:
+                elif days_left < 0:
                     color = "#6a6af7"
 
                 assignments_display.append({
@@ -342,20 +344,18 @@ def index():
                     'type': a.type,
                     'deadline': a.deadline,
                     'subject_name': subj.name,
-                    'class_name': class_obj.name,
+                    'class_name': cls.name,
                     'created_by': a.created_by,
                     'color': color
                 })
 
-    # Sort assignments
     assignments_display.sort(key=lambda x: x['deadline'] or datetime.max)
-
     today = datetime.now().strftime('%Y-%m-%d')
 
     return render_template_string(
         DASH_TEMPLATE,
         user=user,
-        classes=classes,
+        classes=classes_with_role,
         assignments=assignments_display[:50],
         today=today
     )
@@ -1349,76 +1349,24 @@ DASH_TEMPLATE = """
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
     
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background-color: #007bff;
-            color: #fff;
-            padding: 15px 20px;
-            text-align: center;
-        }
-        header h2 {
-            margin: 0;
-        }
-        nav {
-            display: flex;
-            justify-content: center;
-            margin: 15px 0;
-            gap: 15px;
-        }
-        nav a {
-            text-decoration: none;
-            background-color: #28a745;
-            color: #fff;
-            padding: 10px 15px;
-            border-radius: 4px;
-        }
-        nav a:hover {
-            background-color: #218838;
-        }
-        .container {
-            display: flex;
-            justify-content: center;
-            padding: 20px;
-        }
-        .dashboard-card {
-            background-color: #fff;
-            width: 600px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-            padding: 20px;
-        }
-        .dashboard-card h3 {
-            margin-top: 0;
-            color: #333;
-        }
-        .section {
-            margin-bottom: 25px;
-        }
-        ul {
-            list-style: none;
-            padding-left: 0;
-        }
-        li {
-            background-color: #f8f9fa;
-            margin: 5px 0;
-            padding: 10px;
-            border-radius: 4px;
-        }
-        .flash-message {
-            color: green;
-            text-align: center;
-            margin-bottom: 10px;
-        }
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+        header { background-color: #007bff; color: #fff; padding: 15px 20px; text-align: center; }
+        header h2 { margin: 0; }
+        nav { display: flex; justify-content: center; margin: 15px 0; gap: 15px; }
+        nav a { text-decoration: none; background-color: #28a745; color: #fff; padding: 10px 15px; border-radius: 4px; }
+        nav a:hover { background-color: #218838; }
+        .container { display: flex; justify-content: center; padding: 20px; }
+        .dashboard-card { background-color: #fff; width: 600px; border-radius: 8px; box-shadow: 0px 4px 12px rgba(0,0,0,0.1); padding: 20px; }
+        .dashboard-card h3 { margin-top: 0; color: #333; }
+        .section { margin-bottom: 25px; }
+        ul { list-style: none; padding-left: 0; }
+        li { background-color: #f8f9fa; margin: 5px 0; padding: 10px; border-radius: 4px; }
+        .flash-message { color: green; text-align: center; margin-bottom: 10px; }
     </style>
 </head>
 <body>
     <header>
-        <h2>Hej {{ user['name'] }} — Din översikt</h2>
+        <h2>Hej {{ user.name }} — Din översikt</h2>
     </header>
     <nav>
         <a href="{{ url_for('logout') }}">Logga ut</a>
@@ -1452,21 +1400,21 @@ DASH_TEMPLATE = """
                 {% for c in classes %}
                     <li style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0;">
                         <span>
-                            <a href="{{ url_for('view_class', class_id=c['id']) }}">{{ c['name'] }}</a> 
-                            (kod: {{ c['join_code'] }})
+                            <a href="{{ url_for('view_class', class_id=c['class'].id) }}">{{ c['class'].name }}</a> 
+                            (kod: {{ c['class'].join_code }})
                         </span>
-                        {% if c.role == 'admin' %}
+                        {% if c['role'] == 'admin' %}
                             <span>
-                                <a href="{{ url_for('edit_class', class_id=c['id']) }}">
+                                <a href="{{ url_for('edit_class', class_id=c['class'].id) }}">
                                     <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
                                 </a>
-                                <form method="post" action="{{ url_for('delete_class', class_id=c['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera klassen?');">
+                                <form method="post" action="{{ url_for('delete_class', class_id=c['class'].id) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera klassen?');">
                                     <button type="submit" style="background-color: red; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:3px;">Radera</button>
                                 </form>
                             </span>
                         {% else %}
                             <span>
-                                <form method="post" action="{{ url_for('leave_class', class_id=c['id']) }}" style="display:inline;" onsubmit="return confirm('Vill du lämna klassen?');">
+                                <form method="post" action="{{ url_for('leave_class', class_id=c['class'].id) }}" style="display:inline;" onsubmit="return confirm('Vill du lämna klassen?');">
                                     <button type="submit" style="background-color: orange; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">
                                         Lämna
                                     </button>
@@ -1488,14 +1436,14 @@ DASH_TEMPLATE = """
                         <span>
                             <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }} ({{ a['class_name'] }})
                             {% if a['deadline'] %}
-                                {% if a['type'] == 'assignment' %}
+                                {% if a['type'] == 'Uppgift' %}
                                     — deadline: {{ a['deadline'].strftime('%Y/%m/%d %H:%M') }}
-                                {% elif a['type'] == 'exam' %}
+                                {% elif a['type'] == 'Prov' %}
                                     — datum: {{ a['deadline'].strftime('%Y/%m/%d') }}
                                 {% endif %}
                             {% endif %}
                         </span>
-                        {% if user['id'] == a['created_by'] %}
+                        {% if user.id == a['created_by'] %}
                         <span>
                             <a href="{{ url_for('edit_assignment', assignment_id=a['id']) }}">
                                 <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
@@ -2175,6 +2123,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
