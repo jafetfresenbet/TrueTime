@@ -347,6 +347,7 @@ def index():
                     'class_name': cls.name,
                     'created_by': a.created_by,
                     'color': color
+                    'role': membership.role
                 })
 
     assignments_display.sort(key=lambda x: x['deadline'] or datetime.max)
@@ -1443,7 +1444,7 @@ DASH_TEMPLATE = """
                                 {% endif %}
                             {% endif %}
                         </span>
-                        {% if c['role'] == 'admin' %}
+                        {% if a['role'] == 'admin' %}
                         <span>
                             <a href="{{ url_for('edit_assignment', assignment_id=a['id']) }}">
                                 <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
@@ -2123,6 +2124,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
