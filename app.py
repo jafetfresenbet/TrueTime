@@ -530,20 +530,21 @@ def view_class(class_id):
     return render_template_string(CLASS_TEMPLATE, class_data=cls, subjects=subjects, is_admin=is_admin)
 
 # ---------- Subject routes ----------
-@app.route('/class/<int:class_id>/add_subject', methods=['POST'])
+@app.route('/add_subject', methods=['POST'])
 @login_required
 def add_subject(class_id):
     user = current_user()
     cls = Class.query.get_or_404(class_id)
 
-    if cls.admin_user_id != user.id:
+    membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first()
+    if not membership or membership.role != 'admin':
         flash("Endast admin kan lägga till ämnen.")
-        return redirect(url_for('view_class', class_id=class_id))
+        return redirect(url_for('view_class', class_id=cls.id))
 
     name = request.form.get('subject_name', '').strip()
     if not name:
         flash("Du måste skriva ett ämnesnamn.")
-        return redirect(url_for('view_class', class_id=class_id))
+        return redirect(url_for('view_class', class_id=cls.id))
 
     subj = Subject(class_id=cls.id, name=name)
     db.session.add(subj)
@@ -598,119 +599,28 @@ def delete_assignment(assignment_id):
     flash("Uppgift raderad.")
     return redirect(url_for('index', class_id=assign.subject.class_id))
 
-@app.route('/class/<int:class_id>/edit', methods=['GET', 'POST'])
+@app.route('/edit_class/<int:class_id>', methods=['GET', 'POST'])
 @login_required
 def edit_class(class_id):
     user = current_user()
     cls = Class.query.get_or_404(class_id)
 
-    if cls.admin_user_id != user.id:
+    membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first()
+    if not membership or membership.role != 'admin':
         flash("Endast admin kan ändra klassen.")
-        return redirect(url_for('view_class', class_id=class_id))
+        return redirect(url_for('view_class', class_id=cls.id))
 
     if request.method == 'POST':
         new_name = request.form['class_name'].strip()
         if not new_name:
             flash("Skriv ett klassnamn.")
             return redirect(url_for('edit_class', class_id=class_id))
-
         cls.name = new_name
         db.session.commit()
         flash("Klassnamnet har uppdaterats.")
-        return redirect(url_for('index', class_id=class_id))
+        return redirect(url_for('view_class', class_id=cls.id))
 
-    return render_template_string("""
-<!doctype html>
-<html lang="sv">
-<head>
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <meta charset="UTF-8">
-    <title>Ändra klass - PlugIt+</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .create-card {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-            width: 400px;
-            text-align: center;
-        }
-        .create-card h2 {
-            margin-bottom: 20px;
-            color: #333;
-        }
-        .create-card input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0 20px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .create-card button {
-            width: 100%;
-            padding: 10px;
-            background-color: #28a745;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .create-card button:hover {
-            background-color: #218838;
-        }
-        .flash-message {
-            color: red;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 15px;
-        }
-        .back-link a {
-            color: #007bff;
-            text-decoration: none;
-        }
-        .back-link a:hover {
-            text-decoration: underline;
-        }
-    </style>
-</head>
-<body>
-    <div class="create-card">
-        <h2>Ändra klass</h2>
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            <div class="flash-message">
-              {% for message in messages %}
-                {{ message }}<br>
-              {% endfor %}
-            </div>
-          {% endif %}
-        {% endwith %}
-        <form method="post">
-            <input type="text" name="class_name" value="{{ cls.name }}" required>
-            <button type="submit">Ändra klass</button>
-        </form>
-        <div class="back-link">
-            <a href="{{ url_for('index') }}">Tillbaka till översikten</a>
-        </div>
-    </div>
-</body>
-</html>
-""", cls=cls)
+    return render_template_string(EDIT_CLASS_TEMPLATE, cls=cls)
 
 @app.route('/class/<int:class_id>/leave', methods=['POST'])
 @login_required
@@ -2134,6 +2044,100 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
+EDIT_CLASS_TEMPLATE = """
+<!doctype html>
+<html lang="sv">
+<head>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <meta charset="UTF-8">
+    <title>Ändra klass - PlugIt+</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .create-card {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+            width: 400px;
+            text-align: center;
+        }
+        .create-card h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .create-card input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0 20px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .create-card button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .create-card button:hover {
+            background-color: #218838;
+        }
+        .flash-message {
+            color: red;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+        }
+        .back-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="create-card">
+        <h2>Ändra klass</h2>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash-message">
+              {% for message in messages %}
+                {{ message }}<br>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+        <form method="post">
+            <input type="text" name="class_name" value="{{ cls.name }}" required>
+            <button type="submit">Ändra klass</button>
+        </form>
+        <div class="back-link">
+            <a href="{{ url_for('index') }}">Tillbaka till översikten</a>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
 
 
 
