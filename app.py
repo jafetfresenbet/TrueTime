@@ -606,7 +606,7 @@ def delete_assignment(assignment_id):
     db.session.delete(assign)
     db.session.commit()
     flash("Uppgift raderad.")
-    return redirect(url_for('view_class', class_id=cls.id))
+    return redirect(url_for('index', class_id=cls.id))
 
 @app.route('/edit_class/<int:class_id>', methods=['GET', 'POST'])
 @login_required
@@ -660,7 +660,8 @@ def view_subject(subject_id):
     subject = Subject.query.get_or_404(subject_id)
     cls = subject.cls
     user = current_user()
-    is_admin = (cls.admin_user_id == user.id)
+    membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first()
+    is_admin = membership and membership.role == 'admin'
     
     # Samla uppgifter/prov med färg baserat på deadline
     assignments_display = []
@@ -761,7 +762,7 @@ def edit_assignment(assignment_id):
     membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first()
     if not membership or membership.role != 'admin':
         flash("Endast admin kan ändra uppgifter/prov.")
-        return redirect(url_for('view_class', class_id=cls.id))
+        return redirect(url_for('index', class_id=cls.id))
 
     if request.method == 'POST':
         new_title = request.form['title'].strip()
@@ -781,7 +782,7 @@ def edit_assignment(assignment_id):
                     new_deadline = datetime.strptime(deadline_str, '%Y-%m-%dT%H:%M')
             except ValueError:
                 flash("Fel datumformat.")
-                return redirect(url_for('edit_assignment', assignment_id=assignment_id))
+                return redirect(url_for('index', assignment_id=assignment_id))
 
         assignment.title = new_title
         assignment.type = new_type
@@ -805,7 +806,7 @@ def delete_class(class_id):
     membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first()
     if not membership or membership.role != 'admin':
         flash("Endast admin kan radera klassen.")
-        return redirect(url_for('view_class', class_id=cls.id))
+        return redirect(url_for('index', class_id=cls.id))
 
     for subject in cls.subjects:
         for assignment in subject.assignments:
@@ -931,14 +932,109 @@ def add_admin_request(class_id):
 
     # GET request: show the form
     form_html = f"""
-    <h3>Bjud in admin till {cls.name}</h3>
-    <form method="post">
-        <label for="email">E-post till användare:</label><br>
-        <input type="email" name="email" required><br><br>
-        <button type="submit">Skicka inbjudan</button>
-    </form>
-    <br>
-    <a href="{{{{ url_for('view_class', class_id={cls.id}) }}}}">Tillbaka till klassen</a>
+    <!doctype html>
+    <html lang="sv">
+    <head>
+        <meta charset="UTF-8">
+        <title>Bjud in admin – {cls.name}</title>
+    
+        <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+        <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
+        <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
+        <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
+    
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                margin: 0;
+                padding: 0;
+            }}
+            header {{
+                background-color: #007bff;
+                color: white;
+                padding: 15px 20px;
+                text-align: center;
+            }}
+            .container {{
+                display: flex;
+                justify-content: center;
+                padding: 20px;
+            }}
+            .card {{
+                background-color: white;
+                width: 500px;
+                border-radius: 8px;
+                box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+                padding: 20px;
+            }}
+            h3 {{
+                margin-top: 0;
+                color: #333;
+            }}
+            label {{
+                font-weight: bold;
+            }}
+            input[type="email"] {{
+                width: 95%;
+                padding: 10px;
+                border-radius: 4px;
+                border: 1px solid #ccc;
+                margin-top: 5px;
+                margin-bottom: 15px;
+            }}
+            button {{
+                padding: 10px 15px;
+                background-color: #28a745;
+                border: none;
+                color: white;
+                border-radius: 4px;
+                cursor: pointer;
+            }}
+            button:hover {{
+                background-color: #218838;
+            }}
+            .back-link {{
+                text-align: center;
+                margin-top: 15px;
+            }}
+            .back-link a {{
+                color: #007bff;
+                text-decoration: none;
+            }}
+            .back-link a:hover {{
+                text-decoration: underline;
+            }}
+        </style>
+    </head>
+    <body>
+    
+    <header>
+        <h2>Bjud in admin – {cls.name}</h2>
+    </header>
+    
+    <div class="container">
+        <div class="card">
+            
+            <h3>Lägg till en ny admin</h3>
+    
+            <form method="post">
+                <label for="email">E-post till användare:</label>
+                <input type="email" name="email" required>
+    
+                <button type="submit">Skicka inbjudan</button>
+            </form>
+    
+            <div class="back-link">
+                <a href="{{{{ url_for('view_class', class_id={cls.id}) }}}}">Tillbaka till klassen</a>
+            </div>
+    
+        </div>
+    </div>
+    
+    </body>
+    </html>
     """
     return render_template_string(form_html)
 
@@ -2143,6 +2239,7 @@ EDIT_SUBJECT_TEMPLATE = """
     </body>
     </html>
     """
+
 
 
 
