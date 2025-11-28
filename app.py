@@ -1439,10 +1439,10 @@ DASH_TEMPLATE = """
                         <span>
                             <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }} ({{ a['class_name'] }})
                             {% if a['deadline'] %}
-                                {% if a['type'] == 'Uppgift' %}
-                                    — {{ a['deadline'].strftime('%Y/%m/%d %H:%M') }}
-                                {% elif a['type'] == 'Prov' %}
-                                    — {{ a['deadline'].strftime('%Y/%m/%d') }}
+                                {% if a['type'] in ['Uppgift', 'assignment'] %}
+                                    — deadline: {{ a['deadline'].strftime('%Y/%m/%d %H:%M') }}
+                                {% elif a['type'] in ['Prov', 'exam'] %}
+                                    — datum: {{ a['deadline'].strftime('%Y/%m/%d') }}
                                 {% endif %}
                             {% endif %}
                         </span>
@@ -2126,6 +2126,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
