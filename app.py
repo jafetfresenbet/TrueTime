@@ -309,6 +309,7 @@ def index():
     now = datetime.now()
     for item in classes_with_role:
         cls = item['class']
+        role = item['role']  # <-- use the role of THIS class
         for subj in cls.subjects:
             for a in subj.assignments:
                 if a.type == 'Uppgift' and a.deadline and a.deadline < now:
@@ -335,7 +336,7 @@ def index():
                     color = "#f2a134"
                 elif days_left > 0:
                     color = "#e51f1f"
-                elif days_left < 0:
+                else:  # overdue
                     color = "#6a6af7"
 
                 assignments_display.append({
@@ -345,9 +346,10 @@ def index():
                     'deadline': a.deadline,
                     'subject_name': subj.name,
                     'class_name': cls.name,
+                    'class_id': cls.id,
                     'created_by': a.created_by,
                     'color': color,
-                    'role': membership.role
+                    'role': role  # <-- assign role from current class
                 })
 
     assignments_display.sort(key=lambda x: x['deadline'] or datetime.max)
@@ -2124,6 +2126,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
