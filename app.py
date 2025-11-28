@@ -1023,8 +1023,10 @@ def add_admin_request(class_id):
     user = current_user()
     cls = Class.query.get_or_404(class_id)
 
-    if cls.admin_user_id != user.id:
-        flash("Endast admin kan bjuda in andra admins.")
+    # Check current user's role in this class
+    membership = ClassMember.query.filter_by(class_id=class_id, user_id=user.id).first()
+    if not membership or membership.role != 'admin':
+        flash("Endast admin kan bjuda in andra admins.", "error")
         return redirect(url_for('view_class', class_id=class_id))
 
     if request.method == 'POST':
@@ -1035,13 +1037,19 @@ def add_admin_request(class_id):
             flash("Det finns ingen användare med den e-posten.", "error")
             return redirect(url_for('add_admin_request', class_id=class_id))
 
-        membership = ClassMember.query.filter_by(class_id=class_id, user_id=target_user.id).first()
-        if not membership:
+        target_membership = ClassMember.query.filter_by(class_id=class_id, user_id=target_user.id).first()
+        if not target_membership:
             flash("Användaren är inte medlem i klassen.", "error")
             return redirect(url_for('add_admin_request', class_id=class_id))
 
-        # Generate a secure token or link here (we'll implement later)
-        flash(f"Länk skickad till {email} (funktion ej klar än).")
+        if target_membership.role == 'admin':
+            flash("Användaren är redan admin.", "info")
+            return redirect(url_for('view_class', class_id=class_id))
+
+        # For now, directly make them admin (later you can generate a token/link)
+        target_membership.role = 'admin'
+        db.session.commit()
+        flash(f"{target_user.name} är nu admin i klassen!", "success")
         return redirect(url_for('view_class', class_id=class_id))
 
     # GET request: show the form
@@ -2126,6 +2134,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
