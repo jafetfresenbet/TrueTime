@@ -290,34 +290,39 @@ def index():
         return render_template_string(HOME_TEMPLATE)
 
     user = current_user()
-
+    
+    # Get all memberships for this user
     memberships = ClassMember.query.filter_by(user_id=user.id).all()
-    classes = [m.class_obj for m in memberships if m.class_obj is not None]
+    
+    # Build a list of classes with the user's role
+    classes_with_role = []
+    for membership in memberships:
+        if membership.class_obj:  # safety check
+            classes_with_role.append({
+                'class': membership.class_obj,
+                'role': membership.role
+            })
 
+    # Gather assignments for all classes the user is in
     assignments_display = []
     now = datetime.now()
-
-    for class_obj in classes:
-        if not class_obj:
-            continue
-
-        for subj in class_obj.subjects:
+    
+    for c in classes_with_role:
+        cls = c['class']
+        for subj in cls.subjects:
             for a in subj.assignments:
-
-                # Skip old assignments (unchanged)
                 if a.type == 'Uppgift' and a.deadline and a.deadline < now:
                     continue
                 if a.type == 'Prov' and a.deadline and a.deadline.date() < now.date():
                     continue
 
-                # Compute days_left (float)
+                # Compute days_left for color coding
                 if a.deadline:
                     delta = a.deadline - now
                     days_left = delta.days + (delta.seconds / 86400)
                 else:
                     days_left = None
 
-                # Color logic
                 if days_left is None:
                     color = "#f8f9fa"
                 elif days_left > 14:
@@ -330,7 +335,7 @@ def index():
                     color = "#f2a134"
                 elif days_left > 0:
                     color = "#e51f1f"
-                else:
+                elif days_left < 0:
                     color = "#6a6af7"
 
                 assignments_display.append({
@@ -339,20 +344,20 @@ def index():
                     'type': a.type,
                     'deadline': a.deadline,
                     'subject_name': subj.name,
-                    'class_name': class_obj.name,
+                    'class_name': cls.name,
                     'created_by': a.created_by,
                     'color': color
                 })
 
-    # Sort assignments
+    # Sort assignments by deadline
     assignments_display.sort(key=lambda x: x['deadline'] or datetime.max)
-
+    
     today = datetime.now().strftime('%Y-%m-%d')
-
+    
     return render_template_string(
         DASH_TEMPLATE,
         user=user,
-        classes=classes,
+        classes=classes_with_role,  # pass classes WITH role info
         assignments=assignments_display[:50],
         today=today
     )
@@ -1452,7 +1457,7 @@ DASH_TEMPLATE = """
                             <a href="{{ url_for('view_class', class_id=c['id']) }}">{{ c['name'] }}</a> 
                             (kod: {{ c['join_code'] }})
                         </span>
-                        {% if membership and membership.role == 'admin' %}
+                        {% if c.role == 'admin' %}
                             <span>
                                 <a href="{{ url_for('edit_class', class_id=c['id']) }}">
                                     <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
@@ -2172,6 +2177,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
