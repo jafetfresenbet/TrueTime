@@ -1437,13 +1437,13 @@ DASH_TEMPLATE = """
                             <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }} ({{ a['class_name'] }})
                             {% if a['deadline'] %}
                                 {% if a['type'] == 'Uppgift' %}
-                                    — deadline: {{ a['deadline'].strftime('%Y/%m/%d %H:%M') }}
+                                    — {{ a['deadline'].strftime('%Y/%m/%d %H:%M') }}
                                 {% elif a['type'] == 'Prov' %}
-                                    — datum: {{ a['deadline'].strftime('%Y/%m/%d') }}
+                                    — {{ a['deadline'].strftime('%Y/%m/%d') }}
                                 {% endif %}
                             {% endif %}
                         </span>
-                        {% if user.id == a['created_by'] %}
+                        {% if c['role'] == 'admin' %}
                         <span>
                             <a href="{{ url_for('edit_assignment', assignment_id=a['id']) }}">
                                 <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
@@ -2123,6 +2123,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
