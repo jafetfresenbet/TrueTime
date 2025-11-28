@@ -291,35 +291,36 @@ def index():
 
     user = current_user()
     
-    # Get all class memberships for this user
     memberships = ClassMember.query.filter_by(user_id=user.id).all()
     classes = [m.class_obj for m in memberships if m.class_obj is not None]
-
     assignments_display = []
     now = datetime.now()
     
     for cls in classes:
-        if not cls:
+        if not cls:  # safety check
             continue
         for subj in cls.subjects:
             for a in subj.assignments:
-                days_left = None
                 if a.type == 'Uppgift' and a.deadline and a.deadline < now:
                     continue
                 if a.type == 'Prov' and a.deadline and a.deadline.date() < now.date():
                     continue
-
+    
+                # Compute days_left for threshold logic (UNCHANGED)
                 if a.deadline:
-                    days_left_int = compute_days_left(a.deadline)
+                    days_left_int = compute_days_left(a.deadline)   # used for threshold only
                 else:
                     days_left_int = None
-
+                
+                # Compute days_left for COLOR (MATCH view_subject)
                 if a.deadline:
                     now = datetime.now()
                     delta = a.deadline - now
-                    days_left = delta.days + (delta.seconds / 86400)
-
-                # Color logic
+                    days_left = delta.days + (delta.seconds / 86400)   # float-based
+                else:
+                    days_left = None
+                
+                # Color logic (MATCH view_subject)
                 if days_left is None:
                     color = "#f8f9fa"
                 elif days_left > 14:
@@ -332,8 +333,8 @@ def index():
                     color = "#f2a134"
                 elif days_left > 0:
                     color = "#e51f1f"
-                else:
-                    color = "#6a6af7"
+                elif days_left < 0:
+                    color = "#6a6af7"  # same as view_subject
 
                 assignments_display.append({
                     'id': a.id,
@@ -345,18 +346,12 @@ def index():
                     'created_by': a.created_by,
                     'color': color
                 })
-
+    
     assignments_display.sort(key=lambda x: x['deadline'] or datetime.max)
     today = datetime.now().strftime('%Y-%m-%d')
+    print("DEBUG current_user =", current_user, type(current_user))
     
-    return render_template_string(
-        DASH_TEMPLATE,
-        user=user,
-        classes=classes,
-        assignments=assignments_display[:50],
-        today=today
-    )
-
+    return render_template_string(DASH_TEMPLATE, user=user, classes=classes, assignments=assignments_display[:50], today=today)
 @app.route('/register', methods=['GET','POST'])
 def register():
     if request.method == 'POST':
@@ -735,9 +730,7 @@ def view_subject(subject_id):
     subject = Subject.query.get_or_404(subject_id)
     cls = subject.cls
     user = current_user()
-
-    membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first()
-    is_admin = membership and membership.role == 'admin'
+    is_admin = (cls.admin_user_id == user.id)
     
     # Samla uppgifter/prov med färg baserat på deadline
     assignments_display = []
@@ -1061,7 +1054,7 @@ HOME_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <title>PlugIt+ - Hem</title>
-
+    
     <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
@@ -1124,6 +1117,13 @@ REGISTER_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <title>Registrera</title>
+
+    <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
+    
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -1228,6 +1228,13 @@ LOGIN_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <title>Logga in</title>
+
+    <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
+    
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -1326,6 +1333,13 @@ DASH_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <title>PlugIt+ - Översikt</title>
+
+    <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
+    
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -1473,7 +1487,7 @@ DASH_TEMPLATE = """
                                 {% endif %}
                             {% endif %}
                         </span>
-                        {% if user['id'] == c['admin_user_id'] %}
+                        {% if user['id'] == a['created_by'] %}
                         <span>
                             <a href="{{ url_for('edit_assignment', assignment_id=a['id']) }}">
                                 <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
@@ -1515,6 +1529,13 @@ CREATE_CLASS_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <title>Skapa klass - PlugIt+</title>
+
+    <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -1607,6 +1628,13 @@ JOIN_CLASS_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <title>Gå med i klass - PlugIt+</title>
+
+    <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
+    
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -1699,6 +1727,13 @@ CLASS_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <title>{{ class_data['name'] }} - PlugIt+</title>
+
+    <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
+    
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -1862,6 +1897,13 @@ SUBJECT_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <title>{{ subject['name'] }} - {{ class_data['name'] }}</title>
+
+    <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
+    
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
         header { background-color: #007bff; color: #fff; padding: 15px 20px; text-align: center; }
@@ -1961,6 +2003,13 @@ EDIT_ASSIGNMENT_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <title>{{ subject.name }} - {{ class_data.name }}</title>
+
+    <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
+    
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
         header { background-color: #007bff; color: #fff; padding: 15px 20px; text-align: center; }
@@ -2048,6 +2097,13 @@ PROFILE_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <title>Din profil</title>
+
+    <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
+    
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
         header { background-color: #007bff; color: #fff; padding: 15px 20px; text-align: center; }
@@ -2111,161 +2167,3 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
