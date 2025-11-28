@@ -290,6 +290,7 @@ def index():
         return render_template_string(HOME_TEMPLATE)
 
     user = current_user()
+    cls = Class.query.get_or_404(class_id)
     
     memberships = ClassMember.query.filter_by(user_id=user.id).all()
     membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first()
@@ -2168,4 +2169,5 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
