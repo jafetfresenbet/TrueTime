@@ -352,7 +352,7 @@ def index():
     return render_template_string(
         DASH_TEMPLATE,
         user=user,
-        classes=classes_with_role,
+        classes=classes,
         assignments=assignments_display[:50],
         today=today
     )
@@ -2111,6 +2111,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
