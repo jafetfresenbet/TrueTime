@@ -554,11 +554,17 @@ def add_subject(class_id):
     return redirect(url_for('view_class', class_id=cls.id))
 
 # ---------- Assignment routes ----------
-@app.route('/subject/<int:subject_id>/add_assignment', methods=['POST'])
+@app.route('/add_assignment/<int:subject_id>', methods=['POST'])
 @login_required
 def add_assignment(subject_id):
     subj = Subject.query.get_or_404(subject_id)
+    cls = subj.cls
     user = current_user()
+
+    membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first()
+    if not membership or membership.role != 'admin':
+        flash("Endast admin kan lägga till uppgifter/prov.")
+        return redirect(url_for('view_class', class_id=cls.id))
 
     title = request.form.get('title', '').strip()
     type_ = request.form.get('type', '').strip()
@@ -568,13 +574,12 @@ def add_assignment(subject_id):
         flash("Du måste fylla i både namn och typ.")
         return redirect(url_for('view_subject', subject_id=subject_id))
 
-    # hantera deadline
     deadline = None
     if deadline_str:
         try:
             if type_ == 'exam':
                 deadline = datetime.strptime(deadline_str, '%Y-%m-%d')
-            else:  # assignment
+            else:
                 deadline = datetime.strptime(deadline_str, '%Y-%m-%dT%H:%M')
         except ValueError:
             flash("Fel datumformat.")
@@ -586,18 +591,22 @@ def add_assignment(subject_id):
     flash("Uppgift/prov lagt till.")
     return redirect(url_for('view_subject', subject_id=subject_id))
 
-@app.route('/assignment/<int:assignment_id>/delete', methods=['POST'])
+@app.route('/delete_assignment/<int:assignment_id>', methods=['POST'])
 @login_required
 def delete_assignment(assignment_id):
     assign = Assignment.query.get_or_404(assignment_id)
+    cls = assign.subject.cls
     user = current_user()
-    if assign.subject.cls.admin_user_id != user.id:
+
+    membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first()
+    if not membership or membership.role != 'admin':
         flash("Endast admin kan radera uppgifter.")
-        return redirect(url_for('view_class', class_id=assign.subject.class_id))
+        return redirect(url_for('view_class', class_id=cls.id))
+
     db.session.delete(assign)
     db.session.commit()
     flash("Uppgift raderad.")
-    return redirect(url_for('index', class_id=assign.subject.class_id))
+    return redirect(url_for('view_class', class_id=cls.id))
 
 @app.route('/edit_class/<int:class_id>', methods=['GET', 'POST'])
 @login_required
@@ -696,14 +705,15 @@ def view_subject(subject_id):
         is_admin=is_admin
     )
 
-@app.route('/subject/<int:subject_id>/edit', methods=['GET','POST'])
+@app.route('/edit_subject/<int:subject_id>', methods=['GET', 'POST'])
 @login_required
 def edit_subject(subject_id):
-    user = current_user()
     subject = Subject.query.get_or_404(subject_id)
     cls = subject.cls
+    user = current_user()
 
-    if cls.admin_user_id != user.id:
+    membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first()
+    if not membership or membership.role != 'admin':
         flash("Endast admin kan ändra ämnen.")
         return redirect(url_for('view_class', class_id=cls.id))
 
@@ -718,66 +728,29 @@ def edit_subject(subject_id):
         flash("Ämnesnamnet har uppdaterats.")
         return redirect(url_for('view_class', class_id=cls.id))
 
-    return render_template_string("""
-    <!doctype html>
-    <html lang="sv">
-    <head>
-        <meta charset="UTF-8">
-        <title>Ändra ämne - PlugIt+</title>
-        <style>
-            body { font-family: Arial, sans-serif; background-color: #f4f4f4; 
-                   display: flex; justify-content: center; align-items: center; 
-                   height: 100vh; margin:0; }
-            .edit-card { background-color: #fff; padding: 30px; border-radius:8px; 
-                         box-shadow:0px 4px 12px rgba(0,0,0,0.1); width:400px; 
-                         text-align:center; }
-            input[type="text"] { width: 100%; padding:10px; margin: 10px 0 20px 0; 
-                                 border:1px solid #ccc; border-radius:4px; 
-                                 box-sizing:border-box; }
-            button { width:100%; padding:10px; background-color:#007bff; color:#fff; 
-                     border:none; border-radius:4px; cursor:pointer; }
-            button:hover { background-color:#0056b3; }
-            .back-link { margin-top:15px; display:block; }
-            .back-link a { color:#007bff; text-decoration:none; }
-            .back-link a:hover { text-decoration:underline; }
-        </style>
-    </head>
-    <body>
-        <div class="edit-card">
-            <h2>Ändra ämnesnamn</h2>
-            <form method="post">
-                <input type="text" name="subject_name" value="{{ subject.name }}" required>
-                <button type="submit">Spara ändringar</button>
-            </form>
-            <div class="back-link">
-                <a href="{{ url_for('view_class', class_id=cls.id) }}">Tillbaka till klassen</a>
-            </div>
-        </div>
-    </body>
-    </html>
-    """, subject=subject, cls=cls)
+    return render_template_string(EDIT_SUBJECT_TEMPLATE, subject=subject, cls=cls)
 
-@app.route('/subject/<int:subject_id>/delete', methods=['POST'])
+@app.route('/delete_subject/<int:subject_id>', methods=['POST'])
 @login_required
 def delete_subject(subject_id):
-    user = current_user()
     subject = Subject.query.get_or_404(subject_id)
     cls = subject.cls
+    user = current_user()
 
-    if cls.admin_user_id != user.id:
+    membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first()
+    if not membership or membership.role != 'admin':
         flash("Endast admin kan radera ämnen.")
         return redirect(url_for('view_class', class_id=cls.id))
 
-    # Delete all assignments in this subject first
-    for a in subject.assignments:
-        db.session.delete(a)
+    for assignment in subject.assignments:
+        db.session.delete(assignment)
     db.session.delete(subject)
     db.session.commit()
 
     flash(f"Ämnet '{subject.name}' har raderats.")
     return redirect(url_for('view_class', class_id=cls.id))
 
-@app.route('/assignment/<int:assignment_id>/edit', methods=['GET', 'POST'])
+@app.route('/edit_assignment/<int:assignment_id>', methods=['GET', 'POST'])
 @login_required
 def edit_assignment(assignment_id):
     assignment = Assignment.query.get_or_404(assignment_id)
@@ -785,7 +758,8 @@ def edit_assignment(assignment_id):
     cls = subj.cls
     user = current_user()
 
-    if cls.admin_user_id != user.id:
+    membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first()
+    if not membership or membership.role != 'admin':
         flash("Endast admin kan ändra uppgifter/prov.")
         return redirect(url_for('view_class', class_id=cls.id))
 
@@ -798,7 +772,8 @@ def edit_assignment(assignment_id):
             flash("Fyll i ett namn för uppgiften/provet.")
             return redirect(url_for('edit_assignment', assignment_id=assignment_id))
 
-        if deadline_str:  # Kolla att strängen inte är tom
+        new_deadline = None
+        if deadline_str:
             try:
                 if new_type == 'exam':
                     new_deadline = datetime.strptime(deadline_str, '%Y-%m-%d')
@@ -807,45 +782,37 @@ def edit_assignment(assignment_id):
             except ValueError:
                 flash("Fel datumformat.")
                 return redirect(url_for('edit_assignment', assignment_id=assignment_id))
-        else:
-            new_deadline = None  # Om tom, sätt deadline till None
 
         assignment.title = new_title
         assignment.type = new_type
         assignment.deadline = new_deadline
         db.session.commit()
-
         flash("Uppgiften/provet har uppdaterats.")
-        return redirect(url_for('index', subject_id=subj.id))
+        return redirect(url_for('view_subject', subject_id=subj.id))
 
-    # GET → rendera sidan med befintliga värden
     return render_template_string(EDIT_ASSIGNMENT_TEMPLATE,
                                   assignment=assignment,
                                   subject=subj,
                                   class_data=cls,
                                   is_admin=True)
 
-@app.route('/class/<int:class_id>/delete', methods=['POST'])
+@app.route('/delete_class/<int:class_id>', methods=['POST'])
 @login_required
 def delete_class(class_id):
     user = current_user()
     cls = Class.query.get_or_404(class_id)
 
-    # Only admin can delete
-    admin_membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id, role='admin').first()
-    if not admin_membership:
+    membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first()
+    if not membership or membership.role != 'admin':
         flash("Endast admin kan radera klassen.")
-        return redirect(url_for('view_class', class_id=class_id))
+        return redirect(url_for('view_class', class_id=cls.id))
 
-    # Delete related subjects + assignments
     for subject in cls.subjects:
         for assignment in subject.assignments:
             db.session.delete(assignment)
         db.session.delete(subject)
 
-    # Delete all memberships
-    ClassMember.query.filter_by(class_id=class_id).delete()
-
+    ClassMember.query.filter_by(class_id=cls.id).delete()
     db.session.delete(cls)
     db.session.commit()
 
@@ -2138,6 +2105,44 @@ EDIT_CLASS_TEMPLATE = """
 </html>
 """
 
+EDIT_SUBJECT_TEMPLATE = """
+ <!doctype html>
+    <html lang="sv">
+    <head>
+        <meta charset="UTF-8">
+        <title>Ändra ämne - PlugIt+</title>
+        <style>
+            body { font-family: Arial, sans-serif; background-color: #f4f4f4; 
+                   display: flex; justify-content: center; align-items: center; 
+                   height: 100vh; margin:0; }
+            .edit-card { background-color: #fff; padding: 30px; border-radius:8px; 
+                         box-shadow:0px 4px 12px rgba(0,0,0,0.1); width:400px; 
+                         text-align:center; }
+            input[type="text"] { width: 100%; padding:10px; margin: 10px 0 20px 0; 
+                                 border:1px solid #ccc; border-radius:4px; 
+                                 box-sizing:border-box; }
+            button { width:100%; padding:10px; background-color:#007bff; color:#fff; 
+                     border:none; border-radius:4px; cursor:pointer; }
+            button:hover { background-color:#0056b3; }
+            .back-link { margin-top:15px; display:block; }
+            .back-link a { color:#007bff; text-decoration:none; }
+            .back-link a:hover { text-decoration:underline; }
+        </style>
+    </head>
+    <body>
+        <div class="edit-card">
+            <h2>Ändra ämnesnamn</h2>
+            <form method="post">
+                <input type="text" name="subject_name" value="{{ subject.name }}" required>
+                <button type="submit">Spara ändringar</button>
+            </form>
+            <div class="back-link">
+                <a href="{{ url_for('view_class', class_id=cls.id) }}">Tillbaka till klassen</a>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
 
 
 
