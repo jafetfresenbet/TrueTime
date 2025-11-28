@@ -346,7 +346,7 @@ def index():
                     'subject_name': subj.name,
                     'class_name': cls.name,
                     'created_by': a.created_by,
-                    'color': color
+                    'color': color,
                     'role': membership.role
                 })
 
@@ -2124,6 +2124,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
