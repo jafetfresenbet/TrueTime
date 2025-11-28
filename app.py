@@ -303,6 +303,7 @@ def index():
             continue
         for subj in cls.subjects:
             for a in subj.assignments:
+                days_left = None
                 if a.type == 'Uppgift' and a.deadline and a.deadline < now:
                     continue
                 if a.type == 'Prov' and a.deadline and a.deadline.date() < now.date():
@@ -2110,6 +2111,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
