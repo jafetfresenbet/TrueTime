@@ -530,7 +530,7 @@ def view_class(class_id):
     return render_template_string(CLASS_TEMPLATE, class_data=cls, subjects=subjects, is_admin=is_admin)
 
 # ---------- Subject routes ----------
-@app.route('/add_subject', methods=['POST'])
+@app.route('/class/<int:class_id>/add_subject', methods=['POST'])
 @login_required
 def add_subject(class_id):
     user = current_user()
@@ -2143,6 +2143,7 @@ EDIT_SUBJECT_TEMPLATE = """
     </body>
     </html>
     """
+
 
 
 
