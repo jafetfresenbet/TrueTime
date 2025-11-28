@@ -617,7 +617,7 @@ def edit_class(class_id):
     membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first()
     if not membership or membership.role != 'admin':
         flash("Endast admin kan ändra klassen.")
-        return redirect(url_for('view_class', class_id=cls.id))
+        return redirect(url_for('index', class_id=cls.id))
 
     if request.method == 'POST':
         new_name = request.form['class_name'].strip()
@@ -627,7 +627,7 @@ def edit_class(class_id):
         cls.name = new_name
         db.session.commit()
         flash("Klassnamnet har uppdaterats.")
-        return redirect(url_for('view_class', class_id=cls.id))
+        return redirect(url_for('index', class_id=cls.id))
 
     return render_template_string(EDIT_CLASS_TEMPLATE, cls=cls)
 
@@ -2239,6 +2239,7 @@ EDIT_SUBJECT_TEMPLATE = """
     </body>
     </html>
     """
+
 
 
 
