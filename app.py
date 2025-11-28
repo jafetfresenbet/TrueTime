@@ -293,14 +293,12 @@ def index():
     
     # Get all class memberships for this user
     memberships = ClassMember.query.filter_by(user_id=user.id).all()
-    membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first()
     classes = [m.class_obj for m in memberships if m.class_obj is not None]
 
     assignments_display = []
     now = datetime.now()
     
     for cls in classes:
-        is_admin = membership and membership.role == 'admin'
         if not cls:
             continue
         for subj in cls.subjects:
@@ -1434,7 +1432,7 @@ DASH_TEMPLATE = """
                             <a href="{{ url_for('view_class', class_id=c['id']) }}">{{ c['name'] }}</a> 
                             (kod: {{ c['join_code'] }})
                         </span>
-                        {% if is_admin %}
+                        {% if user['id'] == c['admin_user_id'] %}
                             <span>
                                 <a href="{{ url_for('edit_class', class_id=c['id']) }}">
                                     <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
@@ -1474,7 +1472,7 @@ DASH_TEMPLATE = """
                                 {% endif %}
                             {% endif %}
                         </span>
-                        {% if is_admin %}
+                        {% if user['id'] == c['admin_user_id'] %}
                         <span>
                             <a href="{{ url_for('edit_assignment', assignment_id=a['id']) }}">
                                 <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
@@ -2112,6 +2110,7 @@ PROFILE_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
