@@ -156,7 +156,7 @@ def check_days_left_threshold(user, assignment):
 
     # Send the email
     subject = f"Påminnelse: {assignment.title}"
-    body = f"Hej {user.name}, det är nu {days_left + 1} dagar kvar för '{assignment.title}'./n/n Länk: truetime.onrender.com"
+    body = f"Hej {user.name}, det är nu {days_left + 1} dagar kvar för '{assignment.title}'. Länk: truetime.onrender.com"
 
     mail.send_message(
         subject=subject,
@@ -2239,6 +2239,7 @@ EDIT_SUBJECT_TEMPLATE = """
     </body>
     </html>
     """
+
 
 
 
