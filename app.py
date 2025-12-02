@@ -716,7 +716,7 @@ def edit_subject(subject_id):
     membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first()
     if not membership or membership.role != 'admin':
         flash("Endast admin kan ändra ämnen.")
-        return redirect(url_for('view_class', class_id=cls.id))
+        return redirect(url_for('index', class_id=cls.id))
 
     if request.method == 'POST':
         new_name = request.form['subject_name'].strip()
@@ -727,7 +727,7 @@ def edit_subject(subject_id):
         subject.name = new_name
         db.session.commit()
         flash("Ämnesnamnet har uppdaterats.")
-        return redirect(url_for('view_class', class_id=cls.id))
+        return redirect(url_for('index', class_id=cls.id))
 
     return render_template_string(EDIT_SUBJECT_TEMPLATE, subject=subject, cls=cls)
 
@@ -2239,6 +2239,7 @@ EDIT_SUBJECT_TEMPLATE = """
     </body>
     </html>
     """
+
 
 
 
