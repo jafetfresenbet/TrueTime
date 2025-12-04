@@ -789,7 +789,7 @@ def edit_assignment(assignment_id):
         assignment.deadline = new_deadline
         db.session.commit()
         flash("Uppgiften/provet har uppdaterats.")
-        return redirect(url_for('view_subject', subject_id=subj.id))
+        return redirect(url_for('index', subject_id=subj.id))
 
     return render_template_string(EDIT_ASSIGNMENT_TEMPLATE,
                                   assignment=assignment,
@@ -2239,6 +2239,7 @@ EDIT_SUBJECT_TEMPLATE = """
     </body>
     </html>
     """
+
 
 
 
