@@ -1038,6 +1038,77 @@ def add_admin_request(class_id):
     """
     return render_template_string(form_html)
 
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+        user = User.query.filter_by(email=email).first()
+
+        if user:
+            # Skapa token
+            token = serializer.dumps(user.email, salt='password-reset')
+            user.reset_token = token
+            user.reset_token_created_at = datetime.now()
+            db.session.commit()
+
+            reset_url = url_for('reset_password', token=token, _external=True)
+            msg = Message("Återställ ditt lösenord", recipients=[user.email])
+            msg.body = f"Hej {user.name},\n\nKlicka på länken för att återställa ditt lösenord:\n{reset_url}\n\nOm du inte begärde detta kan du ignorera mailet."
+            mail.send(msg)
+
+        # Visa alltid samma meddelande, för säkerhet
+        flash("Om det finns ett konto med den e-posten har vi skickat en länk för återställning.", "info")
+        return redirect(url_for('login'))
+
+    return render_template_string("""
+    <h2>Glömt lösenord</h2>
+    <form method="post">
+        <input type="email" name="email" placeholder="Din e-post" required>
+        <button type="submit">Skicka länk</button>
+    </form>
+    <a href="{{ url_for('login') }}">Tillbaka till inloggning</a>
+    """)
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    try:
+        email = serializer.loads(token, salt='password-reset', max_age=3600)  # giltig 1h
+    except:
+        flash("Länken är ogiltig eller har gått ut.", "error")
+        return redirect(url_for('forgot_password'))
+
+    user = User.query.filter_by(email=email).first_or_404()
+
+    # Kontrollera att token matchar det som finns sparat i DB
+    if user.reset_token != token:
+        flash("Ogiltig återställningstoken.", "error")
+        return redirect(url_for('forgot_password'))
+
+    if request.method == 'POST':
+        new_password = request.form.get('password', '').strip()
+        confirm_password = request.form.get('confirm_password', '').strip()
+
+        if not new_password or new_password != confirm_password:
+            flash("Lösenorden matchar inte.", "warning")
+            return redirect(url_for('reset_password', token=token))
+
+        user.password_hash = generate_password_hash(new_password)
+        user.reset_token = None  # nollställ token
+        user.reset_token_created_at = None
+        db.session.commit()
+
+        flash("Ditt lösenord har återställts! Du kan nu logga in.", "success")
+        return redirect(url_for('login'))
+
+    return render_template_string("""
+    <h2>Återställ lösenord</h2>
+    <form method="post">
+        <input type="password" name="password" placeholder="Nytt lösenord" required><br>
+        <input type="password" name="confirm_password" placeholder="Bekräfta nytt lösenord" required><br>
+        <button type="submit">Återställ lösenord</button>
+    </form>
+    """)
+
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
 HOME_TEMPLATE = """
@@ -2239,6 +2310,7 @@ EDIT_SUBJECT_TEMPLATE = """
     </body>
     </html>
     """
+
 
 
 
