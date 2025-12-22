@@ -1493,7 +1493,7 @@ DASH_TEMPLATE = """
                         <span>
                             <!-- Hide/unhide button first -->
                             <button class="hide-btn" data-class-id="{{ c['class'].id }}" 
-                                    style="background-color: black; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-right:5px;">
+                                    style="background-color: brown; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-right:5px;">
                                 Hide
                             </button>
                         
@@ -2527,6 +2527,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
