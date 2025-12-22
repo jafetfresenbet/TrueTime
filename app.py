@@ -69,6 +69,7 @@ class User(db.Model):
     confirmed = db.Column(db.Boolean, default=False)
     confirmation_token = db.Column(db.String(256), nullable=True)
     reset_password_token = db.Column(db.String(256), nullable=True)
+    reset_password_expires = db.Column(db.DateTime, nullable=True)
     classes = db.relationship('UserClass', back_populates='user', cascade="all, delete-orphan")
 
 class Class(db.Model):
@@ -2471,6 +2472,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
