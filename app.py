@@ -1491,6 +1491,12 @@ DASH_TEMPLATE = """
                             (kod: {{ c['class'].join_code }})
                         </span>
                         <span>
+                            <!-- Hide/unhide button first -->
+                            <button class="hide-btn" data-class-id="{{ c['class'].id }}" 
+                                    style="background-color: black; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-right:5px;">
+                                Hide
+                            </button>
+                        
                             <!-- Existing buttons -->
                             {% if c['role'] == 'admin' %}
                                 <a href="{{ url_for('edit_class', class_id=c['class'].id) }}">
@@ -1506,11 +1512,6 @@ DASH_TEMPLATE = """
                                     </button>
                                 </form>
                             {% endif %}
-
-                            <!-- Hide/unhide button for all roles -->
-                            <button class="hide-btn" data-class-id="{{ c['class'].id }}" style="background-color: black; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">
-                                Hide
-                            </button>
                         </span>
                     </li>
                 {% else %}
@@ -2526,6 +2527,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
