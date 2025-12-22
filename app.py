@@ -1421,7 +1421,7 @@ DASH_TEMPLATE = """
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
-    
+
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
         header { background-color: #007bff; color: #fff; padding: 15px 20px; text-align: center; }
@@ -1436,6 +1436,19 @@ DASH_TEMPLATE = """
         ul { list-style: none; padding-left: 0; }
         li { background-color: #f8f9fa; margin: 5px 0; padding: 10px; border-radius: 4px; }
         .flash-message { color: green; text-align: center; margin-bottom: 10px; }
+
+        /* Hidden class styling */
+        .hidden-class {
+            background-color: black !important;
+            color: white !important;
+        }
+        .hidden-class a {
+            color: white !important;
+        }
+        .hidden-class .assignments li {
+            background-color: #222 !important;
+            color: #fff !important;
+        }
     </style>
 </head>
 <body>
@@ -1472,29 +1485,33 @@ DASH_TEMPLATE = """
             
                 <ul>
                 {% for c in classes %}
-                    <li style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0;">
+                    <li id="class-{{ c['class'].id }}" class="class-item" style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0;">
                         <span>
                             <a href="{{ url_for('view_class', class_id=c['class'].id) }}">{{ c['class'].name }}</a> 
                             (kod: {{ c['class'].join_code }})
                         </span>
-                        {% if c['role'] == 'admin' %}
-                            <span>
+                        <span>
+                            <!-- Existing buttons -->
+                            {% if c['role'] == 'admin' %}
                                 <a href="{{ url_for('edit_class', class_id=c['class'].id) }}">
                                     <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
                                 </a>
                                 <form method="post" action="{{ url_for('delete_class', class_id=c['class'].id) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera klassen?');">
                                     <button type="submit" style="background-color: red; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:3px;">Radera</button>
                                 </form>
-                            </span>
-                        {% else %}
-                            <span>
+                            {% else %}
                                 <form method="post" action="{{ url_for('leave_class', class_id=c['class'].id) }}" style="display:inline;" onsubmit="return confirm('Vill du lämna klassen?');">
                                     <button type="submit" style="background-color: orange; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">
                                         Lämna
                                     </button>
                                 </form>
-                            </span>
-                        {% endif %}
+                            {% endif %}
+
+                            <!-- Hide/unhide button for all roles -->
+                            <button class="hide-btn" data-class-id="{{ c['class'].id }}" style="background-color: black; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">
+                                Hide
+                            </button>
+                        </span>
                     </li>
                 {% else %}
                     <li>Inga klasser ännu.</li>
@@ -1504,9 +1521,9 @@ DASH_TEMPLATE = """
 
             <div class="section">
                 <h3>Kommande uppgifter</h3>
-                <ul>
+                <ul class="assignments">
                 {% for a in assignments %}
-                    <li style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-radius: 6px; background-color: {{ a['color'] }};">
+                    <li data-class-id="{{ a['class_id'] }}" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-radius: 6px; background-color: {{ a['color'] }};">
                         <span>
                             <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }} ({{ a['class_name'] }})
                             {% if a['deadline'] %}
@@ -1546,9 +1563,34 @@ DASH_TEMPLATE = """
                 <a href="https://www.tiktok.com/@truetimeuf" target="_blank">TikTok</a><br>
                 <a href="https://www.youtube.com/@TrueTimeUF" target="_blank">YouTube</a><br>
             </div>
-            
+
         </div>
     </div>
+
+    <script>
+        // Hide/unhide classes & their assignments
+        document.querySelectorAll('.hide-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const classId = btn.dataset.classId;
+                const classCard = document.getElementById('class-' + classId);
+
+                // Toggle hidden class
+                classCard.classList.toggle('hidden-class');
+
+                // Toggle all assignments for this class
+                document.querySelectorAll(`.assignments li[data-class-id='${classId}']`).forEach(a => {
+                    a.classList.toggle('hidden-class');
+                });
+
+                // Change button text
+                if (classCard.classList.contains('hidden-class')) {
+                    btn.textContent = 'Unhide';
+                } else {
+                    btn.textContent = 'Hide';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
 """
@@ -2484,6 +2526,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
