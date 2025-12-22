@@ -1044,19 +1044,36 @@ def forgot_password():
         email = request.form.get('email', '').strip().lower()
         user = User.query.filter_by(email=email).first()
 
-        # Säkerhet: visa samma svar oavsett om användaren finns
+        # Säkerhet: avslöja inte om mail finns
         if user:
             token = serializer.dumps(user.email, salt='reset-password')
-            user.reset_token = token
+            user.reset_password_token = token
+            user.reset_password_expires = datetime.utcnow() + timedelta(hours=1)
             db.session.commit()
 
             reset_url = url_for('reset_password', token=token, _external=True)
-            print("RESET LINK:", reset_url)  # tills mail används
 
-        flash("Om kontot finns har vi skickat en återställningslänk.", "info")
+            msg = Message(
+                "Återställ ditt lösenord",
+                recipients=[user.email]
+            )
+            msg.body = f"""
+Hej {user.name},
+
+Du har begärt att återställa ditt lösenord.
+
+Klicka på länken nedan (giltig i 1 timme):
+{reset_url}
+
+Om du inte begärde detta kan du ignorera mailet.
+"""
+            mail.send(msg)
+
+        flash("Om kontot finns har vi skickat instruktioner till din e-post.", "info")
         return redirect(url_for('login'))
 
     return render_template_string(FORGOT_PASSWORD_TEMPLATE)
+
 
 @app.route('/reset-password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
@@ -1066,24 +1083,30 @@ def reset_password(token):
         flash("Länken är ogiltig eller har gått ut.", "error")
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=email, reset_token=token).first_or_404()
+    user = User.query.filter_by(email=email, reset_password_token=token).first()
+    if not user or user.reset_password_expires < datetime.utcnow():
+        flash("Länken är ogiltig eller har gått ut.", "error")
+        return redirect(url_for('login'))
 
     if request.method == 'POST':
         password = request.form.get('password')
         confirm = request.form.get('confirm_password')
 
-        if password != confirm:
-            flash("Lösenorden matchar inte.", "error")
+        if not password or password != confirm:
+            flash("Lösenorden matchar inte.", "warning")
             return redirect(request.url)
 
         user.password_hash = generate_password_hash(password)
-        user.reset_token = None
+        user.reset_password_token = None
+        user.reset_password_expires = None
         db.session.commit()
 
-        flash("Lösenordet har uppdaterats. Logga in.", "success")
+        flash("Ditt lösenord har uppdaterats. Du kan nu logga in.", "success")
         return redirect(url_for('login'))
 
     return render_template_string(RESET_PASSWORD_TEMPLATE)
+
+
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
 HOME_TEMPLATE = """
@@ -2447,6 +2470,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
