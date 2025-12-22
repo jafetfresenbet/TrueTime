@@ -1362,6 +1362,20 @@ LOGIN_TEMPLATE = """
         .flash-message.success { color: #1a7f37; }
         .flash-message.warning { color: #7c6f00; }
         .flash-message.info { color: #004085; }
+
+        .forgot-password {
+            text-align: right;
+            margin-top: -10px;
+            margin-bottom: 15px;
+        }
+        .forgot-password a {
+            font-size: 0.9em;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -1379,6 +1393,11 @@ LOGIN_TEMPLATE = """
         <form method="post">
             <input type="email" name="email" placeholder="E-post" required>
             <input type="password" name="password" placeholder="Lösenord" required>
+        
+            <div class="forgot-password">
+                <a href="{{ url_for('forgot_password') }}">Glömt lösenord?</a>
+            </div>
+        
             <button type="submit">Logga in</button>
         </form>
 
@@ -2311,6 +2330,148 @@ EDIT_SUBJECT_TEMPLATE = """
     </html>
     """
 
+FORGOT_PASSWORD_TEMPLATE = """
+<!doctype html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>Glömt lösenord</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+            width: 350px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .back-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+        .back-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Glömt lösenord</h2>
+
+        {% with messages = get_flashed_messages(with_categories=True) %}
+          {% for category, message in messages %}
+            <div class="flash-message {{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endwith %}
+
+        <form method="post">
+            <input type="email" name="email" placeholder="Din e-post" required>
+            <button type="submit">Skicka återställningslänk</button>
+        </form>
+
+        <div class="back-link">
+            <a href="{{ url_for('login') }}">Tillbaka till inloggning</a>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+RESET_PASSWORD_TEMPLATE = """
+<!doctype html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>Återställ lösenord</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+            width: 350px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Återställ lösenord</h2>
+
+        <form method="post">
+            <input type="password" name="password" placeholder="Nytt lösenord" required>
+            <input type="password" name="confirm_password" placeholder="Bekräfta lösenord" required>
+            <button type="submit">Spara nytt lösenord</button>
+        </form>
+    </div>
+</body>
+</html>
+"""
 
 
 
