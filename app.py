@@ -1108,6 +1108,39 @@ def reset_password(token):
 
     return render_template_string(RESET_PASSWORD_TEMPLATE)
 
+@app.route('/class/<int:class_id>/leave-admin', methods=['POST'])
+@login_required
+def leave_admin(class_id):
+    user = current_user
+
+    # Hämta kopplingen mellan användare och klass
+    uc = UserClass.query.filter_by(
+        user_id=user.id,
+        class_id=class_id,
+        role='admin'
+    ).first()
+
+    if not uc:
+        flash("Du är inte admin i denna klass.")
+        return redirect(url_for('view_class', class_id=class_id))
+
+    # Räkna hur många admins som finns i klassen
+    admin_count = UserClass.query.filter_by(
+        class_id=class_id,
+        role='admin'
+    ).count()
+
+    if admin_count <= 1:
+        flash("Du är sista adminen i klassen och kan därför inte lämna admin-rollen.")
+        return redirect(url_for('view_class', class_id=class_id))
+
+    # Byt roll till member
+    uc.role = 'member'
+    db.session.commit()
+
+    flash("Du är nu medlem istället för admin i klassen.")
+    return redirect(url_for('view_class', class_id=class_id))
+
 
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
@@ -1919,6 +1952,15 @@ CLASS_TEMPLATE = """
                 <button type="submit" class="btn btn-warning">Bjud in admin</button>
             </form>
 
+            <form method="post"
+                  action="{{ url_for('leave_admin', class_id=class_.id) }}"
+                  onsubmit="return confirm('Är du säker på att du vill lämna admin-rollen?');">
+                <button type="submit"
+                        style="background-color: #555; color: white; border: none; padding: 6px 10px; border-radius: 4px;">
+                    Lämna som admin
+                </button>
+            </form>
+
         {% endif %}
     </nav>
 
@@ -2527,6 +2569,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
