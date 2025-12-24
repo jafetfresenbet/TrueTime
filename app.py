@@ -1950,7 +1950,7 @@ CLASS_TEMPLATE = """
                 <button type="submit" class="btn btn-warning">Bjud in admin</button>
             </form>
 
-            <form method="post" action="{{ url_for('leave_admin', class_id=class_obj.id) }}"
+            <form method="post" action="{{ url_for('leave_admin', class_id=class_data.id) }}"
                   onsubmit="return confirm('Vill du verkligen lämna som admin?');"
                   style="margin-top: 10px;">
                 <button type="submit"
@@ -2567,6 +2567,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
