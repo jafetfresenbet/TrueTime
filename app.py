@@ -1952,7 +1952,7 @@ CLASS_TEMPLATE = """
                   onsubmit="return confirm('Vill du verkligen lämna som admin?');"
                   style="margin-top: 10px;">
                 <button type="submit"
-                        style="background-color:#6c757d; color:white; border:none; padding:6px 12px; border-radius:4px;">
+                        style="background-color:#fa0202; color:white; border:none; padding:6px 12px; border-radius:4px;">
                     Lämna som admin
                 </button>
             </form>
@@ -2565,6 +2565,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
