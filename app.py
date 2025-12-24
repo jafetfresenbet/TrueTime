@@ -1111,32 +1111,30 @@ def reset_password(token):
 @app.route('/class/<int:class_id>/leave-admin', methods=['POST'])
 @login_required
 def leave_admin(class_id):
-    # Hämta medlemskapet för inloggad användare
+    user = current_user()
+
     membership = ClassMember.query.filter_by(
         class_id=class_id,
-        user_id=current_user.id,
-        role='admin'
-    ).first()
+        user_id=user.id
+    ).first_or_404()
 
-    if not membership:
+    if membership.role != 'admin':
         flash("Du är inte admin i denna klass.", "error")
         return redirect(url_for('view_class', class_id=class_id))
 
-    # Räkna hur många admins klassen har
     admin_count = ClassMember.query.filter_by(
         class_id=class_id,
         role='admin'
     ).count()
 
     if admin_count <= 1:
-        flash("Du är den sista adminen i klassen och kan därför inte lämna.", "warning")
+        flash("Du är sista adminen och kan inte lämna adminrollen.", "error")
         return redirect(url_for('view_class', class_id=class_id))
 
-    # Nedgradera till member
     membership.role = 'member'
     db.session.commit()
 
-    flash("Du är nu medlem istället för admin i klassen.", "success")
+    flash("Du är inte längre admin i klassen.", "success")
     return redirect(url_for('view_class', class_id=class_id))
 
 
@@ -2567,6 +2565,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
