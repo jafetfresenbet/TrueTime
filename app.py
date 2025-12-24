@@ -1111,34 +1111,32 @@ def reset_password(token):
 @app.route('/class/<int:class_id>/leave-admin', methods=['POST'])
 @login_required
 def leave_admin(class_id):
-    user = current_user
-
-    # Hämta kopplingen mellan användare och klass
-    uc = UserClass.query.filter_by(
-        user_id=user.id,
+    # Hämta medlemskapet för inloggad användare
+    membership = ClassMember.query.filter_by(
         class_id=class_id,
+        user_id=current_user.id,
         role='admin'
     ).first()
 
-    if not uc:
-        flash("Du är inte admin i denna klass.")
+    if not membership:
+        flash("Du är inte admin i denna klass.", "error")
         return redirect(url_for('view_class', class_id=class_id))
 
-    # Räkna hur många admins som finns i klassen
-    admin_count = UserClass.query.filter_by(
+    # Räkna hur många admins klassen har
+    admin_count = ClassMember.query.filter_by(
         class_id=class_id,
         role='admin'
     ).count()
 
     if admin_count <= 1:
-        flash("Du är sista adminen i klassen och kan därför inte lämna admin-rollen.")
+        flash("Du är den sista adminen i klassen och kan därför inte lämna.", "warning")
         return redirect(url_for('view_class', class_id=class_id))
 
-    # Byt roll till member
-    uc.role = 'member'
+    # Nedgradera till member
+    membership.role = 'member'
     db.session.commit()
 
-    flash("Du är nu medlem istället för admin i klassen.")
+    flash("Du är nu medlem istället för admin i klassen.", "success")
     return redirect(url_for('view_class', class_id=class_id))
 
 
@@ -1952,11 +1950,11 @@ CLASS_TEMPLATE = """
                 <button type="submit" class="btn btn-warning">Bjud in admin</button>
             </form>
 
-            <form method="post"
-                  action="{{ url_for('leave_admin', class_id=class_.id) }}"
-                  onsubmit="return confirm('Är du säker på att du vill lämna admin-rollen?');">
+            <form method="post" action="{{ url_for('leave_admin', class_id=class_obj.id) }}"
+                  onsubmit="return confirm('Vill du verkligen lämna som admin?');"
+                  style="margin-top: 10px;">
                 <button type="submit"
-                        style="background-color: #555; color: white; border: none; padding: 6px 10px; border-radius: 4px;">
+                        style="background-color:#6c757d; color:white; border:none; padding:6px 12px; border-radius:4px;">
                     Lämna som admin
                 </button>
             </form>
@@ -2569,6 +2567,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
