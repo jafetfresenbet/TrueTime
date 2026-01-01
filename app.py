@@ -1328,83 +1328,106 @@ LOGIN_TEMPLATE = """
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
     
     <style>
+        /* Gradient bakgrund för hela sidan */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
         }
+
+        /* Kortet */
         .login-card {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-            width: 350px;
+            background-color: #ffffffee;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+            width: 360px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+        .login-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Rubrik */
         .login-card h2 {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             color: #333;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
+
+        /* Inputfält */
         .login-card input[type="email"],
         .login-card input[type="password"] {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin: 10px 0 20px 0;
             border: 1px solid #ccc;
-            border-radius: 4px;
+            border-radius: 8px;
             box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
+        .login-card input:focus {
+            border-color: #2575fc;
+            box-shadow: 0 0 8px rgba(37, 117, 252, 0.3);
+            outline: none;
+        }
+
+        /* Logga in knapp */
         .login-card button {
             width: 100%;
-            padding: 10px;
-            background-color: #007bff;
+            padding: 12px;
+            background-color: #2575fc;
             color: #fff;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s, transform 0.2s;
         }
         .login-card button:hover {
-            background-color: #0056b3;
+            background-color: #145bdc;
+            transform: translateY(-2px);
         }
-        .login-card .register-link {
+
+        /* Länkar */
+        .login-card .register-link,
+        .login-card .forgot-password {
             text-align: center;
             margin-top: 15px;
         }
-        .login-card .register-link a {
-            color: #007bff;
+        .login-card .register-link a,
+        .login-card .forgot-password a {
+            color: #2575fc;
             text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
         }
-        .login-card .register-link a:hover {
+        .login-card .register-link a:hover,
+        .login-card .forgot-password a:hover {
+            color: #145bdc;
             text-decoration: underline;
         }
+
+        /* Flash messages */
         .flash-message {
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             font-weight: bold;
+            padding: 8px;
+            border-radius: 6px;
         }
-        .flash-message.error { color: #a10000; }
-        .flash-message.success { color: #1a7f37; }
-        .flash-message.warning { color: #7c6f00; }
-        .flash-message.info { color: #004085; }
-
-        .forgot-password {
-            text-align: right;
-            margin-top: -10px;
-            margin-bottom: 15px;
-        }
-        .forgot-password a {
-            font-size: 0.9em;
-            color: #007bff;
-            text-decoration: none;
-        }
-        .forgot-password a:hover {
-            text-decoration: underline;
-        }
+        .flash-message.error { background-color: #f8d7da; color: #842029; }
+        .flash-message.success { background-color: #d1e7dd; color: #0f5132; }
+        .flash-message.warning { background-color: #fff3cd; color: #664d03; }
+        .flash-message.info { background-color: #cfe2ff; color: #084298; }
     </style>
 </head>
 <body>
@@ -2565,6 +2588,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
