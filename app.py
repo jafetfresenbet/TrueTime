@@ -2038,11 +2038,11 @@ JOIN_CLASS_TEMPLATE = """
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
-    
+
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background: linear-gradient(135deg, #ffffff 0%, #0281f7 100%);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -2056,6 +2056,11 @@ JOIN_CLASS_TEMPLATE = """
             box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
             width: 400px;
             text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .join-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
         }
         .join-card h2 {
             margin-bottom: 20px;
@@ -2068,6 +2073,11 @@ JOIN_CLASS_TEMPLATE = """
             border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        .join-card input[type="text"]:focus {
+            border-color: #007bff;
+            outline: none;
         }
         .join-card button {
             width: 100%;
@@ -2078,15 +2088,22 @@ JOIN_CLASS_TEMPLATE = """
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
+            transition: background-color 0.2s, transform 0.2s;
         }
         .join-card button:hover {
             background-color: #0056b3;
+            transform: translateY(-2px);
         }
         .flash-message {
-            color: green;
             text-align: center;
             margin-bottom: 10px;
+            font-weight: bold;
         }
+        .flash-message.error { color: #a10000; }
+        .flash-message.success { color: #1a7f37; }
+        .flash-message.warning { color: #7c6f00; }
+        .flash-message.info { color: #004085; }
+
         .back-link {
             display: block;
             text-align: center;
@@ -2095,8 +2112,11 @@ JOIN_CLASS_TEMPLATE = """
         .back-link a {
             color: #007bff;
             text-decoration: none;
+            transition: color 0.2s, transform 0.2s;
         }
         .back-link a:hover {
+            color: #0056b3;
+            transform: translateY(-2px);
             text-decoration: underline;
         }
     </style>
@@ -2104,19 +2124,20 @@ JOIN_CLASS_TEMPLATE = """
 <body>
     <div class="join-card">
         <h2>Gå med i klass</h2>
-        {% with messages = get_flashed_messages() %}
+
+        {% with messages = get_flashed_messages(with_categories=True) %}
           {% if messages %}
-            <div class="flash-message">
-              {% for message in messages %}
-                {{ message }}<br>
-              {% endfor %}
-            </div>
+            {% for category, message in messages %}
+              <div class="flash-message {{ category }}">{{ message }}</div>
+            {% endfor %}
           {% endif %}
         {% endwith %}
+
         <form method="post">
             <input type="text" name="join_code" placeholder="Ange join-kod" required>
             <button type="submit">Gå med</button>
         </form>
+
         <div class="back-link">
             <a href="{{ url_for('index') }}">Tillbaka till översikten</a>
         </div>
@@ -2867,6 +2888,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
