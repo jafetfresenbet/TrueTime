@@ -830,16 +830,73 @@ def privacy_policy():
 <head>
     <meta charset="UTF-8">
     <title>Sekretesspolicy - PlugIt+</title>
+
+    <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
+
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
-        header { background-color: #007bff; color: #fff; padding: 15px 20px; text-align: center; }
-        header h2 { margin: 0; }
-        .container { max-width: 800px; margin: 30px auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0px 4px 12px rgba(0,0,0,0.1); }
-        h3 { color: #007bff; margin-top: 20px; }
-        p, li { line-height: 1.6; }
-        ul { padding-left: 20px; }
-        a { color: #007bff; text-decoration: none; }
-        a:hover { text-decoration: underline; }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f4f4f4 0%, #e0e7ff 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+        }
+        header h2 {
+            margin: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 25px 30px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+        h3 {
+            color: #007bff;
+            margin-top: 25px;
+        }
+        p, li {
+            line-height: 1.7;
+            color: #333;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .back-link {
+            text-align: center;
+            margin-top: 25px;
+        }
+        .back-link a {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+        .back-link a:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -876,7 +933,7 @@ def privacy_policy():
         <h3>6. Kontakt</h3>
         <p>Om du har frågor om dina uppgifter eller vår hantering av dem, kontakta oss via e-post: <a href="mailto:truetimeuf@gmail.com">truetimeuf@gmail.com</a></p>
 
-        <div style="text-align:center; margin-top:20px;">
+        <div class="back-link">
             <a href="{{ url_for('index') }}">Tillbaka</a>
         </div>
     </div>
@@ -2707,6 +2764,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
