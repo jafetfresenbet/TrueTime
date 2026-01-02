@@ -2149,7 +2149,6 @@ JOIN_CLASS_TEMPLATE = """
 </body>
 </html>
 """
-
 CLASS_TEMPLATE = """
 <!doctype html>
 <html lang="sv">
@@ -2162,28 +2161,36 @@ CLASS_TEMPLATE = """
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
-    
+
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background: linear-gradient(135deg, #e0f0ff 0%, #ffffff 100%);
             margin: 0;
             padding: 0;
         }
+
         header {
             background-color: #007bff;
             color: #fff;
             padding: 15px 20px;
             text-align: center;
+            box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
         }
         header h2 {
             margin: 0;
         }
+        header p {
+            margin: 5px 0 0 0;
+            font-weight: bold;
+        }
+
         nav {
             display: flex;
             justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
             margin: 15px 0;
-            gap: 15px;
         }
         nav a, nav form button {
             text-decoration: none;
@@ -2193,54 +2200,86 @@ CLASS_TEMPLATE = """
             border-radius: 4px;
             border: none;
             cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
         }
         nav a:hover, nav form button:hover {
             background-color: #218838;
+            transform: translateY(-2px);
         }
         nav form {
             display: inline;
         }
+
         .container {
             display: flex;
             justify-content: center;
             padding: 20px;
         }
+
         .class-card {
             background-color: #fff;
-            width: 600px;
+            width: 650px;
             border-radius: 8px;
             box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-            padding: 20px;
+            padding: 25px;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
+        .class-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
+        }
+
         .class-card h3 {
             margin-top: 0;
             color: #333;
         }
+
         .section {
             margin-bottom: 25px;
         }
+
         ul {
             list-style: none;
             padding-left: 0;
         }
+
         li {
             background-color: #f8f9fa;
             margin: 5px 0;
             padding: 10px;
             border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
         }
+        li:hover {
+            background-color: #e6f0ff;
+        }
+
         .flash-message {
-            color: green;
             text-align: center;
             margin-bottom: 10px;
+            font-weight: bold;
         }
+        .flash-message.error { color: #a10000; }
+        .flash-message.success { color: #1a7f37; }
+        .flash-message.warning { color: #7c6f00; }
+        .flash-message.info { color: #004085; }
+
         form input[type="text"] {
             width: 70%;
             padding: 8px;
             margin-right: 5px;
             border-radius: 4px;
             border: 1px solid #ccc;
+            transition: border-color 0.2s;
         }
+        form input[type="text"]:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
         form button {
             padding: 8px 12px;
             border: none;
@@ -2248,9 +2287,30 @@ CLASS_TEMPLATE = """
             color: #fff;
             border-radius: 4px;
             cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
         }
         form button:hover {
             background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .btn-admin {
+            background-color: #fa0202;
+        }
+        .btn-admin:hover {
+            background-color: #c40000;
+        }
+        .btn-gray {
+            background-color: gray;
+        }
+        .btn-gray:hover {
+            background-color: #555;
+        }
+        .btn-warning {
+            background-color: orange;
+        }
+        .btn-warning:hover {
+            background-color: darkorange;
         }
     </style>
 </head>
@@ -2264,26 +2324,21 @@ CLASS_TEMPLATE = """
 
     <nav>
         <a href="{{ url_for('index') }}">Tillbaka till översikten</a>
+
         {% if is_admin %}
-            <!-- Byt ut länk mot formulär med POST -->
             <form method="post" action="{{ url_for('add_subject', class_id=class_data['id']) }}">
                 <input type="text" name="subject_name" placeholder="Ämnesnamn" required>
                 <button type="submit">Lägg till ämne</button>
             </form>
 
-            <form action="{{ url_for('add_admin_request', class_id=class_data.id) }}" method="get" style="display:inline;">
-                <button type="submit" class="btn btn-warning">Bjud in admin</button>
+            <form action="{{ url_for('add_admin_request', class_id=class_data.id) }}" method="get">
+                <button type="submit" class="btn-warning">Bjud in admin</button>
             </form>
 
             <form method="post" action="{{ url_for('leave_admin', class_id=class_data.id) }}"
-                  onsubmit="return confirm('Vill du verkligen lämna som admin?');"
-                  style="margin-top: 10px;">
-                <button type="submit"
-                        style="background-color:#fa0202; color:white; border:none; padding:6px 12px; border-radius:4px;">
-                    Lämna som admin
-                </button>
+                  onsubmit="return confirm('Vill du verkligen lämna som admin?');">
+                <button type="submit" class="btn-admin">Lämna som admin</button>
             </form>
-
         {% endif %}
     </nav>
 
@@ -2303,17 +2358,17 @@ CLASS_TEMPLATE = """
                 <h3>Ämnen / Kurser</h3>
                 <ul>
                 {% for subject in subjects %}
-                    <li style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0;">
+                    <li>
                         <span>
                             <a href="{{ url_for('view_subject', subject_id=subject['id']) }}">{{ subject['name'] }}</a>
                         </span>
                         {% if is_admin %}
                         <span>
                             <a href="{{ url_for('edit_subject', subject_id=subject['id']) }}">
-                                <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px;">Ändra</button>
+                                <button class="btn-gray">Ändra</button>
                             </a>
                             <form method="post" action="{{ url_for('delete_subject', subject_id=subject['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera ämnet?');">
-                                <button type="submit" style="background-color: red; color: white; border: none; padding: 3px 8px; border-radius:4px;">Radera</button>
+                                <button type="submit" class="btn-admin">Radera</button>
                             </form>
                         </span>
                         {% endif %}
@@ -2892,6 +2947,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
