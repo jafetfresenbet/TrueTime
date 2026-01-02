@@ -1145,7 +1145,7 @@ HOME_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
-    <title>PlugIt+ - Hem</title>
+    <title>PlugIt+ – Hem</title>
     
     <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
@@ -1154,50 +1154,120 @@ HOME_TEMPLATE = """
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
     
     <style>
+        /* Samma gradient som login */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
         }
+
+        /* Kortet */
         .home-card {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-            width: 400px;
+            background-color: #ffffffee;
+            padding: 45px 35px;
+            border-radius: 14px;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+            width: 420px;
             text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+        .home-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Rubrik */
         .home-card h1 {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            color: #333;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .brand {
+            color: #2575fc;
+            font-weight: 700;
+        }
+
+        /* Text */
+        .home-card p {
+            margin: 20px 0 30px 0;
+            color: #555;
+            font-size: 1.05em;
+            line-height: 1.5;
+        }
+
+        /* Knappar */
+        .home-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .home-actions a {
+            padding: 12px 22px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1em;
+            transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #2575fc;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #145bdc;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background-color: #e9ecef;
             color: #333;
         }
-        .home-card p {
-            margin: 15px 0;
+        .btn-secondary:hover {
+            background-color: #dfe3e7;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
         }
-        .home-card a {
+
+        /* Liten beta-tag */
+        .beta {
             display: inline-block;
-            padding: 10px 20px;
-            margin: 10px;
-            background-color: #007bff;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 4px;
-        }
-        .home-card a:hover {
-            background-color: #0056b3;
+            margin-left: 8px;
+            font-size: 0.6em;
+            padding: 3px 6px;
+            border-radius: 6px;
+            background-color: #ffc107;
+            color: #333;
+            vertical-align: middle;
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
     <div class="home-card">
-        <h1>Välkommen till <span style="color:#007bff;">PlugIt+</span> (Beta)</h1>
-        <p>Skapa en klass, bjud in klasskompisar och håll koll på uppgifter!</p>
-        <a href="{{ url_for('register') }}">Registrera</a>
-        <a href="{{ url_for('login') }}">Logga in</a>
+        <h1>
+            Välkommen till <span class="brand">PlugIt+</span>
+            <span class="beta">BETA</span>
+        </h1>
+
+        <p>
+            Skapa klasser, bjud in klasskompisar och håll koll på
+            uppgifter, prov och deadlines – allt på ett ställe.
+        </p>
+
+        <div class="home-actions">
+            <a href="{{ url_for('register') }}" class="btn-primary">Registrera</a>
+            <a href="{{ url_for('login') }}" class="btn-secondary">Logga in</a>
+        </div>
     </div>
 </body>
 </html>
@@ -2588,6 +2658,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
