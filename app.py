@@ -1288,74 +1288,119 @@ REGISTER_TEMPLATE = """
     
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
         }
+
         .register-card {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-            width: 350px;
+            background-color: #ffffffee;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+            width: 360px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+
+        .register-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 32px rgba(0,0,0,0.25);
+        }
+
         .register-card h2 {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             color: #333;
+            font-weight: 600;
         }
+
         .register-card input[type="text"],
         .register-card input[type="email"],
         .register-card input[type="password"] {
             width: 100%;
-            padding: 10px;
-            margin: 10px 0 20px 0;
+            padding: 12px;
+            margin: 10px 0 18px 0;
             border: 1px solid #ccc;
-            border-radius: 4px;
+            border-radius: 8px;
             box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
-        .register-card button {
-            width: 100%;
-            padding: 10px;
-            background-color: #28a745;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
+
+        .register-card input:focus {
+            border-color: #2575fc;
+            box-shadow: 0 0 8px rgba(37, 117, 252, 0.3);
+            outline: none;
         }
-        .register-card button:hover {
-            background-color: #218838;
+
+        .gdpr {
+            font-size: 0.9em;
+            margin-bottom: 18px;
         }
-        .register-card .login-link {
-            text-align: center;
-            margin-top: 15px;
-        }
-        .register-card .login-link a {
-            color: #007bff;
+
+        .gdpr a {
+            color: #2575fc;
             text-decoration: none;
+            font-weight: 500;
         }
-        .register-card .login-link a:hover {
+
+        .gdpr a:hover {
             text-decoration: underline;
         }
+
+        .register-card button {
+            width: 100%;
+            padding: 12px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .register-card button:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 18px;
+        }
+
+        .login-link a {
+            color: #2575fc;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
         .flash-message {
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             font-weight: bold;
+            padding: 8px;
+            border-radius: 6px;
         }
-        .flash-message.error { color: #a10000; }
-        .flash-message.success { color: #1a7f37; }
-        .flash-message.warning { color: #7c6f00; }
-        .flash-message.info { color: #004085; }
+
+        .flash-message.error { background-color: #f8d7da; color: #842029; }
+        .flash-message.success { background-color: #d1e7dd; color: #0f5132; }
+        .flash-message.warning { background-color: #fff3cd; color: #664d03; }
+        .flash-message.info { background-color: #cfe2ff; color: #084298; }
     </style>
 </head>
 <body>
     <div class="register-card">
-        <h2>Registrera</h2>
+        <h2>Skapa konto</h2>
 
         {% with messages = get_flashed_messages(with_categories=True) %}
           {% if messages %}
@@ -1369,10 +1414,14 @@ REGISTER_TEMPLATE = """
             <input type="text" name="name" placeholder="Namn" required>
             <input type="email" name="email" placeholder="E-post" required>
             <input type="password" name="password" placeholder="Lösenord" required>
-            <label>
-                <input type="checkbox" name="accept_gdpr" required>
-                Jag accepterar <a href="{{ url_for('privacy_policy') }}" target="_blank">sekretesspolicyn</a>.
-            </label>
+
+            <div class="gdpr">
+                <label>
+                    <input type="checkbox" name="accept_gdpr" required>
+                    Jag accepterar <a href="{{ url_for('privacy_policy') }}" target="_blank">sekretesspolicyn</a>
+                </label>
+            </div>
+
             <button type="submit">Registrera</button>
         </form>
 
@@ -2658,6 +2707,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
