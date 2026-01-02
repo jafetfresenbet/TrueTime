@@ -1652,10 +1652,13 @@ DASH_TEMPLATE = """
 
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #e0f0ff 0%, #ffffff 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2575fc, #ffffff);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             margin: 0;
-            padding: 0;
         }
         header {
             background-color: #007bff;
@@ -2861,6 +2864,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
