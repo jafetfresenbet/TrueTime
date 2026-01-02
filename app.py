@@ -1937,7 +1937,7 @@ CREATE_CLASS_TEMPLATE = """
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background: linear-gradient(135deg, #e0f0ff 0%, #ffffff 100%);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -1967,7 +1967,7 @@ CREATE_CLASS_TEMPLATE = """
         .create-card button {
             width: 100%;
             padding: 10px;
-            background-color: #28a745;
+            background-color: #007bff;
             color: #fff;
             border: none;
             border-radius: 4px;
@@ -1975,13 +1975,18 @@ CREATE_CLASS_TEMPLATE = """
             font-size: 16px;
         }
         .create-card button:hover {
-            background-color: #218838;
+            background-color: #0056b3;
         }
         .flash-message {
-            color: green;
             text-align: center;
             margin-bottom: 10px;
+            font-weight: bold;
         }
+        .flash-message.error { color: #a10000; }
+        .flash-message.success { color: #1a7f37; }
+        .flash-message.warning { color: #7c6f00; }
+        .flash-message.info { color: #004085; }
+
         .back-link {
             display: block;
             text-align: center;
@@ -1999,19 +2004,20 @@ CREATE_CLASS_TEMPLATE = """
 <body>
     <div class="create-card">
         <h2>Skapa ny klass</h2>
-        {% with messages = get_flashed_messages() %}
+
+        {% with messages = get_flashed_messages(with_categories=True) %}
           {% if messages %}
-            <div class="flash-message">
-              {% for message in messages %}
-                {{ message }}<br>
-              {% endfor %}
-            </div>
+            {% for category, message in messages %}
+              <div class="flash-message {{ category }}">{{ message }}</div>
+            {% endfor %}
           {% endif %}
         {% endwith %}
+
         <form method="post">
             <input type="text" name="class_name" placeholder="Klassnamn" required>
             <button type="submit">Skapa klass</button>
         </form>
+
         <div class="back-link">
             <a href="{{ url_for('index') }}">Tillbaka till översikten</a>
         </div>
@@ -2861,6 +2867,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
