@@ -1952,6 +1952,10 @@ CREATE_CLASS_TEMPLATE = """
             width: 400px;
             text-align: center;
         }
+        .join-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
+        }
         .create-card h2 {
             margin-bottom: 20px;
             color: #333;
@@ -2888,6 +2892,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
