@@ -1651,31 +1651,146 @@ DASH_TEMPLATE = """
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
 
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
-        header { background-color: #007bff; color: #fff; padding: 15px 20px; text-align: center; }
-        header h2 { margin: 0; }
-        nav { display: flex; justify-content: center; margin: 15px 0; gap: 15px; }
-        nav a { text-decoration: none; background-color: #28a745; color: #fff; padding: 10px 15px; border-radius: 4px; }
-        nav a:hover { background-color: #218838; }
-        .container { display: flex; justify-content: center; padding: 20px; }
-        .dashboard-card { background-color: #fff; width: 600px; border-radius: 8px; box-shadow: 0px 4px 12px rgba(0,0,0,0.1); padding: 20px; }
-        .dashboard-card h3 { margin-top: 0; color: #333; }
-        .section { margin-bottom: 25px; }
-        ul { list-style: none; padding-left: 0; }
-        li { background-color: #f8f9fa; margin: 5px 0; padding: 10px; border-radius: 4px; }
-        .flash-message { color: green; text-align: center; margin-bottom: 10px; }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f4f4f4 0%, #e0e7ff 100%);
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+        }
+        header h2 {
+            margin: 0;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+            gap: 15px;
+        }
+        nav a {
+            text-decoration: none;
+            background-color: #28a745;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+        nav a:hover {
+            background-color: #218838;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        .dashboard-card {
+            background-color: #fff;
+            width: 650px;
+            border-radius: 12px;
+            box-shadow: 0px 8px 20px rgba(0,0,0,0.12);
+            padding: 25px;
+        }
+        .dashboard-card h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        li {
+            background-color: #f8f9fa;
+            margin: 8px 0;
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s, color 0.2s;
+        }
+        li a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        li a:hover {
+            text-decoration: underline;
+        }
+        .flash-message {
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: #1a7f37;
+        }
 
         /* Hidden class styling */
         .hidden-class {
-            background-color: black !important;
-            color: white !important;
+            background-color: #222 !important;
+            color: #fff !important;
         }
         .hidden-class a {
             color: white !important;
         }
-        .hidden-class .assignments li {
+
+        .assignments li {
+            background-color: #f1f3f5;
+        }
+        .assignments li.hidden-class {
             background-color: #222 !important;
-            color: #fff !important;
+            color: white !important;
+        }
+
+        button {
+            cursor: pointer;
+            border-radius: 6px;
+            border: none;
+            padding: 6px 12px;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        .hide-btn {
+            background-color: #6c757d;
+            color: white;
+            margin-right: 5px;
+        }
+        .hide-btn:hover {
+            background-color: #5a6268;
+        }
+        .edit-btn {
+            background-color: gray;
+            color: white;
+            margin-left: 5px;
+        }
+        .edit-btn:hover {
+            background-color: #555;
+        }
+        .delete-btn {
+            background-color: red;
+            color: white;
+            margin-left: 3px;
+        }
+        .delete-btn:hover {
+            background-color: #a10000;
+        }
+        .leave-btn {
+            background-color: orange;
+            color: white;
+            margin-left: 5px;
+        }
+        .leave-btn:hover {
+            background-color: #e69500;
+        }
+
+        a.button-link {
+            text-decoration: none;
         }
     </style>
 </head>
@@ -1683,18 +1798,19 @@ DASH_TEMPLATE = """
     <header>
         <h2>Hej {{ user.name }} — Din översikt</h2>
     </header>
+
     <nav>
         <a href="{{ url_for('logout') }}">Logga ut</a>
         <a href="{{ url_for('create_class') }}">Skapa klass</a>
         <a href="{{ url_for('join_class') }}">Gå med i klass</a>
-        <a href="{{ url_for('profile') }}" 
-           style="padding: 8px 12px; background-color: #007bff; color: white; border-radius: 4px; text-decoration: none; margin-left: 10px;">
+        <a href="{{ url_for('profile') }}" style="padding: 8px 12px; background-color: #007bff; color: white;">
             Min profil
         </a>
     </nav>
 
     <div class="container">
         <div class="dashboard-card">
+
             {% with messages = get_flashed_messages() %}
               {% if messages %}
                 <div class="flash-message">
@@ -1705,39 +1821,30 @@ DASH_TEMPLATE = """
               {% endif %}
             {% endwith %}
 
-            <div class="section" style="margin-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <h3 style="margin: 0;">Dina klasser</h3>
-                    <span style="font-weight: bold; color: #007bff;">Dagens datum: {{ today }}</span>
+            <div class="section">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <h3>Dina klasser</h3>
+                    <span style="font-weight:bold; color:#007bff;">Dagens datum: {{ today }}</span>
                 </div>
-            
+
                 <ul>
                 {% for c in classes %}
-                    <li id="class-{{ c['class'].id }}" class="class-item" style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0;">
+                    <li id="class-{{ c['class'].id }}">
                         <span>
                             <a href="{{ url_for('view_class', class_id=c['class'].id) }}">{{ c['class'].name }}</a> 
                             (kod: {{ c['class'].join_code }})
                         </span>
                         <span>
-                            <!-- Hide/unhide button first -->
-                            <button class="hide-btn" data-class-id="{{ c['class'].id }}" 
-                                    style="background-color: brown; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-right:5px;">
-                                Hide
-                            </button>
-                        
-                            <!-- Existing buttons -->
+                            <button class="hide-btn" data-class-id="{{ c['class'].id }}">Hide</button>
+
                             {% if c['role'] == 'admin' %}
-                                <a href="{{ url_for('edit_class', class_id=c['class'].id) }}">
-                                    <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
-                                </a>
+                                <a class="button-link" href="{{ url_for('edit_class', class_id=c['class'].id) }}"><button class="edit-btn">Ändra</button></a>
                                 <form method="post" action="{{ url_for('delete_class', class_id=c['class'].id) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera klassen?');">
-                                    <button type="submit" style="background-color: red; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:3px;">Radera</button>
+                                    <button type="submit" class="delete-btn">Radera</button>
                                 </form>
                             {% else %}
                                 <form method="post" action="{{ url_for('leave_class', class_id=c['class'].id) }}" style="display:inline;" onsubmit="return confirm('Vill du lämna klassen?');">
-                                    <button type="submit" style="background-color: orange; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">
-                                        Lämna
-                                    </button>
+                                    <button type="submit" class="leave-btn">Lämna</button>
                                 </form>
                             {% endif %}
                         </span>
@@ -1752,7 +1859,7 @@ DASH_TEMPLATE = """
                 <h3>Kommande uppgifter</h3>
                 <ul class="assignments">
                 {% for a in assignments %}
-                    <li data-class-id="{{ a['class_id'] }}" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-radius: 6px; background-color: {{ a['color'] }};">
+                    <li data-class-id="{{ a['class_id'] }}" style="background-color: {{ a['color'] }};">
                         <span>
                             <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }} ({{ a['class_name'] }})
                             {% if a['deadline'] %}
@@ -1764,14 +1871,12 @@ DASH_TEMPLATE = """
                             {% endif %}
                         </span>
                         {% if a['role'] == 'admin' %}
-                        <span>
-                            <a href="{{ url_for('edit_assignment', assignment_id=a['id']) }}">
-                                <button style="background-color: gray; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:5px;">Ändra</button>
-                            </a>
-                            <form method="post" action="{{ url_for('delete_assignment', assignment_id=a['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera uppgiften?');">
-                                <button type="submit" style="background-color: red; color: white; border: none; padding: 3px 8px; border-radius:4px; margin-left:3px;">Radera</button>
-                            </form>
-                        </span>
+                            <span>
+                                <a class="button-link" href="{{ url_for('edit_assignment', assignment_id=a['id']) }}"><button class="edit-btn">Ändra</button></a>
+                                <form method="post" action="{{ url_for('delete_assignment', assignment_id=a['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera uppgiften?');">
+                                    <button type="submit" class="delete-btn">Radera</button>
+                                </form>
+                            </span>
                         {% endif %}
                     </li>
                 {% else %}
@@ -1783,40 +1888,32 @@ DASH_TEMPLATE = """
             <div class="section">
                 <h3>Integritet & Användarvillkor</h3>
                 <a href="{{ url_for('privacy_policy') }}">Visa sekretesspolicy</a><br>
-                <a href="{{ url_for('download_user_data') }}">Ladda ner dina uppgifter</a><br>
+                <a href="{{ url_for('download_user_data') }}">Ladda ner dina uppgifter</a>
             </div>
 
             <div class="section">
                 <h3>Följ oss på sociala medier:</h3>
                 <a href="https://www.instagram.com/truetimeuf/" target="_blank">Instagram</a><br>
                 <a href="https://www.tiktok.com/@truetimeuf" target="_blank">TikTok</a><br>
-                <a href="https://www.youtube.com/@TrueTimeUF" target="_blank">YouTube</a><br>
+                <a href="https://www.youtube.com/@TrueTimeUF" target="_blank">YouTube</a>
             </div>
 
         </div>
     </div>
 
     <script>
-        // Hide/unhide classes & their assignments
         document.querySelectorAll('.hide-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const classId = btn.dataset.classId;
                 const classCard = document.getElementById('class-' + classId);
 
-                // Toggle hidden class
                 classCard.classList.toggle('hidden-class');
 
-                // Toggle all assignments for this class
                 document.querySelectorAll(`.assignments li[data-class-id='${classId}']`).forEach(a => {
                     a.classList.toggle('hidden-class');
                 });
 
-                // Change button text
-                if (classCard.classList.contains('hidden-class')) {
-                    btn.textContent = 'Unhide';
-                } else {
-                    btn.textContent = 'Hide';
-                }
+                btn.textContent = classCard.classList.contains('hidden-class') ? 'Unhide' : 'Hide';
             });
         });
     </script>
@@ -2764,6 +2861,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
