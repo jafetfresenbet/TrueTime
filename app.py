@@ -1937,7 +1937,7 @@ CREATE_CLASS_TEMPLATE = """
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #e0f0ff 0%, #ffffff 100%);
+            background: linear-gradient(135deg, #ffffff 0%, #0385ff 100%);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -2867,6 +2867,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
