@@ -2790,27 +2790,139 @@ PROFILE_TEMPLATE = """
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
-    
+
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
-        header { background-color: #007bff; color: #fff; padding: 15px 20px; text-align: center; }
-        header h2 { margin: 0; }
-        .container { display: flex; justify-content: center; padding: 20px; }
-        .card { background-color: #fff; width: 600px; border-radius: 8px; box-shadow: 0px 4px 12px rgba(0,0,0,0.1); padding: 20px; }
-        h3 { margin-top: 0; color: #333; }
-        form input[type="text"], form input[type="email"], form input[type="password"] { width: 65%; padding: 8px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #ccc; }
-        form button { padding: 8px 12px; border: none; background-color: #28a745; color: #fff; border-radius: 4px; cursor: pointer; margin-right: 5px; }
-        form button:hover { background-color: #218838; }
-        .delete-btn { background-color: #dc3545; }
-        .delete-btn:hover { background-color: #c82333; }
-        .flash-message { text-align: center; margin-bottom: 10px; }
-        .back-link { display: block; text-align: center; margin-top: 15px; }
-        .back-link a { color: #007bff; text-decoration: none; }
-        .back-link a:hover { text-decoration: underline; }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #e0f0ff 0%, #ffffff 100%);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+        }
+        header h2 {
+            margin: 0;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .profile-card {
+            background-color: #fff;
+            width: 520px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+            padding: 25px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .profile-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
+        }
+
+        h3 {
+            margin-top: 0;
+            color: #333;
+            text-align: center;
+        }
+
+        .flash-message {
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
         .flash-message.error { color: #a10000; }
         .flash-message.success { color: #1a7f37; }
         .flash-message.warning { color: #7c6f00; }
         .flash-message.info { color: #004085; }
+
+        form {
+            margin-top: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+
+        form input[type="text"],
+        form input[type="email"],
+        form input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        form input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .primary-btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background-color: #28a745;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .primary-btn:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+
+        .danger-zone {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+
+        .danger-btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background-color: #dc3545;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .danger-btn:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .back-link a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .back-link a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -2819,35 +2931,47 @@ PROFILE_TEMPLATE = """
     </header>
 
     <div class="container">
-        <div class="card">
-            {% with messages = get_flashed_messages() %}
+        <div class="profile-card">
+            {% with messages = get_flashed_messages(with_categories=true) %}
               {% if messages %}
-                <div class="flash-message">
-                  {% for message in messages %}
-                    {{ message }}<br>
-                  {% endfor %}
-                </div>
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
               {% endif %}
             {% endwith %}
 
             <h3>Ändra uppgifter</h3>
             <form method="post" action="{{ url_for('edit_profile') }}">
-                <input type="text" name="name" value="{{ user.name }}" placeholder="Namn" required>
-                <input type="email" name="email" value="{{ user.email }}" placeholder="E-post" required>
-                
-                <input type="password" name="password" placeholder="Nytt lösenord (lämna tomt om du inte vill byta)">
-                <input type="password" name="confirm_password" placeholder="Bekräfta nytt lösenord">
+                <label for="name">Namn</label>
+                <input type="text" name="name" id="name" value="{{ user.name }}" required>
 
-                <button type="submit">Spara ändringar</button>
-            
+                <label for="email">E-post</label>
+                <input type="email" name="email" id="email" value="{{ user.email }}" required>
+
+                <label for="password">Nytt lösenord</label>
+                <input type="password" name="password" placeholder="Lämna tomt om du inte vill byta">
+
+                <label for="confirm_password">Bekräfta lösenord</label>
+                <input type="password" name="confirm_password">
+
+                <button type="submit" class="primary-btn">Spara ändringar</button>
             </form>
-            <h3>Radera konto</h3>
-            <form method="post" action="{{ url_for('delete_profile') }}">
-                <button type="submit" class="delete-btn" onclick="return confirm('Är du säker på att du vill radera ditt konto? Detta går inte att ångra.')">Radera konto</button>
-            </form>
+
+            <div class="danger-zone">
+                <h3>Radera konto</h3>
+                <form method="post" action="{{ url_for('delete_profile') }}">
+                    <button type="submit"
+                            class="danger-btn"
+                            onclick="return confirm('Är du säker på att du vill radera ditt konto? Detta går inte att ångra.')">
+                        Radera konto
+                    </button>
+                </form>
+            </div>
 
             <div class="back-link">
-                <a href="{{ url_for('index') }}">Tillbaka till startsidan</a>
+                <a href="{{ url_for('index') }}">← Tillbaka till startsidan</a>
             </div>
         </div>
     </div>
@@ -3141,6 +3265,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
