@@ -2400,7 +2400,7 @@ SUBJECT_TEMPLATE = """
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #ffffff 0%, #022a4f 100%);
+            background: linear-gradient(135deg, #022a4f 0%, #ffffff 100%);
             margin: 0;
             padding: 0;
         }
@@ -3045,6 +3045,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
