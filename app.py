@@ -1937,7 +1937,7 @@ CREATE_CLASS_TEMPLATE = """
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #ffffff 0%, #0385ff 100%);
+            background: linear-gradient(135deg, #022a4f 0%, #022a4f 100%);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -2046,7 +2046,7 @@ JOIN_CLASS_TEMPLATE = """
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #ffffff 0%, #0281f7 100%);
+            background: linear-gradient(135deg, #022a4f 0%, #022a4f 100%);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -2165,7 +2165,7 @@ CLASS_TEMPLATE = """
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #0282fa 0%, #ffffff 100%);
+            background: linear-gradient(135deg, #022a4f 0%, #022a4f 100%);
             margin: 0;
             padding: 0;
         }
@@ -2604,7 +2604,7 @@ EDIT_ASSIGNMENT_TEMPLATE = """
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #ffffff 0%, #0280f5 100%);
+            background: linear-gradient(135deg, #022a4f 0%, #022a4f 100%);
             margin: 0;
             padding: 0;
         }
@@ -2995,7 +2995,7 @@ EDIT_CLASS_TEMPLATE = """
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #ffffff 0%, #0583fa 100%);
+            background: linear-gradient(135deg, #022a4f 0%, #022a4f 100%);
             margin: 0;
             padding: 0;
         }
@@ -3148,7 +3148,7 @@ EDIT_SUBJECT_TEMPLATE = """
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #ffffff 0%, #0282fa 100%);
+            background: linear-gradient(135deg, #022a4f 0%, #022a4f 100%);
             margin: 0;
             padding: 0;
         }
@@ -3497,6 +3497,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
