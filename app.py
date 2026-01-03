@@ -2983,65 +2983,115 @@ EDIT_CLASS_TEMPLATE = """
 <!doctype html>
 <html lang="sv">
 <head>
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <meta charset="UTF-8">
     <title>Ändra klass - PlugIt+</title>
+
+    <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
+
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            background: linear-gradient(135deg, #ffffff 0%, #0583fa 100%);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+        }
+        header h2 {
             margin: 0;
         }
-        .create-card {
+
+        .container {
+            display: flex;
+            justify-content: center;
+            padding: 30px 20px;
+        }
+
+        .edit-card {
             background-color: #fff;
-            padding: 30px;
+            width: 420px;
             border-radius: 8px;
             box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-            width: 400px;
+            padding: 25px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .edit-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
+        }
+
+        h3 {
+            margin-top: 0;
+            color: #333;
             text-align: center;
         }
-        .create-card h2 {
-            margin-bottom: 20px;
-            color: #333;
+
+        .flash-message {
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #a10000;
         }
-        .create-card input[type="text"] {
+
+        form {
+            margin-top: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        form input[type="text"] {
             width: 100%;
             padding: 10px;
-            margin: 10px 0 20px 0;
-            border: 1px solid #ccc;
+            margin-bottom: 15px;
             border-radius: 4px;
+            border: 1px solid #ccc;
             box-sizing: border-box;
+            transition: border-color 0.2s;
         }
-        .create-card button {
+
+        form input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .primary-btn {
             width: 100%;
             padding: 10px;
+            border: none;
             background-color: #28a745;
             color: #fff;
-            border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
+            transition: transform 0.2s, background-color 0.2s;
         }
-        .create-card button:hover {
+        .primary-btn:hover {
             background-color: #218838;
+            transform: translateY(-2px);
         }
-        .flash-message {
-            color: red;
-            text-align: center;
-            margin-bottom: 10px;
-        }
+
         .back-link {
-            display: block;
             text-align: center;
-            margin-top: 15px;
+            margin-top: 20px;
         }
         .back-link a {
             color: #007bff;
             text-decoration: none;
+            font-weight: bold;
         }
         .back-link a:hover {
             text-decoration: underline;
@@ -3049,23 +3099,33 @@ EDIT_CLASS_TEMPLATE = """
     </style>
 </head>
 <body>
-    <div class="create-card">
+    <header>
         <h2>Ändra klass</h2>
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            <div class="flash-message">
-              {% for message in messages %}
-                {{ message }}<br>
-              {% endfor %}
+    </header>
+
+    <div class="container">
+        <div class="edit-card">
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="flash-message">
+                  {% for message in messages %}
+                    {{ message }}<br>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+
+            <h3>Klassens namn</h3>
+            <form method="post">
+                <label for="class_name">Namn</label>
+                <input type="text" id="class_name" name="class_name" value="{{ cls.name }}" required>
+
+                <button type="submit" class="primary-btn">Spara ändringar</button>
+            </form>
+
+            <div class="back-link">
+                <a href="{{ url_for('index') }}">← Tillbaka till översikten</a>
             </div>
-          {% endif %}
-        {% endwith %}
-        <form method="post">
-            <input type="text" name="class_name" value="{{ cls.name }}" required>
-            <button type="submit">Ändra klass</button>
-        </form>
-        <div class="back-link">
-            <a href="{{ url_for('index') }}">Tillbaka till översikten</a>
         </div>
     </div>
 </body>
@@ -3265,6 +3325,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
