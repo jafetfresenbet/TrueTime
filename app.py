@@ -3393,7 +3393,7 @@ RESET_PASSWORD_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
-    <title>Återställ lösenord</title>
+    <title>Återställ lösenord - PlugIt+</title>
 
     <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
@@ -3404,32 +3404,64 @@ RESET_PASSWORD_TEMPLATE = """
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            background: linear-gradient(135deg, #e0f0ff 0%, #ffffff 100%);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+        }
+        header h2 {
             margin: 0;
         }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
         .card {
             background-color: #fff;
-            padding: 30px;
+            width: 380px;
             border-radius: 8px;
             box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-            width: 350px;
+            padding: 25px;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        h2 {
-            text-align: center;
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
+        }
+
+        h3 {
+            margin-top: 0;
             margin-bottom: 20px;
+            text-align: center;
+            color: #333;
         }
+
         input {
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
             border-radius: 4px;
             border: 1px solid #ccc;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
         }
-        button {
+
+        input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .primary-btn {
             width: 100%;
             padding: 10px;
             background-color: #28a745;
@@ -3437,25 +3469,35 @@ RESET_PASSWORD_TEMPLATE = """
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s, background-color 0.2s;
         }
-        button:hover {
+        .primary-btn:hover {
             background-color: #218838;
+            transform: translateY(-2px);
         }
     </style>
 </head>
 <body>
-    <div class="card">
+    <header>
         <h2>Återställ lösenord</h2>
+    </header>
 
-        <form method="post">
-            <input type="password" name="password" placeholder="Nytt lösenord" required>
-            <input type="password" name="confirm_password" placeholder="Bekräfta lösenord" required>
-            <button type="submit">Spara nytt lösenord</button>
-        </form>
+    <div class="container">
+        <div class="card">
+            <h3>Ange nytt lösenord</h3>
+
+            <form method="post">
+                <input type="password" name="password" placeholder="Nytt lösenord" required>
+                <input type="password" name="confirm_password" placeholder="Bekräfta lösenord" required>
+                <button type="submit" class="primary-btn">Spara nytt lösenord</button>
+            </form>
+        </div>
     </div>
 </body>
 </html>
 """
+
 
 
 
