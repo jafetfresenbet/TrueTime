@@ -2600,33 +2600,125 @@ EDIT_ASSIGNMENT_TEMPLATE = """
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
-    
+
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
-        header { background-color: #007bff; color: #fff; padding: 15px 20px; text-align: center; }
-        header h2 { margin: 0; }
-        .container { display: flex; justify-content: center; padding: 20px; }
-        .subject-card { background-color: #fff; width: 600px; border-radius: 8px; box-shadow: 0px 4px 12px rgba(0,0,0,0.1); padding: 20px; }
-        h3 { margin-top: 0; color: #333; }
-        ul { list-style: none; padding-left: 0; }
-        li { background-color: #f8f9fa; margin: 5px 0; padding: 10px; border-radius: 4px; }
-        .flash-message { color: green; text-align: center; margin-bottom: 10px; }
-        form input[type="text"], form input[type="date"], form input[type="datetime-local"], form select { width: 65%; padding: 8px; margin-right: 5px; border-radius: 4px; border: 1px solid #ccc; }
-        form button { padding: 8px 12px; border: none; background-color: #28a745; color: #fff; border-radius: 4px; cursor: pointer; }
-        form button:hover { background-color: #218838; }
-        .back-link { display: block; text-align: center; margin-top: 15px; }
-        .back-link a { color: #007bff; text-decoration: none; }
-        .back-link a:hover { text-decoration: underline; }
-        label { display: inline-block; width: 80px; }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #ffffff 0%, #0280f5 100%);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+        }
+        header h2 {
+            margin: 0;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .edit-card {
+            background-color: #fff;
+            width: 500px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+            padding: 25px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .edit-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
+        }
+
+        h3 {
+            margin-top: 0;
+            color: #333;
+            text-align: center;
+        }
+
+        .flash-message {
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #1a7f37;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+
+        form input[type="text"],
+        form input[type="date"],
+        form input[type="datetime-local"],
+        form select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        form input:focus,
+        form select:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        form button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 15px;
+            border: none;
+            background-color: #28a745;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        form button:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .back-link a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .back-link a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <header>
-        <h2>{{ subject.name }} - {{ class_data.name }}</h2>
+        <h2>{{ subject.name }} — {{ class_data.name }}</h2>
     </header>
 
     <div class="container">
-        <div class="subject-card">
+        <div class="edit-card">
             {% with messages = get_flashed_messages() %}
               {% if messages %}
                 <div class="flash-message">
@@ -2637,44 +2729,48 @@ EDIT_ASSIGNMENT_TEMPLATE = """
               {% endif %}
             {% endwith %}
 
-            <h3>Ändra uppgift / Prov</h3>
+            <h3>Ändra uppgift / prov</h3>
 
             {% if is_admin %}
-            <form method="post" action="">
-                <input type="text" name="title" value="{{ assignment.title }}" required>
+            <form method="post">
+                <label for="title">Titel</label>
+                <input type="text" name="title" id="title" value="{{ assignment.title }}" required>
 
-                <label for="type">Typ:</label>
+                <label for="type">Typ</label>
                 <select name="type" id="type" required onchange="updateDeadlineInput()">
                     <option value="assignment" {% if assignment.type == 'assignment' %}selected{% endif %}>Uppgift</option>
                     <option value="exam" {% if assignment.type == 'exam' %}selected{% endif %}>Prov</option>
                 </select>
 
+                <label for="deadline_input">Deadline / Datum</label>
                 <input 
                     type="{% if assignment.type == 'exam' %}date{% else %}datetime-local{% endif %}" 
                     name="deadline" 
                     id="deadline_input"
-                    value="{% if assignment.deadline %}{% if assignment.type == 'exam' %}{{ assignment.deadline.strftime('%Y-%m-%d') }}{% else %}{{ assignment.deadline.strftime('%Y-%m-%dT%H:%M') }}{% endif %}{% else %}{% endif %}"
+                    value="{% if assignment.deadline %}
+                        {% if assignment.type == 'exam' %}
+                            {{ assignment.deadline.strftime('%Y-%m-%d') }}
+                        {% else %}
+                            {{ assignment.deadline.strftime('%Y-%m-%dT%H:%M') }}
+                        {% endif %}
+                    {% endif %}"
                 >
 
                 <button type="submit">Spara ändringar</button>
             </form>
 
             <script>
-            function updateDeadlineInput() {
-                const typeSelect = document.getElementById('type');
-                const deadlineInput = document.getElementById('deadline_input');
-                if(typeSelect.value === 'exam') {
-                    deadlineInput.type = 'date';
-                } else {
-                    deadlineInput.type = 'datetime-local';
+                function updateDeadlineInput() {
+                    const typeSelect = document.getElementById('type');
+                    const deadlineInput = document.getElementById('deadline_input');
+                    deadlineInput.type = typeSelect.value === 'exam' ? 'date' : 'datetime-local';
                 }
-            }
-            window.onload = updateDeadlineInput;
+                window.onload = updateDeadlineInput;
             </script>
             {% endif %}
 
             <div class="back-link">
-                <a href="{{ url_for('index', subject_id=subject.id) }}">Avbryt / Tillbaka</a>
+                <a href="{{ url_for('index') }}">← Avbryt & tillbaka</a>
             </div>
         </div>
     </div>
@@ -3045,6 +3141,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
