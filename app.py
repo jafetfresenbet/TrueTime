@@ -177,16 +177,19 @@ def check_days_left_threshold(user, assignment):
     db.session.commit()
 
 def send_deadline_notifications():
-    if user.notifications_enabled:
-        assignments = Assignment.query.all()
+    assignments = Assignment.query.all()  # fetch all assignments
 
     for a in assignments:
         if not a.deadline:
             continue
 
+        # Loop through all class members of the assignment's subject
         for uc in a.subject.cls.members:
             user = uc.user
-            check_days_left_threshold(user, a)
+
+            # Only send notification if the user has notifications enabled
+            if user.notifications_enabled:
+                check_days_left_threshold(user, a)
 
 @rq.job
 def send_email_job(user_id, subject, body):
@@ -3512,6 +3515,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
