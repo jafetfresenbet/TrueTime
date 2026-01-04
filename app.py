@@ -71,6 +71,7 @@ class User(db.Model):
     reset_password_token = db.Column(db.String(256), nullable=True)
     reset_password_expires = db.Column(db.DateTime, nullable=True)
     classes = db.relationship('UserClass', back_populates='user', cascade="all, delete-orphan")
+    notifications_enabled = db.Column(db.Boolean, default=True)
 
 class Class(db.Model):
     __tablename__ = 'classes'
@@ -2956,6 +2957,12 @@ PROFILE_TEMPLATE = """
                 <label for="confirm_password">Bekräfta lösenord</label>
                 <input type="password" name="confirm_password">
 
+                <label style="display:flex; align-items:center; gap:10px; margin:15px 0;">
+                    <input type="checkbox" name="notifications_enabled"
+                           {% if user.notifications_enabled %}checked{% endif %}>
+                    <span>Ta emot notiser om uppgifter & prov</span>
+                </label>
+
                 <button type="submit" class="primary-btn">Spara ändringar</button>
             </form>
 
@@ -3497,6 +3504,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
