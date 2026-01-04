@@ -177,7 +177,8 @@ def check_days_left_threshold(user, assignment):
     db.session.commit()
 
 def send_deadline_notifications():
-    assignments = Assignment.query.all()
+    if user.notifications_enabled:
+        assignments = Assignment.query.all()
 
     for a in assignments:
         if not a.deadline:
@@ -238,23 +239,28 @@ def profile():
 @app.route('/profile/edit', methods=['POST'])
 @login_required
 def edit_profile():
-    user = current_user()
+    user = current_user()  # ✅ FIXED
+
     new_name = request.form.get('name', '').strip()
     new_email = request.form.get('email', '').strip()
     new_password = request.form.get('password', '').strip()
     confirm_password = request.form.get('confirm_password', '').strip()
     new_phone = request.form.get('phone_number', '').strip()
 
+    # 🔔 notifications checkbox
+    notifications_enabled = 'notifications_enabled' in request.form
+
     if not new_name or not new_email:
         flash("Fyll i både namn och e-post.", "error")
         return redirect(url_for('profile'))
 
-    # Check if the new email is already used by another user
+    # Check if email is already used
     existing_user = User.query.filter_by(email=new_email).first()
     if existing_user and existing_user.id != user.id:
         flash("Denna e-post används redan av en annan användare.", "warning")
         return redirect(url_for('profile'))
 
+    # Password update
     if new_password:
         if new_password != confirm_password:
             flash("Lösenorden matchar inte.", "warning")
@@ -265,6 +271,7 @@ def edit_profile():
     user.name = new_name
     user.email = new_email
     user.phone_number = new_phone
+    user.notifications_enabled = notifications_enabled  # 🔔 NEW
 
     db.session.commit()
     flash("Dina uppgifter har uppdaterats.", "success")
@@ -3504,6 +3511,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
