@@ -249,6 +249,7 @@ def edit_profile():
 
     # 🔔 notifications checkbox
     notifications_enabled = 'notifications_enabled' in request.form
+    user.notifications_enabled = notifications_enabled
 
     if not new_name or not new_email:
         flash("Fyll i både namn och e-post.", "error")
@@ -3511,6 +3512,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
