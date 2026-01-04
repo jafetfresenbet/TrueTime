@@ -2806,7 +2806,7 @@ PROFILE_TEMPLATE = """
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(180deg, #000000 0%, #ff0000 100%);
+            background: linear-gradient(180deg, #ffffff 0%, #780101 100%);
             margin: 0;
             padding: 0;
         }
@@ -3515,6 +3515,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
