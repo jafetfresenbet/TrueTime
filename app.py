@@ -191,6 +191,19 @@ def send_deadline_notifications():
             if user.notifications_enabled:
                 check_days_left_threshold(user, a)
 
+def delete_expired_assignments():
+    now = datetime.utcnow()
+
+    expired_assignments = Assignment.query.filter(
+        Assignment.deadline != None,
+        Assignment.deadline < now
+    ).all()
+
+    for assignment in expired_assignments:
+        db.session.delete(assignment)
+
+    db.session.commit()
+
 @rq.job
 def send_email_job(user_id, subject, body):
     from models import User
@@ -365,6 +378,8 @@ def index():
                     'color': color,
                     'role': role  # <-- assign role from current class
                 })
+
+    delete_expired_assignments()
 
     assignments_display.sort(key=lambda x: x['deadline'] or datetime.max)
     today = datetime.now().strftime('%Y-%m-%d')
@@ -3515,6 +3530,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
