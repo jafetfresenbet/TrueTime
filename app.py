@@ -3298,125 +3298,55 @@ FORGOT_PASSWORD_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
-    <title>Ändra ämne - PlugIt+</title>
-
-    <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
-
+    <title>Glömt lösenord</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #e0f0ff 0%, #ffffff 100%);
-            margin: 0;
-            padding: 0;
-        }
-
-        header {
-            background-color: #007bff;
-            color: #fff;
-            padding: 15px 20px;
-            text-align: center;
-            box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
-        }
-        header h2 {
-            margin: 0;
-        }
-
-        .container {
+            background-color: #f4f4f4;
             display: flex;
             justify-content: center;
-            padding: 30px 20px;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
-
-        .edit-card {
-            background-color: #fff;
-            width: 420px;
+        .card {
+            background: #fff;
+            padding: 30px;
             border-radius: 8px;
-            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-            padding: 25px;
-            text-align: center;
-            transition: transform 0.2s, box-shadow 0.2s;
+            width: 350px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .edit-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
-        }
-
-        h3 {
-            margin-top: 0;
-            color: #333;
-        }
-
-        form {
+        h2 { text-align: center; }
+        input, button {
+            width: 100%;
+            padding: 10px;
             margin-top: 15px;
         }
-
-        form input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-            transition: border-color 0.2s;
-        }
-
-        form input:focus {
-            border-color: #007bff;
-            outline: none;
-        }
-
-        .primary-btn {
-            width: 100%;
-            padding: 10px;
+        button {
+            background: #007bff;
+            color: white;
             border: none;
-            background-color: #28a745;
-            color: #fff;
             border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: transform 0.2s, background-color 0.2s;
         }
-        .primary-btn:hover {
-            background-color: #218838;
-            transform: translateY(-2px);
-        }
-
-        .back-link {
-            margin-top: 20px;
+        .back {
             text-align: center;
-        }
-        .back-link a {
-            color: #007bff;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .back-link a:hover {
-            text-decoration: underline;
+            margin-top: 15px;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h2>Ändra ämne</h2>
-    </header>
+<div class="card">
+    <h2>Återställ lösenord</h2>
 
-    <div class="container">
-        <div class="edit-card">
-            <h3>Ämnesnamn</h3>
-            <form method="post">
-                <input type="text" name="subject_name" value="{{ subject.name }}" required>
-                <button type="submit" class="primary-btn">Spara ändringar</button>
-            </form>
+    <form method="post">
+        <input type="email" name="email" placeholder="Din e-post" required>
+        <button type="submit">Skicka återställningslänk</button>
+    </form>
 
-            <div class="back-link">
-                <a href="{{ url_for('view_class', class_id=cls.id) }}">← Tillbaka till klassen</a>
-            </div>
-        </div>
+    <div class="back">
+        <a href="{{ url_for('login') }}">Tillbaka till login</a>
     </div>
+</div>
 </body>
 </html>
 """
@@ -3530,6 +3460,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
