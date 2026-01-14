@@ -1402,6 +1402,10 @@ REGISTER_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
+
+    <!-- ✅ ADDED -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Registrera</title>
 
     <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
@@ -1417,7 +1421,11 @@ REGISTER_TEMPLATE = """
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+
+            /* ✅ changed for better centering on mobile */
+            min-height: 100vh;
+            box-sizing: border-box;
+
             margin: 0;
         }
 
@@ -1520,6 +1528,22 @@ REGISTER_TEMPLATE = """
         .flash-message.success { background-color: #d1e7dd; color: #0f5132; }
         .flash-message.warning { background-color: #fff3cd; color: #664d03; }
         .flash-message.info { background-color: #cfe2ff; color: #084298; }
+
+        /* ✅ ADDED: Mobile improvements */
+        @media (max-width: 600px) {
+            body {
+                padding: 20px;
+            }
+
+            .register-card {
+                width: 100%;
+                padding: 30px 20px;
+            }
+
+            .register-card h2 {
+                font-size: 1.4em;
+            }
+        }
     </style>
 </head>
 <body>
@@ -3500,6 +3524,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
