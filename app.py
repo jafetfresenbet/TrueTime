@@ -1249,7 +1249,8 @@ HOME_TEMPLATE = """
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
+            box-sizing: border-box;
             margin: 0;
         }
 
@@ -3499,6 +3500,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
