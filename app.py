@@ -1757,6 +1757,10 @@ DASH_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
+
+    <!-- ✅ ADDED -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>PlugIt+ - Översikt</title>
 
     <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
@@ -1787,6 +1791,7 @@ DASH_TEMPLATE = """
             justify-content: center;
             margin: 15px 0;
             gap: 15px;
+            flex-wrap: wrap; /* ✅ Added for mobile wrapping */
         }
         nav a {
             text-decoration: none;
@@ -1831,6 +1836,7 @@ DASH_TEMPLATE = """
             justify-content: space-between;
             align-items: center;
             transition: background 0.2s, color 0.2s;
+            flex-wrap: wrap; /* ✅ Added for mobile wrapping */
         }
         li a {
             color: #007bff;
@@ -1906,6 +1912,27 @@ DASH_TEMPLATE = """
 
         a.button-link {
             text-decoration: none;
+        }
+
+        /* ✅ Mobile adjustments */
+        @media (max-width: 700px) {
+            .dashboard-card {
+                width: 100%;
+                padding: 20px;
+            }
+
+            li {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            li span {
+                margin-bottom: 5px;
+            }
+
+            nav {
+                gap: 8px;
+            }
         }
     </style>
 </head>
@@ -3548,6 +3575,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
