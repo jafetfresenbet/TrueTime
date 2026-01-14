@@ -1229,6 +1229,10 @@ HOME_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
+
+    <!-- ✅ ADDED: makes layout work correctly on phones -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>PlugIt+ – Hem</title>
     
     <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
@@ -1259,6 +1263,7 @@ HOME_TEMPLATE = """
             text-align: center;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+
         .home-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 16px 32px rgba(0, 0, 0, 0.25);
@@ -1306,6 +1311,7 @@ HOME_TEMPLATE = """
             background-color: #2575fc;
             color: white;
         }
+
         .btn-primary:hover {
             background-color: #145bdc;
             transform: translateY(-2px);
@@ -1316,6 +1322,7 @@ HOME_TEMPLATE = """
             background-color: #e9ecef;
             color: #333;
         }
+
         .btn-secondary:hover {
             background-color: #dfe3e7;
             transform: translateY(-2px);
@@ -1333,6 +1340,38 @@ HOME_TEMPLATE = """
             color: #333;
             vertical-align: middle;
             font-weight: 600;
+        }
+
+        /* ✅ ADDED: Mobile improvements */
+        @media (max-width: 600px) {
+            body {
+                padding: 20px;
+                height: auto;
+            }
+
+            .home-card {
+                width: 100%;
+                padding: 30px 20px;
+            }
+
+            .home-card h1 {
+                font-size: 1.4em;
+            }
+
+            .home-card p {
+                font-size: 1em;
+            }
+
+            .home-actions {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .home-actions a {
+                width: 100%;
+                text-align: center;
+                padding: 14px 0;
+            }
         }
     </style>
 </head>
@@ -3460,6 +3499,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
