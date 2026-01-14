@@ -2068,6 +2068,7 @@ CREATE_CLASS_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skapa klass - PlugIt+</title>
 
     <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
@@ -2200,6 +2201,7 @@ JOIN_CLASS_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gå med i klass - PlugIt+</title>
 
     <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
@@ -2314,6 +2316,7 @@ JOIN_CLASS_TEMPLATE = """
 </body>
 </html>
 """
+
 CLASS_TEMPLATE = """
 <!doctype html>
 <html lang="sv">
@@ -3598,6 +3601,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
