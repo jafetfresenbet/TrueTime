@@ -2570,6 +2570,7 @@ SUBJECT_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ subject['name'] }} - {{ class_data['name'] }}</title>
 
     <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
@@ -2579,6 +2580,10 @@ SUBJECT_TEMPLATE = """
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #022a4f 0%, #022a4f 100%);
@@ -2593,27 +2598,31 @@ SUBJECT_TEMPLATE = """
             text-align: center;
             box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
         }
+
         header h2 {
             margin: 0;
+            font-size: 20px;
         }
 
         .container {
             display: flex;
             justify-content: center;
-            padding: 20px;
+            padding: 20px 12px;
         }
 
         .subject-card {
             background-color: #fff;
-            width: 650px;
-            border-radius: 8px;
+            width: 100%;
+            max-width: 650px;
+            border-radius: 10px;
             box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-            padding: 25px;
+            padding: 22px;
             transition: transform 0.2s, box-shadow 0.2s;
         }
+
         .subject-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
+            transform: translateY(-3px);
+            box-shadow: 0px 8px 18px rgba(0,0,0,0.12);
         }
 
         h3 {
@@ -2623,15 +2632,17 @@ SUBJECT_TEMPLATE = """
 
         ul {
             list-style: none;
-            padding-left: 0;
+            padding: 0;
+            margin: 0;
         }
 
         li {
             margin: 6px 0;
-            padding: 10px;
+            padding: 12px;
             border-radius: 6px;
             transition: transform 0.2s, filter 0.2s;
         }
+
         li:hover {
             transform: translateY(-2px);
             filter: brightness(0.95);
@@ -2639,7 +2650,7 @@ SUBJECT_TEMPLATE = """
 
         .flash-message {
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             font-weight: bold;
             color: #1a7f37;
         }
@@ -2655,11 +2666,12 @@ SUBJECT_TEMPLATE = """
             width: 100%;
             padding: 10px;
             margin: 8px 0;
-            border-radius: 4px;
+            border-radius: 6px;
             border: 1px solid #ccc;
             box-sizing: border-box;
             transition: border-color 0.2s;
         }
+
         form input:focus,
         form select:focus {
             border-color: #007bff;
@@ -2673,11 +2685,12 @@ SUBJECT_TEMPLATE = """
             border: none;
             background-color: #28a745;
             color: #fff;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 16px;
             transition: transform 0.2s, background-color 0.2s;
         }
+
         form button:hover {
             background-color: #218838;
             transform: translateY(-2px);
@@ -2687,84 +2700,105 @@ SUBJECT_TEMPLATE = """
             text-align: center;
             margin-top: 20px;
         }
+
         .back-link a {
             color: #007bff;
             text-decoration: none;
             font-weight: bold;
         }
+
         .back-link a:hover {
             text-decoration: underline;
+        }
+
+        /* --------- RESPONSIVE --------- */
+        @media (max-width: 600px) {
+            header h2 {
+                font-size: 18px;
+            }
+
+            .subject-card {
+                padding: 16px;
+            }
+
+            li {
+                padding: 10px;
+            }
+
+            form input, form select, form button {
+                font-size: 14px;
+            }
         }
     </style>
 </head>
 <body>
-    <header>
-        <h2>{{ subject['name'] }} — {{ class_data['name'] }}</h2>
-    </header>
+<header>
+    <h2>{{ subject['name'] }} — {{ class_data['name'] }}</h2>
+</header>
 
-    <div class="container">
-        <div class="subject-card">
-            {% with messages = get_flashed_messages() %}
-              {% if messages %}
-                <div class="flash-message">
-                  {% for message in messages %}
-                    {{ message }}<br>
-                  {% endfor %}
-                </div>
-              {% endif %}
-            {% endwith %}
-
-            <h3>Uppgifter / Inlämningar / Prov</h3>
-            <ul>
-            {% for assignment in assignments %}
-                <li style="background-color: {{ assignment['color'] }};">
-                    <strong>{{ assignment['title'] }}</strong> —
-                    {% if assignment['deadline'] %}
-                        {% if assignment['type'] == 'assignment' %}
-                            deadline: {{ assignment['deadline'].strftime('%Y/%m/%d %H:%M') }}
-                        {% else %}
-                            datum: {{ assignment['deadline'].strftime('%Y/%m/%d') }}
-                        {% endif %}
-                    {% else %}
-                        Ingen deadline
-                    {% endif %}
-                </li>
-            {% else %}
-                <li style="background-color:#f8f9fa;">Inga uppgifter tillagda ännu.</li>
-            {% endfor %}
-            </ul>
-
-            {% if is_admin %}
-            <form method="post" action="{{ url_for('add_assignment', subject_id=subject['id']) }}">
-                <input type="text" name="title" placeholder="Uppgiftsnamn" required>
-
-                <select name="type" id="type" required onchange="updateDeadlineInput()">
-                    <option value="assignment">Uppgift</option>
-                    <option value="exam">Prov</option>
-                </select>
-
-                <input type="datetime-local" name="deadline" id="deadline_input">
-
-                <button type="submit">Lägg till uppgift</button>
-            </form>
-
-            <script>
-                function updateDeadlineInput() {
-                    const typeSelect = document.getElementById('type');
-                    const deadlineInput = document.getElementById('deadline_input');
-                    deadlineInput.type = typeSelect.value === 'exam' ? 'date' : 'datetime-local';
-                }
-                window.onload = updateDeadlineInput;
-            </script>
-            {% endif %}
-
-            <div class="back-link">
-                <a href="{{ url_for('view_class', class_id=class_data['id']) }}">
-                    ← Tillbaka till klassen
-                </a>
+<div class="container">
+    <div class="subject-card">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash-message">
+              {% for message in messages %}
+                {{ message }}<br>
+              {% endfor %}
             </div>
+          {% endif %}
+        {% endwith %}
+
+        <h3>Uppgifter / Inlämningar / Prov</h3>
+        <ul>
+        {% for assignment in assignments %}
+            <li style="background-color: {{ assignment['color'] }};">
+                <strong>{{ assignment['title'] }}</strong> —
+                {% if assignment['deadline'] %}
+                    {% if assignment['type'] == 'assignment' %}
+                        deadline: {{ assignment['deadline'].strftime('%Y/%m/%d %H:%M') }}
+                    {% else %}
+                        datum: {{ assignment['deadline'].strftime('%Y/%m/%d') }}
+                    {% endif %}
+                {% else %}
+                    Ingen deadline
+                {% endif %}
+            </li>
+        {% else %}
+            <li style="background-color:#f8f9fa;">Inga uppgifter tillagda ännu.</li>
+        {% endfor %}
+        </ul>
+
+        {% if is_admin %}
+        <form method="post" action="{{ url_for('add_assignment', subject_id=subject['id']) }}">
+            <input type="text" name="title" placeholder="Uppgiftsnamn" required>
+
+            <select name="type" id="type" required onchange="updateDeadlineInput()">
+                <option value="assignment">Uppgift</option>
+                <option value="exam">Prov</option>
+            </select>
+
+            <input type="datetime-local" name="deadline" id="deadline_input">
+
+            <button type="submit">Lägg till uppgift</button>
+        </form>
+
+        <script>
+            function updateDeadlineInput() {
+                const typeSelect = document.getElementById('type');
+                const deadlineInput = document.getElementById('deadline_input');
+                deadlineInput.type = typeSelect.value === 'exam' ? 'date' : 'datetime-local';
+            }
+            window.onload = updateDeadlineInput;
+        </script>
+        {% endif %}
+
+        <div class="back-link">
+            <a href="{{ url_for('view_class', class_id=class_data['id']) }}">
+                ← Tillbaka till klassen
+            </a>
         </div>
     </div>
+</div>
 </body>
 </html>
 """
@@ -3614,6 +3648,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
