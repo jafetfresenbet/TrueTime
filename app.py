@@ -2322,6 +2322,7 @@ CLASS_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ class_data['name'] }} - PlugIt+</title>
 
     <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
@@ -2331,6 +2332,10 @@ CLASS_TEMPLATE = """
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #022a4f 0%, #022a4f 100%);
@@ -2345,35 +2350,31 @@ CLASS_TEMPLATE = """
             text-align: center;
             box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
         }
-        header h2 {
-            margin: 0;
-        }
-        header p {
-            margin: 5px 0 0 0;
-            font-weight: bold;
-        }
 
         nav {
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
             gap: 10px;
-            margin: 15px 0;
+            margin: 15px;
         }
+
         nav a, nav form button {
-            text-decoration: none;
             background-color: #28a745;
             color: #fff;
-            padding: 10px 15px;
-            border-radius: 4px;
+            padding: 10px 14px;
+            border-radius: 6px;
             border: none;
             cursor: pointer;
-            transition: transform 0.2s, background-color 0.2s;
+            text-decoration: none;
+            transition: 0.2s;
         }
+
         nav a:hover, nav form button:hover {
             background-color: #218838;
             transform: translateY(-2px);
         }
+
         nav form {
             display: inline;
         }
@@ -2381,25 +2382,16 @@ CLASS_TEMPLATE = """
         .container {
             display: flex;
             justify-content: center;
-            padding: 20px;
+            padding: 20px 12px;
         }
 
         .class-card {
             background-color: #fff;
-            width: 650px;
-            border-radius: 8px;
+            width: 100%;
+            max-width: 650px;
+            border-radius: 10px;
             box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-            padding: 25px;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .class-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
-        }
-
-        .class-card h3 {
-            margin-top: 0;
-            color: #333;
+            padding: 22px;
         }
 
         .section {
@@ -2408,44 +2400,49 @@ CLASS_TEMPLATE = """
 
         ul {
             list-style: none;
-            padding-left: 0;
+            padding: 0;
+            margin: 0;
         }
 
         li {
             background-color: #f8f9fa;
-            margin: 5px 0;
-            padding: 10px;
-            border-radius: 4px;
+            margin: 8px 0;
+            padding: 12px;
+            border-radius: 6px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: background-color 0.2s;
+            gap: 10px;
+            flex-wrap: wrap;
         }
-        li:hover {
-            background-color: #e6f0ff;
+
+        li a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        li a:hover {
+            text-decoration: underline;
         }
 
         .flash-message {
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             font-weight: bold;
         }
+
         .flash-message.error { color: #a10000; }
         .flash-message.success { color: #1a7f37; }
         .flash-message.warning { color: #7c6f00; }
         .flash-message.info { color: #004085; }
 
         form input[type="text"] {
-            width: 70%;
+            width: 100%;
+            max-width: 220px;
             padding: 8px;
-            margin-right: 5px;
-            border-radius: 4px;
+            border-radius: 6px;
             border: 1px solid #ccc;
-            transition: border-color 0.2s;
-        }
-        form input[type="text"]:focus {
-            border-color: #007bff;
-            outline: none;
         }
 
         form button {
@@ -2453,101 +2450,117 @@ CLASS_TEMPLATE = """
             border: none;
             background-color: #007bff;
             color: #fff;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: transform 0.2s, background-color 0.2s;
-        }
-        form button:hover {
-            background-color: #0056b3;
-            transform: translateY(-2px);
+            transition: 0.2s;
         }
 
-        .btn-admin {
-            background-color: #fa0202;
-        }
-        .btn-admin:hover {
-            background-color: #c40000;
-        }
-        .btn-gray {
-            background-color: gray;
-        }
-        .btn-gray:hover {
-            background-color: #555;
-        }
-        .btn-warning {
-            background-color: orange;
-        }
-        .btn-warning:hover {
-            background-color: darkorange;
+        .btn-admin { background-color: #dc3545; }
+        .btn-gray { background-color: #6c757d; }
+        .btn-warning { background-color: #ffc107; color: #222; }
+
+        /* ---------------- MOBILE FIXES ---------------- */
+        @media (max-width: 600px) {
+
+            header h2 {
+                font-size: 20px;
+            }
+
+            nav {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            nav a, nav form button {
+                width: 100%;
+                text-align: center;
+            }
+
+            li {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            form input[type="text"] {
+                max-width: 100%;
+                margin-bottom: 6px;
+            }
         }
     </style>
 </head>
 <body>
-    <header>
-        <h2>{{ class_data['name'] }}</h2>
-        {% if is_admin %}
-            <p>Join-kod: {{ class_data['join_code'] }}</p>
-        {% endif %}
-    </header>
 
-    <nav>
-        <a href="{{ url_for('index') }}">Tillbaka till översikten</a>
+<header>
+    <h2>{{ class_data['name'] }}</h2>
+    {% if is_admin %}
+        <p>Join-kod: {{ class_data['join_code'] }}</p>
+    {% endif %}
+</header>
 
-        {% if is_admin %}
-            <form method="post" action="{{ url_for('add_subject', class_id=class_data['id']) }}">
-                <input type="text" name="subject_name" placeholder="Ämnesnamn" required>
-                <button type="submit">Lägg till ämne</button>
-            </form>
+<nav>
+    <a href="{{ url_for('index') }}">Tillbaka</a>
 
-            <form action="{{ url_for('add_admin_request', class_id=class_data.id) }}" method="get">
-                <button type="submit" class="btn-warning">Bjud in admin</button>
-            </form>
+    {% if is_admin %}
+        <form method="post" action="{{ url_for('add_subject', class_id=class_data['id']) }}">
+            <input type="text" name="subject_name" placeholder="Ämnesnamn" required>
+            <button type="submit">Lägg till ämne</button>
+        </form>
 
-            <form method="post" action="{{ url_for('leave_admin', class_id=class_data.id) }}"
-                  onsubmit="return confirm('Vill du verkligen lämna som admin?');">
-                <button type="submit" class="btn-admin">Lämna som admin</button>
-            </form>
-        {% endif %}
-    </nav>
+        <form action="{{ url_for('add_admin_request', class_id=class_data.id) }}" method="get">
+            <button type="submit" class="btn-warning">Bjud in admin</button>
+        </form>
 
-    <div class="container">
-        <div class="class-card">
-            {% with messages = get_flashed_messages() %}
-              {% if messages %}
-                <div class="flash-message">
-                  {% for message in messages %}
-                    {{ message }}<br>
-                  {% endfor %}
-                </div>
-              {% endif %}
-            {% endwith %}
+        <form method="post" action="{{ url_for('leave_admin', class_id=class_data.id) }}"
+              onsubmit="return confirm('Vill du verkligen lämna som admin?');">
+            <button type="submit" class="btn-admin">Lämna som admin</button>
+        </form>
+    {% endif %}
+</nav>
 
-            <div class="section">
-                <h3>Ämnen / Kurser</h3>
-                <ul>
-                {% for subject in subjects %}
-                    <li>
-                        <span>
-                            <a href="{{ url_for('view_subject', subject_id=subject['id']) }}">{{ subject['name'] }}</a>
-                        </span>
-                        {% if is_admin %}
-                        <span>
-                            <a href="{{ url_for('edit_subject', subject_id=subject['id']) }}">
-                                <button class="btn-gray">Ändra</button>
-                            </a>
-                            <form method="post" action="{{ url_for('delete_subject', subject_id=subject['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera ämnet?');">
-                                <button type="submit" class="btn-admin">Radera</button>
-                            </form>
-                        </span>
-                        {% endif %}
-                    </li>
-                {% else %}
-                    <li>Inga ämnen tillagda ännu.</li>
-                {% endfor %}
-                </ul>
+<div class="container">
+    <div class="class-card">
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash-message">
+              {% for message in messages %}
+                {{ message }}<br>
+              {% endfor %}
             </div>
+          {% endif %}
+        {% endwith %}
+
+        <div class="section">
+            <h3>Ämnen / Kurser</h3>
+            <ul>
+            {% for subject in subjects %}
+                <li>
+                    <span>
+                        <a href="{{ url_for('view_subject', subject_id=subject['id']) }}">{{ subject['name'] }}</a>
+                    </span>
+
+                    {% if is_admin %}
+                    <span>
+                        <a href="{{ url_for('edit_subject', subject_id=subject['id']) }}">
+                            <button class="btn-gray">Ändra</button>
+                        </a>
+                        <form method="post" action="{{ url_for('delete_subject', subject_id=subject['id']) }}"
+                              style="display:inline;"
+                              onsubmit="return confirm('Är du säker?');">
+                            <button type="submit" class="btn-admin">Radera</button>
+                        </form>
+                    </span>
+                    {% endif %}
+                </li>
+            {% else %}
+                <li>Inga ämnen tillagda ännu.</li>
+            {% endfor %}
+            </ul>
         </div>
+
     </div>
+</div>
+
 </body>
 </html>
 """
@@ -3601,6 +3614,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
