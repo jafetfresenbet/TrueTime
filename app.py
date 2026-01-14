@@ -2077,52 +2077,67 @@ CREATE_CLASS_TEMPLATE = """
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+    
         body {
             font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #022a4f 0%, #022a4f 100%);
+            margin: 0;
+    
+            /* Perfekt centrering */
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+    
+            padding: 20px; /* viktigt för mobil */
         }
+    
         .create-card {
             background-color: #fff;
             padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-            width: 400px;
+            border-radius: 12px;
+            box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
+    
+            /* Responsiv bredd */
+            width: 100%;
+            max-width: 420px;
+    
             text-align: center;
         }
-        .join-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
-        }
+    
         .create-card h2 {
             margin-bottom: 20px;
             color: #333;
         }
+    
         .create-card input[type="text"] {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin: 10px 0 20px 0;
             border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
+            border-radius: 6px;
+            font-size: 16px;
         }
+    
         .create-card button {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             background-color: #007bff;
             color: #fff;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 16px;
+            transition: background 0.2s;
         }
+    
         .create-card button:hover {
             background-color: #0056b3;
         }
+    
         .flash-message {
             text-align: center;
             margin-bottom: 10px;
@@ -2132,18 +2147,26 @@ CREATE_CLASS_TEMPLATE = """
         .flash-message.success { color: #1a7f37; }
         .flash-message.warning { color: #7c6f00; }
         .flash-message.info { color: #004085; }
-
+    
         .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 15px;
+            margin-top: 18px;
         }
+    
         .back-link a {
             color: #007bff;
             text-decoration: none;
+            font-size: 14px;
         }
+    
         .back-link a:hover {
             text-decoration: underline;
+        }
+    
+        /* Extra polish för små skärmar */
+        @media (max-width: 480px) {
+            .create-card {
+                padding: 22px;
+            }
         }
     </style>
 </head>
@@ -3575,6 +3598,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
