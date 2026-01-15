@@ -2808,6 +2808,7 @@ EDIT_ASSIGNMENT_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ subject.name }} - {{ class_data.name }}</title>
 
     <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
@@ -2821,7 +2822,9 @@ EDIT_ASSIGNMENT_TEMPLATE = """
             font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #022a4f 0%, #022a4f 100%);
             margin: 0;
-            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         header {
@@ -2831,24 +2834,29 @@ EDIT_ASSIGNMENT_TEMPLATE = """
             text-align: center;
             box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
         }
+
         header h2 {
             margin: 0;
         }
 
         .container {
+            flex: 1;
             display: flex;
             justify-content: center;
+            align-items: center;
             padding: 20px;
         }
 
         .edit-card {
             background-color: #fff;
-            width: 500px;
+            width: 100%;
+            max-width: 500px;
             border-radius: 8px;
             box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
             padding: 25px;
             transition: transform 0.2s, box-shadow 0.2s;
         }
+
         .edit-card:hover {
             transform: translateY(-5px);
             box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
@@ -2908,6 +2916,7 @@ EDIT_ASSIGNMENT_TEMPLATE = """
             font-size: 16px;
             transition: transform 0.2s, background-color 0.2s;
         }
+
         form button:hover {
             background-color: #218838;
             transform: translateY(-2px);
@@ -2917,78 +2926,85 @@ EDIT_ASSIGNMENT_TEMPLATE = """
             text-align: center;
             margin-top: 20px;
         }
+
         .back-link a {
             color: #007bff;
             text-decoration: none;
             font-weight: bold;
         }
+
         .back-link a:hover {
             text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h2>{{ subject.name }} — {{ class_data.name }}</h2>
-    </header>
 
-    <div class="container">
-        <div class="edit-card">
-            {% with messages = get_flashed_messages() %}
-              {% if messages %}
-                <div class="flash-message">
-                  {% for message in messages %}
-                    {{ message }}<br>
-                  {% endfor %}
-                </div>
-              {% endif %}
-            {% endwith %}
+<header>
+    <h2>{{ subject.name }} — {{ class_data.name }}</h2>
+</header>
 
-            <h3>Ändra uppgift / prov</h3>
+<div class="container">
+    <div class="edit-card">
 
-            {% if is_admin %}
-            <form method="post">
-                <label for="title">Titel</label>
-                <input type="text" name="title" id="title" value="{{ assignment.title }}" required>
-
-                <label for="type">Typ</label>
-                <select name="type" id="type" required onchange="updateDeadlineInput()">
-                    <option value="assignment" {% if assignment.type == 'assignment' %}selected{% endif %}>Uppgift</option>
-                    <option value="exam" {% if assignment.type == 'exam' %}selected{% endif %}>Prov</option>
-                </select>
-
-                <label for="deadline_input">Deadline / Datum</label>
-                <input 
-                    type="{% if assignment.type == 'exam' %}date{% else %}datetime-local{% endif %}" 
-                    name="deadline" 
-                    id="deadline_input"
-                    value="{% if assignment.deadline %}
-                        {% if assignment.type == 'exam' %}
-                            {{ assignment.deadline.strftime('%Y-%m-%d') }}
-                        {% else %}
-                            {{ assignment.deadline.strftime('%Y-%m-%dT%H:%M') }}
-                        {% endif %}
-                    {% endif %}"
-                >
-
-                <button type="submit">Spara ändringar</button>
-            </form>
-
-            <script>
-                function updateDeadlineInput() {
-                    const typeSelect = document.getElementById('type');
-                    const deadlineInput = document.getElementById('deadline_input');
-                    deadlineInput.type = typeSelect.value === 'exam' ? 'date' : 'datetime-local';
-                }
-                window.onload = updateDeadlineInput;
-            </script>
-            {% endif %}
-
-            <div class="back-link">
-                <a href="{{ url_for('index') }}">← Avbryt & tillbaka</a>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash-message">
+              {% for message in messages %}
+                {{ message }}<br>
+              {% endfor %}
             </div>
+          {% endif %}
+        {% endwith %}
+
+        <h3>Ändra uppgift / prov</h3>
+
+        {% if is_admin %}
+        <form method="post">
+
+            <label for="title">Titel</label>
+            <input type="text" name="title" id="title" value="{{ assignment.title }}" required>
+
+            <label for="type">Typ</label>
+            <select name="type" id="type" required onchange="updateDeadlineInput()">
+                <option value="assignment" {% if assignment.type == 'assignment' %}selected{% endif %}>Uppgift</option>
+                <option value="exam" {% if assignment.type == 'exam' %}selected{% endif %}>Prov</option>
+            </select>
+
+            <label for="deadline_input">Deadline / Datum</label>
+            <input 
+                type="{% if assignment.type == 'exam' %}date{% else %}datetime-local{% endif %}" 
+                name="deadline" 
+                id="deadline_input"
+                value="{% if assignment.deadline %}
+                    {% if assignment.type == 'exam' %}
+                        {{ assignment.deadline.strftime('%Y-%m-%d') }}
+                    {% else %}
+                        {{ assignment.deadline.strftime('%Y-%m-%dT%H:%M') }}
+                    {% endif %}
+                {% endif %}"
+            >
+
+            <button type="submit">Spara ändringar</button>
+        </form>
+
+        <script>
+            function updateDeadlineInput() {
+                const typeSelect = document.getElementById('type');
+                const deadlineInput = document.getElementById('deadline_input');
+                deadlineInput.type = typeSelect.value === 'exam' ? 'date' : 'datetime-local';
+            }
+            window.onload = updateDeadlineInput;
+        </script>
+        {% endif %}
+
+        <div class="back-link">
+            <a href="{{ url_for('index') }}">← Avbryt & tillbaka</a>
         </div>
+
     </div>
+</div>
+
 </body>
 </html>
 """
@@ -3648,6 +3664,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
