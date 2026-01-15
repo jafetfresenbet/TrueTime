@@ -3014,6 +3014,7 @@ PROFILE_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Din profil</title>
 
     <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
@@ -3027,7 +3028,9 @@ PROFILE_TEMPLATE = """
             font-family: Arial, sans-serif;
             background: linear-gradient(180deg, #ffffff 0%, #780101 100%);
             margin: 0;
-            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         header {
@@ -3037,24 +3040,29 @@ PROFILE_TEMPLATE = """
             text-align: center;
             box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
         }
+
         header h2 {
             margin: 0;
         }
 
         .container {
+            flex: 1;
             display: flex;
             justify-content: center;
+            align-items: center;
             padding: 20px;
         }
 
         .profile-card {
             background-color: #fff;
-            width: 520px;
+            width: 100%;
+            max-width: 520px;
             border-radius: 8px;
             box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
             padding: 25px;
             transition: transform 0.2s, box-shadow 0.2s;
         }
+
         .profile-card:hover {
             transform: translateY(-5px);
             box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
@@ -3115,6 +3123,7 @@ PROFILE_TEMPLATE = """
             font-size: 16px;
             transition: transform 0.2s, background-color 0.2s;
         }
+
         .primary-btn:hover {
             background-color: #218838;
             transform: translateY(-2px);
@@ -3137,6 +3146,7 @@ PROFILE_TEMPLATE = """
             font-size: 16px;
             transition: transform 0.2s, background-color 0.2s;
         }
+
         .danger-btn:hover {
             background-color: #c82333;
             transform: translateY(-2px);
@@ -3146,72 +3156,79 @@ PROFILE_TEMPLATE = """
             text-align: center;
             margin-top: 20px;
         }
+
         .back-link a {
             color: #007bff;
             text-decoration: none;
             font-weight: bold;
         }
+
         .back-link a:hover {
             text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h2>Din profil</h2>
-    </header>
 
-    <div class="container">
-        <div class="profile-card">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-              {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash-message {{ category }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-              {% endif %}
-            {% endwith %}
+<header>
+    <h2>Din profil</h2>
+</header>
 
-            <h3>Ändra uppgifter</h3>
-            <form method="post" action="{{ url_for('edit_profile') }}">
-                <label for="name">Namn</label>
-                <input type="text" name="name" id="name" value="{{ user.name }}" required>
+<div class="container">
+    <div class="profile-card">
 
-                <label for="email">E-post</label>
-                <input type="email" name="email" id="email" value="{{ user.email }}" required>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message {{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
 
-                <label for="password">Nytt lösenord</label>
-                <input type="password" name="password" placeholder="Lämna tomt om du inte vill byta">
+        <h3>Ändra uppgifter</h3>
 
-                <label for="confirm_password">Bekräfta lösenord</label>
-                <input type="password" name="confirm_password">
+        <form method="post" action="{{ url_for('edit_profile') }}">
+            <label for="name">Namn</label>
+            <input type="text" name="name" id="name" value="{{ user.name }}" required>
 
-                <label style="display:flex; align-items:center; gap:10px; margin:15px 0;">
-                    <input type="checkbox" name="notifications_enabled"
-                           {% if user.notifications_enabled %}checked{% endif %}>
-                    <span>Ta emot notiser om uppgifter & prov</span>
-                </label>
+            <label for="email">E-post</label>
+            <input type="email" name="email" id="email" value="{{ user.email }}" required>
 
-                <button type="submit" class="primary-btn">Spara ändringar</button>
+            <label for="password">Nytt lösenord</label>
+            <input type="password" name="password" placeholder="Lämna tomt om du inte vill byta">
+
+            <label for="confirm_password">Bekräfta lösenord</label>
+            <input type="password" name="confirm_password">
+
+            <label style="display:flex; align-items:center; gap:10px; margin:15px 0;">
+                <input type="checkbox" name="notifications_enabled"
+                       {% if user.notifications_enabled %}checked{% endif %}>
+                <span>Ta emot notiser om uppgifter & prov</span>
+            </label>
+
+            <button type="submit" class="primary-btn">Spara ändringar</button>
+        </form>
+
+        <div class="danger-zone">
+            <h3>Radera konto</h3>
+            <form method="post" action="{{ url_for('delete_profile') }}">
+                <button type="submit"
+                        class="danger-btn"
+                        onclick="return confirm('Är du säker på att du vill radera ditt konto? Detta går inte att ångra.')">
+                    Radera konto
+                </button>
             </form>
-
-            <div class="danger-zone">
-                <h3>Radera konto</h3>
-                <form method="post" action="{{ url_for('delete_profile') }}">
-                    <button type="submit"
-                            class="danger-btn"
-                            onclick="return confirm('Är du säker på att du vill radera ditt konto? Detta går inte att ångra.')">
-                        Radera konto
-                    </button>
-                </form>
-            </div>
-
-            <div class="back-link">
-                <a href="{{ url_for('index') }}">← Tillbaka till startsidan</a>
-            </div>
         </div>
+
+        <div class="back-link">
+            <a href="{{ url_for('index') }}">← Tillbaka till startsidan</a>
+        </div>
+
     </div>
+</div>
+
 </body>
 </html>
 """
@@ -3664,6 +3681,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
