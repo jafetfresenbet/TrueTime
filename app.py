@@ -1016,113 +1016,7 @@ def add_admin_request(class_id):
         flash(f"{target_user.name} är nu admin i klassen!", "success")
         return redirect(url_for('view_class', class_id=class_id))
 
-    # GET request: show the form
-    form_html = f"""
-    <!doctype html>
-    <html lang="sv">
-    <head>
-        <meta charset="UTF-8">
-        <title>Bjud in admin – {cls.name}</title>
-    
-        <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
-        <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
-        <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
-        <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
-        <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
-    
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-                background-color: #f4f4f4;
-                margin: 0;
-                padding: 0;
-            }}
-            header {{
-                background-color: #007bff;
-                color: white;
-                padding: 15px 20px;
-                text-align: center;
-            }}
-            .container {{
-                display: flex;
-                justify-content: center;
-                padding: 20px;
-            }}
-            .card {{
-                background-color: white;
-                width: 500px;
-                border-radius: 8px;
-                box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-                padding: 20px;
-            }}
-            h3 {{
-                margin-top: 0;
-                color: #333;
-            }}
-            label {{
-                font-weight: bold;
-            }}
-            input[type="email"] {{
-                width: 95%;
-                padding: 10px;
-                border-radius: 4px;
-                border: 1px solid #ccc;
-                margin-top: 5px;
-                margin-bottom: 15px;
-            }}
-            button {{
-                padding: 10px 15px;
-                background-color: #28a745;
-                border: none;
-                color: white;
-                border-radius: 4px;
-                cursor: pointer;
-            }}
-            button:hover {{
-                background-color: #218838;
-            }}
-            .back-link {{
-                text-align: center;
-                margin-top: 15px;
-            }}
-            .back-link a {{
-                color: #007bff;
-                text-decoration: none;
-            }}
-            .back-link a:hover {{
-                text-decoration: underline;
-            }}
-        </style>
-    </head>
-    <body>
-    
-    <header>
-        <h2>Bjud in admin – {cls.name}</h2>
-    </header>
-    
-    <div class="container">
-        <div class="card">
-            
-            <h3>Lägg till en ny admin</h3>
-    
-            <form method="post">
-                <label for="email">E-post till användare:</label>
-                <input type="email" name="email" required>
-    
-                <button type="submit">Skicka inbjudan</button>
-            </form>
-    
-            <div class="back-link">
-                <a href="{{{{ url_for('view_class', class_id={cls.id}) }}}}">Tillbaka till klassen</a>
-            </div>
-    
-        </div>
-    </div>
-    
-    </body>
-    </html>
-    """
-    return render_template_string(form_html)
+    return render_template_string(INVITE_ADMIN_TEMPLATE)
 
 @app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
@@ -3761,81 +3655,151 @@ RESET_PASSWORD_TEMPLATE = """
 </html>
 """
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+INVITE_ADMIN_TEMPLATE = """
+<!doctype html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bjud in admin – {{ cls.name }}</title>
+
+    <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(180deg, #023a6e 0%, #023a6e 100%);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            width: 100%;
+            background-color: #007bff;
+            color: #fff;
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+
+        header h2 {
+            margin: 0;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .card {
+            background-color: #fff;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+            padding: 25px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
+        }
+
+        h3 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            text-align: left;
+        }
+
+        input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        input[type="email"]:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .back-link a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h2>Bjud in admin – {{ cls.name }}</h2>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h3>Lägg till en ny admin</h3>
+
+            <form method="post">
+                <label for="email">E-post till användare:</label>
+                <input type="email" name="email" id="email" required>
+                <button type="submit">Skicka inbjudan</button>
+            </form>
+
+            <div class="back-link">
+                <a href="{{ url_for('view_class', class_id=cls.id) }}">← Tillbaka till klassen</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+"""
