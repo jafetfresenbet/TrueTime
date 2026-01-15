@@ -1016,7 +1016,7 @@ def add_admin_request(class_id):
         flash(f"{target_user.name} är nu admin i klassen!", "success")
         return redirect(url_for('view_class', class_id=class_id))
 
-    return render_template_string(INVITE_ADMIN_TEMPLATE)
+    return render_template_string(INVITE_ADMIN_TEMPLATE, cls=cls)
 
 @app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
@@ -3803,3 +3803,4 @@ INVITE_ADMIN_TEMPLATE = """
 </body>
 </html>
 """
+
