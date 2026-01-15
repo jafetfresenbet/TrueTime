@@ -3545,55 +3545,97 @@ FORGOT_PASSWORD_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Glömt lösenord</title>
+
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
+            margin: 0;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
         }
+
         .card {
             background: #fff;
             padding: 30px;
             border-radius: 8px;
-            width: 350px;
+            width: 90%;
+            max-width: 400px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
         }
-        h2 { text-align: center; }
-        input, button {
+
+        h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        input[type="email"]:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        button {
             width: 100%;
             padding: 10px;
             margin-top: 15px;
-        }
-        button {
-            background: #007bff;
+            background-color: #007bff;
             color: white;
             border: none;
             border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s, transform 0.2s;
         }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
         .back {
-            text-align: center;
             margin-top: 15px;
+        }
+
+        .back a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .back a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-<div class="card">
-    <h2>Återställ lösenord</h2>
+    <div class="card">
+        <h2>Återställ lösenord</h2>
 
-    <form method="post">
-        <input type="email" name="email" placeholder="Din e-post" required>
-        <button type="submit">Skicka återställningslänk</button>
-    </form>
+        <form method="post">
+            <input type="email" name="email" placeholder="Din e-post" required>
+            <button type="submit">Skicka återställningslänk</button>
+        </form>
 
-    <div class="back">
-        <a href="{{ url_for('login') }}">Tillbaka till login</a>
+        <div class="back">
+            <a href="{{ url_for('login') }}">Tillbaka till login</a>
+        </div>
     </div>
-</div>
 </body>
 </html>
 """
@@ -3707,6 +3749,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
