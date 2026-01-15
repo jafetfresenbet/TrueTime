@@ -3645,6 +3645,7 @@ RESET_PASSWORD_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Återställ lösenord - PlugIt+</title>
 
     <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
@@ -3658,16 +3659,22 @@ RESET_PASSWORD_TEMPLATE = """
             font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #e0f0ff 0%, #ffffff 100%);
             margin: 0;
-            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         header {
+            width: 100%;
             background-color: #007bff;
             color: #fff;
             padding: 15px 20px;
             text-align: center;
             box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+            box-sizing: border-box;
         }
+
         header h2 {
             margin: 0;
         }
@@ -3675,17 +3682,21 @@ RESET_PASSWORD_TEMPLATE = """
         .container {
             display: flex;
             justify-content: center;
-            padding: 40px 20px;
+            width: 100%;
+            padding: 20px;
         }
 
         .card {
             background-color: #fff;
-            width: 380px;
+            width: 90%;
+            max-width: 400px;
             border-radius: 8px;
             box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
             padding: 25px;
+            text-align: center;
             transition: transform 0.2s, box-shadow 0.2s;
         }
+
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
@@ -3694,11 +3705,10 @@ RESET_PASSWORD_TEMPLATE = """
         h3 {
             margin-top: 0;
             margin-bottom: 20px;
-            text-align: center;
             color: #333;
         }
 
-        input {
+        input[type="password"] {
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
@@ -3708,7 +3718,7 @@ RESET_PASSWORD_TEMPLATE = """
             transition: border-color 0.2s;
         }
 
-        input:focus {
+        input[type="password"]:focus {
             border-color: #007bff;
             outline: none;
         }
@@ -3724,6 +3734,7 @@ RESET_PASSWORD_TEMPLATE = """
             font-size: 16px;
             transition: transform 0.2s, background-color 0.2s;
         }
+
         .primary-btn:hover {
             background-color: #218838;
             transform: translateY(-2px);
