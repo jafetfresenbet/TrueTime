@@ -3406,6 +3406,7 @@ EDIT_SUBJECT_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ändra ämne - PlugIt+</title>
 
     <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
@@ -3419,7 +3420,9 @@ EDIT_SUBJECT_TEMPLATE = """
             font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #022a4f 0%, #022a4f 100%);
             margin: 0;
-            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         header {
@@ -3429,25 +3432,30 @@ EDIT_SUBJECT_TEMPLATE = """
             text-align: center;
             box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
         }
+
         header h2 {
             margin: 0;
         }
 
         .container {
+            flex: 1;
             display: flex;
             justify-content: center;
-            padding: 30px 20px;
+            align-items: center;
+            padding: 20px;
         }
 
         .edit-card {
             background-color: #fff;
-            width: 420px;
+            width: 100%;
+            max-width: 420px;
             border-radius: 8px;
             box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
             padding: 25px;
             text-align: center;
             transition: transform 0.2s, box-shadow 0.2s;
         }
+
         .edit-card:hover {
             transform: translateY(-5px);
             box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
@@ -3488,6 +3496,7 @@ EDIT_SUBJECT_TEMPLATE = """
             font-size: 16px;
             transition: transform 0.2s, background-color 0.2s;
         }
+
         .primary-btn:hover {
             background-color: #218838;
             transform: translateY(-2px);
@@ -3497,11 +3506,13 @@ EDIT_SUBJECT_TEMPLATE = """
             margin-top: 20px;
             text-align: center;
         }
+
         .back-link a {
             color: #007bff;
             text-decoration: none;
             font-weight: bold;
         }
+
         .back-link a:hover {
             text-decoration: underline;
         }
@@ -3696,6 +3707,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
