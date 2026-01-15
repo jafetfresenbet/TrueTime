@@ -3238,6 +3238,7 @@ EDIT_CLASS_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ändra klass - PlugIt+</title>
 
     <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
@@ -3251,7 +3252,9 @@ EDIT_CLASS_TEMPLATE = """
             font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #022a4f 0%, #022a4f 100%);
             margin: 0;
-            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         header {
@@ -3261,24 +3264,29 @@ EDIT_CLASS_TEMPLATE = """
             text-align: center;
             box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
         }
+
         header h2 {
             margin: 0;
         }
 
         .container {
+            flex: 1;
             display: flex;
             justify-content: center;
-            padding: 30px 20px;
+            align-items: center;
+            padding: 20px;
         }
 
         .edit-card {
             background-color: #fff;
-            width: 420px;
+            width: 100%;
+            max-width: 420px;
             border-radius: 8px;
             box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
             padding: 25px;
             transition: transform 0.2s, box-shadow 0.2s;
         }
+
         .edit-card:hover {
             transform: translateY(-5px);
             box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
@@ -3333,6 +3341,7 @@ EDIT_CLASS_TEMPLATE = """
             font-size: 16px;
             transition: transform 0.2s, background-color 0.2s;
         }
+
         .primary-btn:hover {
             background-color: #218838;
             transform: translateY(-2px);
@@ -3342,46 +3351,52 @@ EDIT_CLASS_TEMPLATE = """
             text-align: center;
             margin-top: 20px;
         }
+
         .back-link a {
             color: #007bff;
             text-decoration: none;
             font-weight: bold;
         }
+
         .back-link a:hover {
             text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h2>Ändra klass</h2>
-    </header>
 
-    <div class="container">
-        <div class="edit-card">
-            {% with messages = get_flashed_messages() %}
-              {% if messages %}
-                <div class="flash-message">
-                  {% for message in messages %}
-                    {{ message }}<br>
-                  {% endfor %}
-                </div>
-              {% endif %}
-            {% endwith %}
+<header>
+    <h2>Ändra klass</h2>
+</header>
 
-            <h3>Klassens namn</h3>
-            <form method="post">
-                <label for="class_name">Namn</label>
-                <input type="text" id="class_name" name="class_name" value="{{ cls.name }}" required>
+<div class="container">
+    <div class="edit-card">
 
-                <button type="submit" class="primary-btn">Spara ändringar</button>
-            </form>
-
-            <div class="back-link">
-                <a href="{{ url_for('index') }}">← Tillbaka till översikten</a>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash-message">
+              {% for message in messages %}
+                {{ message }}<br>
+              {% endfor %}
             </div>
+          {% endif %}
+        {% endwith %}
+
+        <h3>Klassens namn</h3>
+        <form method="post">
+            <label for="class_name">Namn</label>
+            <input type="text" id="class_name" name="class_name" value="{{ cls.name }}" required>
+
+            <button type="submit" class="primary-btn">Spara ändringar</button>
+        </form>
+
+        <div class="back-link">
+            <a href="{{ url_for('index') }}">← Tillbaka till översikten</a>
         </div>
+
     </div>
+</div>
+
 </body>
 </html>
 """
@@ -3681,6 +3696,7 @@ RESET_PASSWORD_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
