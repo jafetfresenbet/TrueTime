@@ -327,13 +327,11 @@ def index():
 
     user = current_user()
 
-    # Get all memberships for this user
+    # Hämta alla medlemskap för denna användare
     memberships = ClassMember.query.filter_by(user_id=user.id).all()
     classes = [m.class_obj for m in memberships if m.class_obj is not None]
 
-    activities = Activity.query.filter_by(user_id=user.id).order_by(Activity.start_time).all()
-
-    # Prepare classes with roles
+    # Förbered klasser med roller
     classes_with_role = []
     for class_obj in classes:
         if not class_obj:
@@ -342,20 +340,22 @@ def index():
         role = membership.role if membership else 'member'
         classes_with_role.append({'class': class_obj, 'role': role})
 
-    # Prepare assignments display
-    assignments_display = []
     now = datetime.now()
+
+    # Förbered uppgifter och prov
+    combined_items = []
     for item in classes_with_role:
         cls = item['class']
-        role = item['role']  # <-- use the role of THIS class
+        role = item['role']
         for subj in cls.subjects:
             for a in subj.assignments:
+                # Hoppa över uppgifter/prov som passerat deadline
                 if a.type == 'Uppgift' and a.deadline and a.deadline < now:
                     continue
                 if a.type == 'Prov' and a.deadline and a.deadline.date() < now.date():
                     continue
 
-                # Compute days_left for color
+                # Beräkna färg baserat på deadline
                 if a.deadline:
                     delta = a.deadline - now
                     days_left = delta.days + (delta.seconds / 86400)
@@ -377,31 +377,51 @@ def index():
                 else:  # overdue
                     color = "#6a6af7"
 
-                assignments_display.append({
+                combined_items.append({
                     'id': a.id,
                     'title': a.title,
-                    'type': a.type,
+                    'type': 'assignment',  # markera som uppgift/prov
                     'deadline': a.deadline,
                     'subject_name': subj.name,
                     'class_name': cls.name,
                     'class_id': cls.id,
                     'created_by': a.created_by,
                     'color': color,
-                    'role': role  # <-- assign role from current class
+                    'role': role
                 })
 
-    delete_expired_assignments()
+    # Hämta alla aktiviteter
+    activities = Activity.query.filter_by(user_id=user.id).all()
+    for act in activities:
+        combined_items.append({
+            'id': act.id,
+            'type': 'activity',
+            'title': act.name,
+            'start_time': act.start_time,
+            'end_time': act.end_time,
+            'role': 'owner',  # alltid admin för egna aktiviteter
+            'color': '#cce5ff'  # ljusblå bakgrund
+        })
 
-    assignments_display.sort(key=lambda x: x['deadline'] or datetime.max)
-    today = datetime.now().strftime('%Y-%m-%d')
+    # Sortera allt efter datum/tid (deadline för uppgifter, starttid för aktiviteter)
+    def sort_key(item):
+        if item['type'] == 'assignment':
+            return item['deadline'] or datetime.max
+        else:
+            return item['start_time']
+
+    combined_items.sort(key=sort_key)
+
+    delete_expired_assignments()  # radera gamla uppgifter
+
+    today = now.strftime('%Y-%m-%d')
 
     return render_template_string(
         DASH_TEMPLATE,
         user=user,
         classes=classes_with_role,
-        assignments=assignments_display[:50],
-        today=today,
-        activities=activities
+        assignments=combined_items[:50],  # begränsa till 50 objekt
+        today=today
     )
 
 @app.route('/register', methods=['GET','POST'])
@@ -3950,6 +3970,7 @@ CREATE_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
