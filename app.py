@@ -1174,7 +1174,7 @@ def create_activity():
             return redirect(url_for('create_activity'))
 
         activity = Activity(
-            user_id=current_user.id,
+            user_id=current_user().id,
             name=name,
             start_time=start_time,
             end_time=end_time
@@ -3987,6 +3987,7 @@ CREATE_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
