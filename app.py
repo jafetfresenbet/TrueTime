@@ -136,6 +136,15 @@ class ClassMember(db.Model):
     user = db.relationship('User', backref='class_memberships', lazy=True)
     class_obj = db.relationship('Class', backref='memberships', lazy=True)
 
+class Activity(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    name = db.Column(db.String(150), nullable=False)
+    start_time = db.Column(db.DateTime, nullable=False)
+    end_time = db.Column(db.DateTime, nullable=False)
+
+    user = db.relationship('User', backref='activities')
+
 # ---------- Auth helpers ----------
 def check_days_left_threshold(user, assignment):
     if not assignment.deadline:
@@ -1114,6 +1123,43 @@ def leave_admin(class_id):
 
     flash("Du är inte längre admin i klassen.", "success")
     return redirect(url_for('view_class', class_id=class_id))
+
+@app.route('/activity/create', methods=['GET', 'POST'])
+@login_required
+def create_activity():
+    if request.method == 'POST':
+        name = request.form.get('activity_name', '').strip()
+        start_str = request.form.get('start_time')
+        end_str = request.form.get('end_time')
+
+        if not name or not start_str or not end_str:
+            flash("Fyll i alla fält.", "error")
+            return redirect(url_for('create_activity'))
+
+        try:
+            start_time = datetime.fromisoformat(start_str)
+            end_time = datetime.fromisoformat(end_str)
+        except ValueError:
+            flash("Fel format på datum/tid.", "error")
+            return redirect(url_for('create_activity'))
+
+        if start_time >= end_time:
+            flash("Starttid måste vara före sluttid.", "warning")
+            return redirect(url_for('create_activity'))
+
+        activity = Activity(
+            user_id=current_user.id,
+            name=name,
+            start_time=start_time,
+            end_time=end_time
+        )
+
+        db.session.add(activity)
+        db.session.commit()
+        flash("Aktivitet skapad!", "success")
+        return redirect(url_for('index'))
+
+    return render_template_string(CREATE_ACTIVITY_TEMPLATE)
 
 
 # ---------- Templates ----------
@@ -3901,6 +3947,7 @@ CREATE_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
