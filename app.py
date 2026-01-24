@@ -1123,20 +1123,19 @@ HOME_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
-
-    <!-- ✅ ADDED: makes layout work correctly on phones -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>PlugIt+ – Hem</title>
-    
+    <!-- SEO: Title och description -->
+    <title>PlugIt+ – Digital studieplanerare för elever</title>
+    <meta name="description" content="PlugIt+ hjälper elever att planera sina studier, skapa klasser och hålla koll på uppgifter, prov och deadlines – allt på ett ställe.">
+
     <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
-    
+
     <style>
-        /* Samma gradient som login */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #6a11cb, #2575fc);
@@ -1148,7 +1147,6 @@ HOME_TEMPLATE = """
             margin: 0;
         }
 
-        /* Kortet */
         .home-card {
             background-color: #ffffffee;
             padding: 45px 35px;
@@ -1164,7 +1162,6 @@ HOME_TEMPLATE = """
             box-shadow: 0 16px 32px rgba(0, 0, 0, 0.25);
         }
 
-        /* Rubrik */
         .home-card h1 {
             margin-bottom: 15px;
             color: #333;
@@ -1177,7 +1174,6 @@ HOME_TEMPLATE = """
             font-weight: 700;
         }
 
-        /* Text */
         .home-card p {
             margin: 20px 0 30px 0;
             color: #555;
@@ -1185,7 +1181,6 @@ HOME_TEMPLATE = """
             line-height: 1.5;
         }
 
-        /* Knappar */
         .home-actions {
             display: flex;
             justify-content: center;
@@ -1224,7 +1219,6 @@ HOME_TEMPLATE = """
             box-shadow: 0 6px 12px rgba(0,0,0,0.15);
         }
 
-        /* Liten beta-tag */
         .beta {
             display: inline-block;
             margin-left: 8px;
@@ -1237,36 +1231,13 @@ HOME_TEMPLATE = """
             font-weight: 600;
         }
 
-        /* ✅ ADDED: Mobile improvements */
         @media (max-width: 600px) {
-            body {
-                padding: 20px;
-                height: auto;
-            }
-
-            .home-card {
-                width: 100%;
-                padding: 30px 20px;
-            }
-
-            .home-card h1 {
-                font-size: 1.4em;
-            }
-
-            .home-card p {
-                font-size: 1em;
-            }
-
-            .home-actions {
-                flex-direction: column;
-                gap: 12px;
-            }
-
-            .home-actions a {
-                width: 100%;
-                text-align: center;
-                padding: 14px 0;
-            }
+            body { padding: 20px; height: auto; }
+            .home-card { width: 100%; padding: 30px 20px; }
+            .home-card h1 { font-size: 1.4em; }
+            .home-card p { font-size: 1em; }
+            .home-actions { flex-direction: column; gap: 12px; }
+            .home-actions a { width: 100%; text-align: center; padding: 14px 0; }
         }
     </style>
 </head>
@@ -1278,8 +1249,11 @@ HOME_TEMPLATE = """
         </h1>
 
         <p>
-            Skapa klasser, bjud in klasskompisar och håll koll på
-            uppgifter, prov och deadlines – allt på ett ställe.
+            PlugIt+ är en digital studieplanerare som hjälper elever att planera sina studier, skapa klasser och bjuda in klasskompisar. Håll koll på uppgifter, prov och deadlines – allt på ett ställe, enkelt och överskådligt.
+        </p>
+
+        <p>
+            Vårt mål är att göra studier mer organiserade och att ge elever en plattform där de kan samarbeta och hålla motivationen uppe.
         </p>
 
         <div class="home-actions">
@@ -3803,4 +3777,5 @@ INVITE_ADMIN_TEMPLATE = """
 </body>
 </html>
 """
+
 
