@@ -400,7 +400,7 @@ def index():
         user=user,
         classes=classes_with_role,
         assignments=assignments_display[:50],
-        today=today
+        today=today,
         activities=activities
     )
 
@@ -3950,6 +3950,7 @@ CREATE_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
