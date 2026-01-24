@@ -137,6 +137,7 @@ class ClassMember(db.Model):
     class_obj = db.relationship('Class', backref='memberships', lazy=True)
 
 class Activity(db.Model):
+    __tablename__ = 'activity'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     name = db.Column(db.String(150), nullable=False)
@@ -3984,6 +3985,7 @@ CREATE_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
