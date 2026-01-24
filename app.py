@@ -1819,7 +1819,7 @@ DASH_TEMPLATE = """
              background-color:white; padding:20px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.2); z-index:1000;">
             <h3>Välj vad du vill skapa</h3>
             <button onclick="window.location.href='{{ url_for('create_class') }}'">Skapa klass</button>
-            <button onclick="window.location.href='{{ url_for('create_activity') }}'">Skapa aktivitet</button>
+            <button onclick="window.location.href='{{ url_for('create_class') }}'">Skapa aktivitet</button>
             <button onclick="closeCreateCard()">Avbryt</button>
         </div>
         
@@ -3800,6 +3800,7 @@ INVITE_ADMIN_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
