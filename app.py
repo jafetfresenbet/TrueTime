@@ -331,6 +331,8 @@ def index():
     memberships = ClassMember.query.filter_by(user_id=user.id).all()
     classes = [m.class_obj for m in memberships if m.class_obj is not None]
 
+    activities = Activity.query.filter_by(user_id=user.id).order_by(Activity.start_time).all()
+
     # Prepare classes with roles
     classes_with_role = []
     for class_obj in classes:
@@ -399,6 +401,7 @@ def index():
         classes=classes_with_role,
         assignments=assignments_display[:50],
         today=today
+        activities=activities
     )
 
 @app.route('/register', methods=['GET','POST'])
@@ -3947,6 +3950,7 @@ CREATE_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
