@@ -1811,7 +1811,30 @@ DASH_TEMPLATE = """
 
     <nav>
         <a href="{{ url_for('logout') }}">Logga ut</a>
-        <a href="{{ url_for('create_class') }}">Skapa klass</a>
+        <!-- Ändra gamla Skapa klass-knappen -->
+        <button id="create-btn">Skapa</button>
+        
+        <!-- Skapa kortet som dyker upp -->
+        <div id="create-card" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); 
+             background-color:white; padding:20px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.2); z-index:1000;">
+            <h3>Välj vad du vill skapa</h3>
+            <button onclick="window.location.href='{{ url_for('create_class') }}'">Skapa klass</button>
+            <button onclick="window.location.href='{{ url_for('create_activity') }}'">Skapa aktivitet</button>
+            <button onclick="closeCreateCard()">Avbryt</button>
+        </div>
+        
+        <script>
+            const createBtn = document.getElementById('create-btn');
+            const createCard = document.getElementById('create-card');
+        
+            createBtn.addEventListener('click', () => {
+                createCard.style.display = 'block';
+            });
+        
+            function closeCreateCard() {
+                createCard.style.display = 'none';
+            }
+        </script>
         <a href="{{ url_for('join_class') }}">Gå med i klass</a>
         <a href="{{ url_for('profile') }}" style="padding: 8px 12px; background-color: #007bff; color: white;">
             Min profil
@@ -3777,5 +3800,6 @@ INVITE_ADMIN_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
