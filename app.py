@@ -137,14 +137,16 @@ class ClassMember(db.Model):
     class_obj = db.relationship('Class', backref='memberships', lazy=True)
 
 class Activity(db.Model):
-    __tablename__ = 'activity'
+    __tablename__ = 'activity'  # exakt namn från DBeaver
+
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    name = db.Column(db.String(150), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # <-- FK till users
+    name = db.Column(db.String(255), nullable=False)
     start_time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime, nullable=False)
 
-    user = db.relationship('User', backref='activities')
+    # Relationship
+    user = db.relationship('User', backref=db.backref('activities', lazy=True))
 
 # ---------- Auth helpers ----------
 def check_days_left_threshold(user, assignment):
@@ -3985,6 +3987,7 @@ CREATE_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
