@@ -1958,31 +1958,45 @@ DASH_TEMPLATE = """
             </div>
 
             <div class="section">
-                <h3>Kommande uppgifter</h3>
+                <h3>Kommande uppgifter & aktiviteter</h3>
                 <ul class="assignments">
                 {% for a in assignments %}
-                    <li data-class-id="{{ a['class_id'] }}" style="background-color: {{ a['color'] }};">
-                        <span>
-                            <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }} ({{ a['class_name'] }})
-                            {% if a['deadline'] %}
-                                {% if a['type'] in ['Uppgift', 'assignment'] %}
-                                    — deadline: {{ a['deadline'].strftime('%Y/%m/%d %H:%M') }}
-                                {% elif a['type'] in ['Prov', 'exam'] %}
-                                    — datum: {{ a['deadline'].strftime('%Y/%m/%d') }}
-                                {% endif %}
-                            {% endif %}
-                        </span>
-                        {% if a['role'] == 'admin' %}
+                    {% if a.type == 'assignment' %}
+                        <li data-class-id="{{ a['class_id'] }}" style="background-color: {{ a['color'] }};">
                             <span>
-                                <a class="button-link" href="{{ url_for('edit_assignment', assignment_id=a['id']) }}"><button class="edit-btn">Ändra</button></a>
-                                <form method="post" action="{{ url_for('delete_assignment', assignment_id=a['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera uppgiften?');">
+                                <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }} ({{ a['class_name'] }})
+                                {% if a['deadline'] %}
+                                    {% if a['type'] in ['Uppgift','assignment'] %}
+                                        — deadline: {{ a['deadline'].strftime('%Y/%m/%d %H:%M') }}
+                                    {% elif a['type'] in ['Prov','exam'] %}
+                                        — datum: {{ a['deadline'].strftime('%Y/%m/%d') }}
+                                    {% endif %}
+                                {% endif %}
+                            </span>
+                            {% if a['role'] == 'admin' %}
+                                <span>
+                                    <a class="button-link" href="{{ url_for('edit_assignment', assignment_id=a['id']) }}"><button class="edit-btn">Ändra</button></a>
+                                    <form method="post" action="{{ url_for('delete_assignment', assignment_id=a['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera uppgiften?');">
+                                        <button type="submit" class="delete-btn">Radera</button>
+                                    </form>
+                                </span>
+                            {% endif %}
+                        </li>
+                    {% elif a.type == 'activity' %}
+                        <li style="background-color: {{ a['color'] }}; color:#004085; font-weight:bold;">
+                            <span>
+                                {{ a['title'] }} — Start: {{ a['start_time'].strftime('%Y/%m/%d %H:%M') }} | Slut: {{ a['end_time'].strftime('%Y/%m/%d %H:%M') }}
+                            </span>
+                            <span>
+                                <a class="button-link" href="{{ url_for('edit_activity', activity_id=a['id']) }}"><button class="edit-btn">Ändra</button></a>
+                                <form method="post" action="{{ url_for('delete_activity', activity_id=a['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera aktiviteten?');">
                                     <button type="submit" class="delete-btn">Radera</button>
                                 </form>
                             </span>
-                        {% endif %}
-                    </li>
+                        </li>
+                    {% endif %}
                 {% else %}
-                    <li>Inga uppgifter hittades.</li>
+                    <li>Inga uppgifter eller aktiviteter hittades.</li>
                 {% endfor %}
                 </ul>
             </div>
@@ -3970,6 +3984,7 @@ CREATE_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
