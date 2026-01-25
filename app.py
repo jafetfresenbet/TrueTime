@@ -1215,6 +1215,20 @@ def edit_activity(activity_id):
 
     return render_template_string(EDIT_ACTIVITY_TEMPLATE, activity=activity)
 
+@app.route("/activity/<int:activity_id>/delete", methods=["POST"])
+@login_required
+def delete_activity(activity_id):
+    activity = Activity.query.get_or_404(activity_id)
+
+    if activity.user_id != current_user.id:
+        abort(403)
+
+    db.session.delete(activity)
+    db.session.commit()
+
+    flash("Aktiviteten raderades", "success")
+    return redirect(url_for("index"))
+
 
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
@@ -4179,6 +4193,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
