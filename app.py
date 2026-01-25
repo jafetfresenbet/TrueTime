@@ -1187,6 +1187,34 @@ def create_activity():
 
     return render_template_string(CREATE_ACTIVITY_TEMPLATE)
 
+@app.route('/activity/edit/<int:activity_id>', methods=['GET', 'POST'])
+@login_required
+def edit_activity(activity_id):
+    activity = Activity.query.get_or_404(activity_id)
+
+    if activity.user_id != current_user().id:
+        flash("Du har inte behörighet att ändra denna aktivitet.", "error")
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        name = request.form.get('name').strip()
+        start_time = request.form.get('start_time')
+        end_time = request.form.get('end_time')
+
+        if not name or not start_time or not end_time:
+            flash("Fyll i alla fält.", "warning")
+            return redirect(url_for('edit_activity', activity_id=activity_id))
+
+        activity.name = name
+        activity.start_time = datetime.fromisoformat(start_time)
+        activity.end_time = datetime.fromisoformat(end_time)
+
+        db.session.commit()
+        flash("Aktiviteten uppdaterades!", "success")
+        return redirect(url_for('index'))
+
+    return render_template_string(EDIT_ACTIVITY_TEMPLATE, activity=activity)
+
 
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
@@ -3982,15 +4010,169 @@ CREATE_ACTIVITY_TEMPLATE = """
 </html>
 """
 
+EDIT_ACTIVITY_TEMPLATE = """
+<!doctype html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>Redigera aktivitet</title>
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f7fb;
+            margin: 0;
+            padding: 0;
+        }
 
+        .container {
+            max-width: 420px;
+            margin: 60px auto;
+            background: #ffffff;
+            padding: 28px;
+            border-radius: 14px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
 
+        h1 {
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 1.4rem;
+        }
 
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
 
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+            border: 1px solid #dcdfe6;
+            font-size: 0.95rem;
+        }
 
+        input:focus {
+            outline: none;
+            border-color: #4f46e5;
+        }
 
+        .buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
 
+        button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .save-btn {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .save-btn:hover {
+            background: #4338ca;
+        }
+
+        .cancel-btn {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .cancel-btn:hover {
+            background: #d1d5db;
+        }
+
+        .flash {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+        }
+
+        .flash.success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .flash.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .flash.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>✏️ Redigera aktivitet</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="post">
+        <label for="name">Aktivitet</label>
+        <input
+            type="text"
+            id="name"
+            name="name"
+            value="{{ activity.name }}"
+            required
+        >
+
+        <label for="start_time">Starttid</label>
+        <input
+            type="datetime-local"
+            id="start_time"
+            name="start_time"
+            value="{{ activity.start_time.strftime('%Y-%m-%dT%H:%M') }}"
+            required
+        >
+
+        <label for="end_time">Sluttid</label>
+        <input
+            type="datetime-local"
+            id="end_time"
+            name="end_time"
+            value="{{ activity.end_time.strftime('%Y-%m-%dT%H:%M') }}"
+            required
+        >
+
+        <div class="buttons">
+            <button type="submit" class="save-btn">Spara</button>
+            <a href="{{ url_for('index') }}" style="flex:1;">
+                <button type="button" class="cancel-btn">Avbryt</button>
+            </a>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>
+"""
 
 
 
