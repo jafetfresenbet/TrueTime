@@ -2018,6 +2018,12 @@ DASH_TEMPLATE = """
                             <span>
                                 {{ a['title'] }} — Start: {{ a['start_time'].strftime('%Y/%m/%d %H:%M') }} | Slut: {{ a['end_time'].strftime('%Y/%m/%d %H:%M') }}
                             </span>
+                            <span>
+                                <a class="button-link" href="{{ url_for('edit_activity', activity_id=a['id']) }}"><button class="edit-btn">Ändra</button></a>
+                                <form method="post" action="{{ url_for('delete_activity', activity_id=a['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera aktiviteten?');">
+                                    <button type="submit" class="delete-btn">Radera</button>
+                                </form>
+                            </span>
                         </li>
                     {% endif %}
                 {% else %}
@@ -4173,6 +4179,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
