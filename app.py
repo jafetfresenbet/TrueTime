@@ -1220,7 +1220,7 @@ def edit_activity(activity_id):
 def delete_activity(activity_id):
     activity = Activity.query.get_or_404(activity_id)
 
-    if activity.user_id != current_user.id:
+    if activity.user_id != current_user().id:
         abort(403)
 
     db.session.delete(activity)
@@ -4193,6 +4193,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
