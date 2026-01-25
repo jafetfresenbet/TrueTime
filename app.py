@@ -3941,7 +3941,7 @@ CREATE_ACTIVITY_TEMPLATE = """
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background: linear-gradient(135deg, #022a4f 0%, #022a4f 100%);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -4041,10 +4041,13 @@ EDIT_ACTIVITY_TEMPLATE = """
 
     <style>
         body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #f5f7fb;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #022a4f 0%, #022a4f 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             margin: 0;
-            padding: 0;
         }
 
         .container {
@@ -4193,6 +4196,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
