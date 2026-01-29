@@ -97,6 +97,7 @@ class Subject(db.Model):
     weight = db.Column(db.String(50), default="100p")
     cls = db.relationship('Class', back_populates='subjects')
     assignments = db.relationship('Assignment', back_populates='subject', cascade="all, delete-orphan")
+    skills = db.relationship('SubjectSkill', backref='subject', cascade="all, delete-orphan")
 
 class Assignment(db.Model):
     __tablename__ = 'assignments'
@@ -4325,6 +4326,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
