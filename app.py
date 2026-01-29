@@ -2581,29 +2581,47 @@ CLASS_TEMPLATE = """
                             <span>
                                 <a href="{{ url_for('view_subject', subject_id=subject['id']) }}" style="font-size: 1.1em;">{{ subject['name'] }}</a>
                                 
-                                {# --- HÄR ÄR LOGIKEN FÖR ALTERNATIV 2 --- #}
+                                {# Visar vikt om den är satt (t.ex. 100p) #}
                                 {% if subject['weight'] and subject['weight'] != 'Ingen vikt' %}
                                     <span style="color: #666; font-size: 0.9em; margin-left: 5px;">({{ subject['weight'] }})</span>
                                 {% endif %}
                             </span>
-                
-                            {% if is_admin %}
-                            <span>
-                                <button type="button" class="btn-gray" onclick="toggleWeightMenu('{{ subject.id }}')" style="padding: 4px 8px;">⚙️ Vikt</button>
-                                <a href="{{ url_for('edit_subject', subject_id=subject['id']) }}"><button class="btn-gray">Ändra</button></a>
-                                <form method="post" action="{{ url_for('delete_subject', subject_id=subject['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker?');">
-                                    <button type="submit" class="btn-admin">Radera</button>
-                                </form>
+                        
+                            <span style="display: flex; gap: 5px; align-items: center;">
+                                <button type="button" class="btn-gray" onclick="toggleMenu('skill-menu-{{ subject.id }}')" style="padding: 4px 8px; background-color: #17a2b8; color: white; border: none;">
+                                    📊 Nivå: {{ user_skills.get(subject.id, 'Ej vald') }}
+                                </button>
+                        
+                                {% if is_admin %}
+                                    <button type="button" class="btn-gray" onclick="toggleMenu('weight-menu-{{ subject.id }}')" style="padding: 4px 8px;">⚙️ Vikt</button>
+                                    
+                                    <a href="{{ url_for('edit_subject', subject_id=subject['id']) }}"><button class="btn-gray">Ändra</button></a>
+                                    
+                                    <form method="post" action="{{ url_for('delete_subject', subject_id=subject['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker?');">
+                                        <button type="submit" class="btn-admin">Radera</button>
+                                    </form>
+                                {% endif %}
                             </span>
-                            {% endif %}
                         </div>
-                
+                        
+                        <div id="skill-menu-{{ subject.id }}" style="display: none; background: #e1f5fe; padding: 10px; border-radius: 6px; margin-top: 5px; border: 1px solid #b3e5fc;">
+                            <form method="post" action="{{ url_for('update_skill', subject_id=subject['id']) }}" style="display: flex; align-items: center; gap: 10px; margin: 0;">
+                                <label style="font-size: 0.85em; color: #01579b;">Hur duktig känner du dig i {{ subject.name }}?</label>
+                                <select name="level" onchange="this.form.submit()" style="padding: 4px; border-radius: 4px;">
+                                    <option value="Ej vald" {% if user_skills.get(subject.id) == 'Ej vald' %}selected{% endif %}>Välj nivå...</option>
+                                    <option value="Låg" {% if user_skills.get(subject.id) == 'Låg' %}selected{% endif %}>Låg</option>
+                                    <option value="Medel" {% if user_skills.get(subject.id) == 'Medel' %}selected{% endif %}>Medel</option>
+                                    <option value="Hög" {% if user_skills.get(subject.id) == 'Hög' %}selected{% endif %}>Hög</option>
+                                </select>
+                            </form>
+                        </div>
+                        
                         {% if is_admin %}
-                        <div id="weight-menu-{{ subject.id }}" style="display: none; background: #eee; padding: 10px; border-radius: 6px; margin-top: 5px;">
-                            <form method="post" action="{{ url_for('update_subject_weight', subject_id=subject['id']) }}" style="display: flex; align-items: center; gap: 10px;">
-                                <label style="font-size: 0.85em;">Välj vikt:</label>
-                                <select name="weight" onchange="this.form.submit()" style="max-width: 150px; padding: 4px;">
-                                    <option value="Ingen vikt" {% if subject['weight'] == 'Ingen vikt' %}selected{% endif %}>Ingen vikt (Grundskola)</option>
+                        <div id="weight-menu-{{ subject.id }}" style="display: none; background: #eee; padding: 10px; border-radius: 6px; margin-top: 5px; border: 1px solid #ccc;">
+                            <form method="post" action="{{ url_for('update_subject_weight', subject_id=subject['id']) }}" style="display: flex; align-items: center; gap: 10px; margin: 0;">
+                                <label style="font-size: 0.85em;">Ställ in poäng/vikt:</label>
+                                <select name="weight" onchange="this.form.submit()" style="padding: 4px; border-radius: 4px;">
+                                    <option value="Ingen vikt" {% if subject['weight'] == 'Ingen vikt' %}selected{% endif %}>Ingen vikt</option>
                                     <option value="50p" {% if subject['weight'] == '50p' %}selected{% endif %}>50p</option>
                                     <option value="100p" {% if subject['weight'] == '100p' %}selected{% endif %}>100p</option>
                                     <option value="150p" {% if subject['weight'] == '150p' %}selected{% endif %}>150p</option>
@@ -2611,6 +2629,7 @@ CLASS_TEMPLATE = """
                                 </select>
                             </form>
                         </div>
+                        {% endif %}
                         {% endif %}
                     </div>
                 </li>
@@ -2624,9 +2643,15 @@ CLASS_TEMPLATE = """
 </div>
 
 <script>
-function toggleWeightMenu(subjectId) {
-    var menu = document.getElementById("weight-menu-" + subjectId);
-    menu.style.display = (menu.style.display === "none") ? "block" : "none";
+function toggleMenu(menuId) {
+    var menu = document.getElementById(menuId);
+    // Stäng alla andra menyer om du vill ha det "städat", 
+    // eller bara toggla den aktuella:
+    if (menu.style.display === "none" || menu.style.display === "") {
+        menu.style.display = "block";
+    } else {
+        menu.style.display = "none";
+    }
 }
 </script>
 
@@ -4246,6 +4271,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
