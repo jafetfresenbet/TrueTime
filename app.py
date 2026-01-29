@@ -94,6 +94,7 @@ class Subject(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     class_id = db.Column(db.Integer, db.ForeignKey('classes.id'), nullable=False)
     name = db.Column(db.String, nullable=False)
+    weight = db.Column(db.String(50), default="100p")
     cls = db.relationship('Class', back_populates='subjects')
     assignments = db.relationship('Assignment', back_populates='subject', cascade="all, delete-orphan")
 
@@ -4196,6 +4197,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
