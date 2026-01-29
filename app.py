@@ -59,6 +59,19 @@ mail = Mail(app)
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 
 # ---------- Models ----------
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+    email = db.Column(db.String, unique=True, nullable=False)
+    phone_number = db.Column(db.String(20))
+    password_hash = db.Column(db.String, nullable=False)
+    confirmed = db.Column(db.Boolean, default=False)
+    confirmation_token = db.Column(db.String(256), nullable=True)
+    reset_password_token = db.Column(db.String(256), nullable=True)
+    reset_password_expires = db.Column(db.DateTime, nullable=True)
+    classes = db.relationship('UserClass', back_populates='user', cascade="all, delete-orphan")
+    notifications_enabled = db.Column(db.Boolean, default=True)
 
 class Class(db.Model):
     __tablename__ = 'classes'
@@ -4298,6 +4311,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
