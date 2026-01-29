@@ -1273,6 +1273,26 @@ def delete_activity(activity_id):
     flash("Aktiviteten raderades", "success")
     return redirect(url_for("index"))
 
+@app.route('/subject/<int:subject_id>/update_skill', methods=['POST'])
+@login_required
+def update_skill(subject_id): # Namnet här måste vara 'update_skill'
+    level = request.form.get('level')
+    
+    # Kolla om användaren redan har sparat en nivå för detta ämne
+    skill = SubjectSkill.query.filter_by(user_id=current_user.id, subject_id=subject_id).first()
+    
+    if skill:
+        skill.level = level
+    else:
+        new_skill = SubjectSkill(user_id=current_user.id, subject_id=subject_id, level=level)
+        db.session.add(new_skill)
+    
+    db.session.commit()
+    
+    # Hitta klassens ID så vi kan skicka användaren tillbaka till rätt ställe
+    subj = Subject.query.get_or_404(subject_id)
+    return redirect(url_for('view_class', class_id=subj.class_id))
+
 
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
@@ -4291,6 +4311,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
