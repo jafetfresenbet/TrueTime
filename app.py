@@ -2409,165 +2409,157 @@ CLASS_TEMPLATE = """
     <title>{{ class_data['name'] }} - PlugIt+</title>
 
     <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
-
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #022a4f 0%, #022a4f 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #022a4f 0%, #043a6b 100%);
             margin: 0;
             padding: 0;
+            color: #333;
+            min-height: 100vh;
         }
 
         header {
             background-color: #007bff;
             color: #fff;
-            padding: 15px 20px;
+            padding: 20px;
             text-align: center;
-            box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
         }
 
         nav {
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
-            gap: 10px;
-            margin: 15px;
+            gap: 12px;
+            margin: 20px;
         }
 
-        nav a, nav form button {
+        .btn-nav, nav form button {
             background-color: #28a745;
             color: #fff;
-            padding: 10px 14px;
-            border-radius: 6px;
+            padding: 10px 18px;
+            border-radius: 8px;
             border: none;
             cursor: pointer;
             text-decoration: none;
-            transition: 0.2s;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        nav a:hover, nav form button:hover {
+        .btn-nav:hover, nav form button:hover {
             background-color: #218838;
             transform: translateY(-2px);
-        }
-
-        nav form {
-            display: inline;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
 
         .container {
             display: flex;
             justify-content: center;
-            padding: 20px 12px;
+            padding: 0 15px 40px 15px;
         }
 
         .class-card {
             background-color: #fff;
             width: 100%;
-            max-width: 650px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-            padding: 22px;
+            max-width: 700px;
+            border-radius: 12px;
+            box-shadow: 0px 10px 25px rgba(0,0,0,0.2);
+            padding: 25px;
         }
 
-        .section {
-            margin-bottom: 25px;
+        .section h3 {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            color: #022a4f;
         }
 
-        ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
+        ul { list-style: none; padding: 0; }
 
         li {
-            background-color: #f8f9fa;
-            margin: 8px 0;
-            padding: 12px;
-            border-radius: 6px;
+            background-color: #fff;
+            margin: 12px 0;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #eef2f7;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease;
+        }
+
+        li:hover { transform: scale(1.01); }
+
+        .subject-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 10px;
+            width: 100%;
             flex-wrap: wrap;
+            gap: 10px;
         }
 
-        li a {
+        .subject-name {
+            font-size: 1.15em;
             color: #007bff;
             text-decoration: none;
-            font-weight: 500;
-        }
-
-        li a:hover {
-            text-decoration: underline;
-        }
-
-        .flash-message {
-            text-align: center;
-            margin-bottom: 12px;
             font-weight: bold;
         }
 
-        .flash-message.error { color: #a10000; }
-        .flash-message.success { color: #1a7f37; }
-        .flash-message.warning { color: #7c6f00; }
-        .flash-message.info { color: #004085; }
-
-        form input[type="text"] {
-            width: 100%;
-            max-width: 220px;
-            padding: 8px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-        }
-
-        form button {
-            padding: 8px 12px;
+        /* --- NYA SNYGGA KNAPPAR --- */
+        .btn-action {
+            padding: 6px 12px;
+            border-radius: 20px;
             border: none;
-            background-color: #007bff;
-            color: #fff;
-            border-radius: 6px;
             cursor: pointer;
-            transition: 0.2s;
+            font-size: 0.85em;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+            color: white;
         }
 
-        .btn-admin { background-color: #dc3545; }
-        .btn-gray { background-color: #6c757d; }
-        .btn-warning { background-color: #ffc107; color: #222; }
+        .btn-skill { background-color: #17a2b8; }
+        .btn-skill:hover { background-color: #138496; filter: brightness(1.1); }
+        
+        .btn-weight { background-color: #6c757d; }
+        .btn-weight:hover { background-color: #5a6268; }
 
-        /* ---------------- MOBILE FIXES ---------------- */
+        .btn-edit { background-color: #ffc107; color: #212529 !important; }
+        .btn-edit:hover { background-color: #e0a800; }
+
+        .btn-delete { background-color: #dc3545; }
+        .btn-delete:hover { background-color: #c82333; }
+
+        .button-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .menu-box {
+            display: none;
+            background: #f1f8ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 1px dashed #007bff;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         @media (max-width: 600px) {
-
-            header h2 {
-                font-size: 20px;
-            }
-
-            nav {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            nav a, nav form button {
-                width: 100%;
-                text-align: center;
-            }
-
-            li {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            form input[type="text"] {
-                max-width: 100%;
-                margin-bottom: 6px;
-            }
+            .subject-header { flex-direction: column; align-items: flex-start; }
+            .button-group { width: 100%; justify-content: flex-start; margin-top: 10px; }
+            .btn-action { flex: 1; justify-content: center; }
         }
     </style>
 </head>
@@ -2576,117 +2568,103 @@ CLASS_TEMPLATE = """
 <header>
     <h2>{{ class_data['name'] }}</h2>
     {% if is_admin %}
-        <p>Join-kod: {{ class_data['join_code'] }}</p>
+        <p style="background: rgba(255,255,255,0.2); display: inline-block; padding: 4px 12px; border-radius: 15px;">Join-kod: <strong>{{ class_data['join_code'] }}</strong></p>
     {% endif %}
 </header>
 
 <nav>
-    <a href="{{ url_for('index') }}">Tillbaka</a>
+    <a href="{{ url_for('index') }}" class="btn-nav">🏠 Hem</a>
 
     {% if is_admin %}
         <form method="post" action="{{ url_for('add_subject', class_id=class_data['id']) }}">
-            <input type="text" name="subject_name" placeholder="Ämnesnamn" required>
-            <button type="submit">Lägg till ämne</button>
-        </form>
-
-        <form action="{{ url_for('add_admin_request', class_id=class_data.id) }}" method="get">
-            <button type="submit" class="btn-warning">Bjud in admin</button>
-        </form>
-
-        <form method="post" action="{{ url_for('leave_admin', class_id=class_data.id) }}"
-              onsubmit="return confirm('Vill du verkligen lämna som admin?');">
-            <button type="submit" class="btn-admin">Lämna som admin</button>
+            <input type="text" name="subject_name" placeholder="Nytt ämne..." required style="padding: 10px; border-radius: 8px; border: 1px solid #ccc; outline: none;">
+            <button type="submit">➕ Lägg till</button>
         </form>
     {% endif %}
 </nav>
 
 <div class="container">
     <div class="class-card">
-
         {% with messages = get_flashed_messages() %}
           {% if messages %}
-            <div class="flash-message">
-              {% for message in messages %}
-                {{ message }}<br>
-              {% endfor %}
-            </div>
+            {% for message in messages %}
+                <div class="flash-message" style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center; border: 1px solid #ffeeba;">{{ message }}</div>
+            {% endfor %}
           {% endif %}
         {% endwith %}
 
         <div class="section">
-            <h3>Ämnen / Kurser</h3>
+            <h3>📖 Ämnen & Kurser</h3>
             <ul>
             {% for subject in subjects %}
                 <li>
-                    <div style="display: flex; flex-direction: column; gap: 5px; width: 100%;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                            <span>
-                                <a href="{{ url_for('view_subject', subject_id=subject['id']) }}" style="font-size: 1.1em;">{{ subject['name'] }}</a>
-                                
-                                {# Visar vikt om den är satt (t.ex. 100p) #}
-                                {% if subject['weight'] and subject['weight'] != 'Ingen vikt' %}
-                                    <span style="color: #666; font-size: 0.9em; margin-left: 5px;">({{ subject['weight'] }})</span>
-                                {% endif %}
-                            </span>
-                        
-                            <span style="display: flex; gap: 5px; align-items: center;">
-                                <button type="button" class="btn-gray" onclick="toggleMenu('skill-menu-{{ subject.id }}')" style="padding: 4px 8px; background-color: #17a2b8; color: white; border: none;">
-                                    📊 Nivå: {{ user_skills.get(subject.id, 'Ej vald') }}
-                                </button>
-                        
-                                {% if is_admin %}
-                                    <button type="button" class="btn-gray" onclick="toggleMenu('weight-menu-{{ subject.id }}')" style="padding: 4px 8px;">⚙️ Vikt</button>
-                                    
-                                    <a href="{{ url_for('edit_subject', subject_id=subject['id']) }}"><button class="btn-gray">Ändra</button></a>
-                                    
-                                    <form method="post" action="{{ url_for('delete_subject', subject_id=subject['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker?');">
-                                        <button type="submit" class="btn-admin">Radera</button>
-                                    </form>
-                                {% endif %}
-                            </span>
+                    <div class="subject-header">
+                        <div>
+                            <a href="{{ url_for('view_subject', subject_id=subject['id']) }}" class="subject-name">{{ subject['name'] }}</a>
+                            {% if subject['weight'] and subject['weight'] != 'Ingen vikt' %}
+                                <span style="color: #666; font-size: 0.85em;"> • {{ subject['weight'] }}</span>
+                            {% endif %}
                         </div>
-                        
-                        <div id="skill-menu-{{ subject.id }}" style="display: none; background: #e1f5fe; padding: 10px; border-radius: 6px; margin-top: 5px; border: 1px solid #b3e5fc;">
-                            <form method="post" action="{{ url_for('update_skill', subject_id=subject['id']) }}" style="display: flex; align-items: center; gap: 10px; margin: 0;">
-                                <label style="font-size: 0.85em; color: #01579b;">Hur duktig känner du dig i {{ subject.name }}?</label>
-                                <select name="level" onchange="this.form.submit()" style="padding: 4px; border-radius: 4px;">
-                                    <option value="Ej vald" {% if user_skills.get(subject.id) == 'Ej vald' %}selected{% endif %}>Välj nivå...</option>
-                                    <option value="Låg" {% if user_skills.get(subject.id) == 'Låg' %}selected{% endif %}>Låg</option>
-                                    <option value="Medel" {% if user_skills.get(subject.id) == 'Medel' %}selected{% endif %}>Medel</option>
-                                    <option value="Hög" {% if user_skills.get(subject.id) == 'Hög' %}selected{% endif %}>Hög</option>
-                                </select>
-                            </form>
+
+                        <div class="button-group">
+                            <button type="button" class="btn-action btn-skill" onclick="toggleMenu('skill-menu-{{ subject.id }}')">
+                                📊 {{ user_skills.get(subject.id, 'Välj nivå') }}
+                            </button>
+
+                            {% if is_admin %}
+                                <button type="button" class="btn-action btn-weight" onclick="toggleMenu('weight-menu-{{ subject.id }}')">⚙️ Vikt</button>
+                                <a href="{{ url_for('edit_subject', subject_id=subject['id']) }}" class="btn-action btn-edit" style="text-decoration: none;">✏️ Ändra</a>
+                                <form method="post" action="{{ url_for('delete_subject', subject_id=subject['id']) }}" onsubmit="return confirm('Radera {{ subject.name }}?');" style="display:inline;">
+                                    <button type="submit" class="btn-action btn-delete">🗑️</button>
+                                </form>
+                            {% endif %}
                         </div>
-                        
-                        {% if is_admin %}
-                        <div id="weight-menu-{{ subject.id }}" style="display: none; background: #eee; padding: 10px; border-radius: 6px; margin-top: 5px; border: 1px solid #ccc;">
-                            <form method="post" action="{{ url_for('update_subject_weight', subject_id=subject['id']) }}" style="display: flex; align-items: center; gap: 10px; margin: 0;">
-                                <label style="font-size: 0.85em;">Ställ in poäng/vikt:</label>
-                                <select name="weight" onchange="this.form.submit()" style="padding: 4px; border-radius: 4px;">
-                                    <option value="Ingen vikt" {% if subject['weight'] == 'Ingen vikt' %}selected{% endif %}>Ingen vikt</option>
-                                    <option value="50p" {% if subject['weight'] == '50p' %}selected{% endif %}>50p</option>
-                                    <option value="100p" {% if subject['weight'] == '100p' %}selected{% endif %}>100p</option>
-                                    <option value="150p" {% if subject['weight'] == '150p' %}selected{% endif %}>150p</option>
-                                    <option value="Gymnasiearbete" {% if subject['weight'] == 'Gymnasiearbete' %}selected{% endif %}>Gymnasiearbete</option>
-                                </select>
-                            </form>
-                        </div>
-                        {% endif %} </div>
+                    </div>
+
+                    <div id="skill-menu-{{ subject.id }}" class="menu-box">
+                        <form method="post" action="{{ url_for('update_skill', subject_id=subject['id']) }}">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #01579b;">Hur ligger du till i {{ subject.name }}?</label>
+                            <select name="level" onchange="this.form.submit()" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #b3e5fc;">
+                                <option value="Ej vald" {% if user_skills.get(subject.id) == 'Ej vald' %}selected{% endif %}>Välj din nuvarande nivå...</option>
+                                <option value="Låg" {% if user_skills.get(subject.id) == 'Låg' %}selected{% endif %}>🔴 Låg nivå (Behöver mycket hjälp)</option>
+                                <option value="Medel" {% if user_skills.get(subject.id) == 'Medel' %}selected{% endif %}>🟡 Medel nivå (Klarar det mesta själv)</option>
+                                <option value="Hög" {% if user_skills.get(subject.id) == 'Hög' %}selected{% endif %}>🟢 Hög nivå (Siktar på toppresultat)</option>
+                            </select>
+                        </form>
+                    </div>
+
+                    {% if is_admin %}
+                    <div id="weight-menu-{{ subject.id }}" class="menu-box" style="background-color: #f8f9fa; border-color: #6c757d;">
+                        <form method="post" action="{{ url_for('update_subject_weight', subject_id=subject['id']) }}">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Ställ in kursens poäng/vikt:</label>
+                            <select name="weight" onchange="this.form.submit()" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+                                <option value="Ingen vikt" {% if subject['weight'] == 'Ingen vikt' %}selected{% endif %}>Ingen vikt</option>
+                                <option value="50p" {% if subject['weight'] == '50p' %}selected{% endif %}>50p</option>
+                                <option value="100p" {% if subject['weight'] == '100p' %}selected{% endif %}>100p</option>
+                                <option value="150p" {% if subject['weight'] == '150p' %}selected{% endif %}>150p</option>
+                                <option value="Gymnasiearbete" {% if subject['weight'] == 'Gymnasiearbete' %}selected{% endif %}>Gymnasiearbete</option>
+                            </select>
+                        </form>
+                    </div>
+                    {% endif %}
                 </li>
             {% else %}
-                <li>Inga ämnen tillagda ännu.</li>
+                <li style="text-align: center; color: #999;">Inga ämnen tillagda ännu.</li>
             {% endfor %}
             </ul>
         </div>
-
     </div>
 </div>
 
 <script>
 function toggleMenu(menuId) {
     var menu = document.getElementById(menuId);
-    // Stäng alla andra menyer om du vill ha det "städat", 
-    // eller bara toggla den aktuella:
+    // Stäng andra menyer av samma typ (valfritt, men ger renare look)
+    const allMenus = document.querySelectorAll('.menu-box');
+    allMenus.forEach(m => {
+        if (m.id !== menuId) m.style.display = 'none';
+    });
+
     if (menu.style.display === "none" || menu.style.display === "") {
         menu.style.display = "block";
     } else {
@@ -2694,7 +2672,6 @@ function toggleMenu(menuId) {
     }
 }
 </script>
-
 </body>
 </html>
 """
@@ -4311,6 +4288,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
