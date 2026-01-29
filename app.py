@@ -2609,6 +2609,32 @@ CLASS_TEMPLATE = """
 
         <div class="section">
             <h3>📖 Ämnen & Kurser</h3>
+
+            {% set total_subjects = subjects|length %}
+            {% set updated_subjects = user_skills|length %}
+            {% set percentage = (updated_subjects / total_subjects * 100)|int if total_subjects > 0 else 0 %}
+        
+            <div class="progress-section" style="margin: 15px 0 25px 0; background: #f8f9fa; padding: 15px; border-radius: 10px; border: 1px solid #eef2f7;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 0.9em; font-weight: 600; color: #022a4f;">Din profil-status:</span>
+                    <span style="font-size: 0.85em; background: #007bff; color: white; padding: 2px 8px; border-radius: 10px;">{{ updated_subjects }} av {{ total_subjects }} klara</span>
+                </div>
+                <div style="background: #e9ecef; height: 12px; border-radius: 6px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);">
+                    <div style="background: linear-gradient(90deg, #007bff, #28a745); 
+                                width: {{ percentage }}%; 
+                                height: 100%; 
+                                transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+                                box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);">
+                    </div>
+                </div>
+                <p style="font-size: 0.75em; color: #666; margin-top: 8px; margin-bottom: 0;">
+                    {% if percentage == 100 %}
+                        🌟 Grymt! Du har satt nivå på alla ämnen.
+                    {% else %}
+                        Sätt din nivå i alla ämnen för att färdigställa din profil.
+                    {% endif %}
+                </p>
+            </div>
             <ul>
             {% for subject in subjects %}
                 <li>
@@ -4294,6 +4320,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
