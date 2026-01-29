@@ -2610,20 +2610,14 @@ CLASS_TEMPLATE = """
         <div class="section">
             <h3>📖 Ämnen & Kurser</h3>
 
-            {# --- KORRIGERAD LOGIK START --- #}
+            {# --- KORRIGERAD LOGIK UTAN "DO"-TAGG --- #}
             {% set total_subjects = subjects|length %}
             
-            {# Vi skapar en ny lista som bara innehåller skills för ämnen som finns i JUST DENNA klass #}
-            {% set active_skills = [] %}
-            {% for s in subjects %}
-                {% if s.id in user_skills %}
-                    {% do active_skills.append(s.id) %}
-                {% endif %}
-            {% endfor %}
+            {# Vi räknar hur många ämnen i listan som faktiskt har en sparad skill #}
+            {% set updated_subjects = subjects | selectattr('id', 'in', user_skills) | list | length %}
             
-            {% set updated_subjects = active_skills|length %}
             {% set percentage = (updated_subjects / total_subjects * 100)|int if total_subjects > 0 else 0 %}
-            {# --- KORRIGERAD LOGIK SLUT --- #}
+            {# --- SLUT PÅ LOGIK --- #}
         
             <div class="progress-section" style="margin: 15px 0 25px 0; background: #f8f9fa; padding: 15px; border-radius: 10px; border: 1px solid #eef2f7;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -4331,6 +4325,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
