@@ -59,7 +59,6 @@ mail = Mail(app)
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 
 # ---------- Models ----------
-c
 
 class Class(db.Model):
     __tablename__ = 'classes'
@@ -4299,6 +4298,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
