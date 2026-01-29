@@ -2434,27 +2434,43 @@ CLASS_TEMPLATE = """
             justify-content: center;
             flex-wrap: wrap;
             gap: 12px;
-            margin: 20px;
+            margin: 20px auto;
+            max-width: 800px;
+            padding: 0 10px;
         }
 
-        .btn-nav, nav form button {
+        /* --- NAVIGERINGSKNAPPAR --- */
+        .btn-nav {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             background-color: #28a745;
             color: #fff;
             padding: 10px 18px;
-            border-radius: 8px;
+            border-radius: 25px;
             border: none;
             cursor: pointer;
             text-decoration: none;
             font-weight: 600;
+            font-size: 0.9em;
             transition: all 0.2s ease;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .btn-nav:hover, nav form button:hover {
+        .btn-nav:hover {
             background-color: #218838;
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
+
+        .btn-nav.btn-back { background-color: #6c757d; }
+        .btn-nav.btn-back:hover { background-color: #5a6268; }
+
+        .btn-nav.btn-warning { background-color: #ffc107; color: #212529; }
+        .btn-nav.btn-warning:hover { background-color: #e0a800; }
+
+        .btn-nav.btn-danger { background-color: #dc3545; }
+        .btn-nav.btn-danger:hover { background-color: #c82333; }
 
         .container {
             display: flex;
@@ -2465,7 +2481,7 @@ CLASS_TEMPLATE = """
         .class-card {
             background-color: #fff;
             width: 100%;
-            max-width: 700px;
+            max-width: 750px;
             border-radius: 12px;
             box-shadow: 0px 10px 25px rgba(0,0,0,0.2);
             padding: 25px;
@@ -2490,8 +2506,6 @@ CLASS_TEMPLATE = """
             transition: transform 0.2s ease;
         }
 
-        li:hover { transform: scale(1.01); }
-
         .subject-header {
             display: flex;
             justify-content: space-between;
@@ -2502,15 +2516,15 @@ CLASS_TEMPLATE = """
         }
 
         .subject-name {
-            font-size: 1.15em;
+            font-size: 1.1em;
             color: #007bff;
             text-decoration: none;
             font-weight: bold;
         }
 
-        /* --- NYA SNYGGA KNAPPAR --- */
+        /* --- ÄMNES-KNAPPAR --- */
         .btn-action {
-            padding: 6px 12px;
+            padding: 8px 14px;
             border-radius: 20px;
             border: none;
             cursor: pointer;
@@ -2521,25 +2535,17 @@ CLASS_TEMPLATE = """
             gap: 5px;
             transition: all 0.2s ease;
             color: white;
+            text-decoration: none;
         }
 
-        .btn-skill { background-color: #17a2b8; }
-        .btn-skill:hover { background-color: #138496; filter: brightness(1.1); }
+        .btn-skill { background-color: #17a2b8; border: 2px solid transparent; }
+        .btn-skill:hover { filter: brightness(1.1); transform: scale(1.05); }
         
         .btn-weight { background-color: #6c757d; }
-        .btn-weight:hover { background-color: #5a6268; }
-
         .btn-edit { background-color: #ffc107; color: #212529 !important; }
-        .btn-edit:hover { background-color: #e0a800; }
-
         .btn-delete { background-color: #dc3545; }
-        .btn-delete:hover { background-color: #c82333; }
 
-        .button-group {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
+        .button-group { display: flex; gap: 8px; flex-wrap: wrap; }
 
         .menu-box {
             display: none;
@@ -2557,6 +2563,8 @@ CLASS_TEMPLATE = """
         }
 
         @media (max-width: 600px) {
+            nav { flex-direction: column; }
+            .btn-nav { width: 100%; }
             .subject-header { flex-direction: column; align-items: flex-start; }
             .button-group { width: 100%; justify-content: flex-start; margin-top: 10px; }
             .btn-action { flex: 1; justify-content: center; }
@@ -2573,12 +2581,18 @@ CLASS_TEMPLATE = """
 </header>
 
 <nav>
-    <a href="{{ url_for('index') }}" class="btn-nav">🏠 Hem</a>
+    <a href="{{ url_for('index') }}" class="btn-nav btn-back">🏠 Hem</a>
 
     {% if is_admin %}
-        <form method="post" action="{{ url_for('add_subject', class_id=class_data['id']) }}">
-            <input type="text" name="subject_name" placeholder="Nytt ämne..." required style="padding: 10px; border-radius: 8px; border: 1px solid #ccc; outline: none;">
-            <button type="submit">➕ Lägg till</button>
+        <form method="post" action="{{ url_for('add_subject', class_id=class_data['id']) }}" style="display: flex; gap: 5px;">
+            <input type="text" name="subject_name" placeholder="Nytt ämne..." required style="padding: 10px; border-radius: 20px; border: 1px solid #ccc; outline: none; width: 140px;">
+            <button type="submit" class="btn-nav">➕ Lägg till</button>
+        </form>
+
+        <a href="{{ url_for('add_admin_request', class_id=class_data.id) }}" class="btn-nav btn-warning">👑 Bjud in admin</a>
+
+        <form method="post" action="{{ url_for('leave_admin', class_id=class_data.id) }}" onsubmit="return confirm('Lämna som admin?');">
+            <button type="submit" class="btn-nav btn-danger">🏃 Lämna admin</button>
         </form>
     {% endif %}
 </nav>
@@ -2588,7 +2602,7 @@ CLASS_TEMPLATE = """
         {% with messages = get_flashed_messages() %}
           {% if messages %}
             {% for message in messages %}
-                <div class="flash-message" style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center; border: 1px solid #ffeeba;">{{ message }}</div>
+                <div style="background: #fff3cd; color: #856404; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; border: 1px solid #ffeeba;">{{ message }}</div>
             {% endfor %}
           {% endif %}
         {% endwith %}
@@ -2612,8 +2626,8 @@ CLASS_TEMPLATE = """
                             </button>
 
                             {% if is_admin %}
-                                <button type="button" class="btn-action btn-weight" onclick="toggleMenu('weight-menu-{{ subject.id }}')">⚙️ Vikt</button>
-                                <a href="{{ url_for('edit_subject', subject_id=subject['id']) }}" class="btn-action btn-edit" style="text-decoration: none;">✏️ Ändra</a>
+                                <button type="button" class="btn-action btn-weight" onclick="toggleMenu('weight-menu-{{ subject.id }}')">⚙️</button>
+                                <a href="{{ url_for('edit_subject', subject_id=subject['id']) }}" class="btn-action btn-edit">✏️</a>
                                 <form method="post" action="{{ url_for('delete_subject', subject_id=subject['id']) }}" onsubmit="return confirm('Radera {{ subject.name }}?');" style="display:inline;">
                                     <button type="submit" class="btn-action btn-delete">🗑️</button>
                                 </form>
@@ -2623,12 +2637,12 @@ CLASS_TEMPLATE = """
 
                     <div id="skill-menu-{{ subject.id }}" class="menu-box">
                         <form method="post" action="{{ url_for('update_skill', subject_id=subject['id']) }}">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #01579b;">Hur ligger du till i {{ subject.name }}?</label>
-                            <select name="level" onchange="this.form.submit()" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #b3e5fc;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #01579b;">Hur känns {{ subject.name }} just nu?</label>
+                            <select name="level" onchange="this.form.submit()" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #b3e5fc; cursor:pointer;">
                                 <option value="Ej vald" {% if user_skills.get(subject.id) == 'Ej vald' %}selected{% endif %}>Välj din nuvarande nivå...</option>
-                                <option value="Låg" {% if user_skills.get(subject.id) == 'Låg' %}selected{% endif %}>🔴 Låg nivå (Behöver mycket hjälp)</option>
-                                <option value="Medel" {% if user_skills.get(subject.id) == 'Medel' %}selected{% endif %}>🟡 Medel nivå (Klarar det mesta själv)</option>
-                                <option value="Hög" {% if user_skills.get(subject.id) == 'Hög' %}selected{% endif %}>🟢 Hög nivå (Siktar på toppresultat)</option>
+                                <option value="Låg" {% if user_skills.get(subject.id) == 'Låg' %}selected{% endif %}>🔴 Låg (Behöver mycket hjälp)</option>
+                                <option value="Medel" {% if user_skills.get(subject.id) == 'Medel' %}selected{% endif %}>🟡 Medel (Klarar det mesta själv)</option>
+                                <option value="Hög" {% if user_skills.get(subject.id) == 'Hög' %}selected{% endif %}>🟢 Hög (Siktar på toppresultat)</option>
                             </select>
                         </form>
                     </div>
@@ -2636,8 +2650,8 @@ CLASS_TEMPLATE = """
                     {% if is_admin %}
                     <div id="weight-menu-{{ subject.id }}" class="menu-box" style="background-color: #f8f9fa; border-color: #6c757d;">
                         <form method="post" action="{{ url_for('update_subject_weight', subject_id=subject['id']) }}">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Ställ in kursens poäng/vikt:</label>
-                            <select name="weight" onchange="this.form.submit()" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Kursens poäng/vikt:</label>
+                            <select name="weight" onchange="this.form.submit()" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; cursor:pointer;">
                                 <option value="Ingen vikt" {% if subject['weight'] == 'Ingen vikt' %}selected{% endif %}>Ingen vikt</option>
                                 <option value="50p" {% if subject['weight'] == '50p' %}selected{% endif %}>50p</option>
                                 <option value="100p" {% if subject['weight'] == '100p' %}selected{% endif %}>100p</option>
@@ -2649,7 +2663,7 @@ CLASS_TEMPLATE = """
                     {% endif %}
                 </li>
             {% else %}
-                <li style="text-align: center; color: #999;">Inga ämnen tillagda ännu.</li>
+                <li style="text-align: center; color: #999; padding: 30px;">Inga ämnen tillagda ännu.</li>
             {% endfor %}
             </ul>
         </div>
@@ -2659,17 +2673,9 @@ CLASS_TEMPLATE = """
 <script>
 function toggleMenu(menuId) {
     var menu = document.getElementById(menuId);
-    // Stäng andra menyer av samma typ (valfritt, men ger renare look)
     const allMenus = document.querySelectorAll('.menu-box');
-    allMenus.forEach(m => {
-        if (m.id !== menuId) m.style.display = 'none';
-    });
-
-    if (menu.style.display === "none" || menu.style.display === "") {
-        menu.style.display = "block";
-    } else {
-        menu.style.display = "none";
-    }
+    allMenus.forEach(m => { if (m.id !== menuId) m.style.display = 'none'; });
+    menu.style.display = (menu.style.display === "none" || menu.style.display === "") ? "block" : "none";
 }
 </script>
 </body>
@@ -4288,6 +4294,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
