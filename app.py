@@ -623,9 +623,10 @@ def add_subject(class_id):
 def update_subject_weight(subject_id):
     subj = Subject.query.get_or_404(subject_id)
     cls = Class.query.get(subj.class_id)
+    
+    # Kontrollera att användaren är admin i klassen
     user = current_user()
     membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first()
-
     if not membership or membership.role != 'admin':
         flash("Endast admin kan ändra vikt.")
         return redirect(url_for('view_class', class_id=cls.id))
@@ -634,7 +635,7 @@ def update_subject_weight(subject_id):
     if new_weight:
         subj.weight = new_weight
         db.session.commit()
-        flash(f"Vikt för {subj.name} uppdaterad till {new_weight}.")
+        flash(f"Vikten för {subj.name} har uppdaterats.")
     
     return redirect(url_for('view_class', class_id=cls.id))
 
@@ -2579,18 +2580,18 @@ CLASS_TEMPLATE = """
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                             <span>
                                 <a href="{{ url_for('view_subject', subject_id=subject['id']) }}" style="font-size: 1.1em;">{{ subject['name'] }}</a>
-                                <span style="color: #666; font-size: 0.9em; margin-left: 5px;">({{ subject['weight'] or '100p' }})</span>
+                                
+                                {# --- HÄR ÄR LOGIKEN FÖR ALTERNATIV 2 --- #}
+                                {% if subject['weight'] and subject['weight'] != 'Ingen vikt' %}
+                                    <span style="color: #666; font-size: 0.9em; margin-left: 5px;">({{ subject['weight'] }})</span>
+                                {% endif %}
                             </span>
                 
                             {% if is_admin %}
                             <span>
                                 <button type="button" class="btn-gray" onclick="toggleWeightMenu('{{ subject.id }}')" style="padding: 4px 8px;">⚙️ Vikt</button>
-                                
-                                <a href="{{ url_for('edit_subject', subject_id=subject['id']) }}">
-                                    <button class="btn-gray">Ändra</button>
-                                </a>
-                                <form method="post" action="{{ url_for('delete_subject', subject_id=subject['id']) }}"
-                                      style="display:inline;" onsubmit="return confirm('Är du säker?');">
+                                <a href="{{ url_for('edit_subject', subject_id=subject['id']) }}"><button class="btn-gray">Ändra</button></a>
+                                <form method="post" action="{{ url_for('delete_subject', subject_id=subject['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker?');">
                                     <button type="submit" class="btn-admin">Radera</button>
                                 </form>
                             </span>
@@ -2600,8 +2601,9 @@ CLASS_TEMPLATE = """
                         {% if is_admin %}
                         <div id="weight-menu-{{ subject.id }}" style="display: none; background: #eee; padding: 10px; border-radius: 6px; margin-top: 5px;">
                             <form method="post" action="{{ url_for('update_subject_weight', subject_id=subject['id']) }}" style="display: flex; align-items: center; gap: 10px;">
-                                <label style="font-size: 0.85em;">Välj vikt för {{ subject.name }}:</label>
+                                <label style="font-size: 0.85em;">Välj vikt:</label>
                                 <select name="weight" onchange="this.form.submit()" style="max-width: 150px; padding: 4px;">
+                                    <option value="Ingen vikt" {% if subject['weight'] == 'Ingen vikt' %}selected{% endif %}>Ingen vikt (Grundskola)</option>
                                     <option value="50p" {% if subject['weight'] == '50p' %}selected{% endif %}>50p</option>
                                     <option value="100p" {% if subject['weight'] == '100p' %}selected{% endif %}>100p</option>
                                     <option value="150p" {% if subject['weight'] == '150p' %}selected{% endif %}>150p</option>
@@ -2624,11 +2626,7 @@ CLASS_TEMPLATE = """
 <script>
 function toggleWeightMenu(subjectId) {
     var menu = document.getElementById("weight-menu-" + subjectId);
-    if (menu.style.display === "none") {
-        menu.style.display = "block";
-    } else {
-        menu.style.display = "none";
-    }
+    menu.style.display = (menu.style.display === "none") ? "block" : "none";
 }
 </script>
 
@@ -4248,6 +4246,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
