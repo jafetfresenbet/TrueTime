@@ -149,13 +149,6 @@ class Activity(db.Model):
     # Relationship
     user = db.relationship('User', backref=db.backref('activities', lazy=True))
 
-class SubjectSkill(db.Model):
-    __tablename__ = 'subject_skill'
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
-    level = db.Column(db.String(20), default='Ej vald')
-
 # ---------- Auth helpers ----------
 def check_days_left_threshold(user, assignment):
     if not assignment.deadline:
@@ -599,13 +592,7 @@ def view_class(class_id):
 
     subjects = cls.subjects
     is_admin = membership and membership.role == 'admin'
-
-    # Hämta alla nivåer som den inloggade användaren har sparat
-    skills = SubjectSkill.query.filter_by(user_id=user.id).all()
-    # Gör om det till en enkel dictionary: {ämne_id: nivå}
-    user_skills = {s.subject_id: s.level for s in skills}
-    
-    return render_template_string(CLASS_TEMPLATE, class_data=cls, subjects=subjects, is_admin=is_admin, user_skills=user_skills)
+    return render_template_string(CLASS_TEMPLATE, class_data=cls, subjects=subjects, is_admin=is_admin)
 
 # ---------- Subject routes ----------
 @app.route('/class/<int:class_id>/add_subject', methods=['POST'])
@@ -1263,22 +1250,6 @@ def delete_activity(activity_id):
 
     flash("Aktiviteten raderades", "success")
     return redirect(url_for("index"))
-
-@app.route('/subject/<int:subject_id>/update_skill', methods=['POST'])
-@login_required
-def update_skill(subject_id):
-    level = request.form.get('level')
-    # Kolla om användaren redan har sparat en nivå för detta ämne
-    skill = SubjectSkill.query.filter_by(user_id=current_user.id, subject_id=subject_id).first()
-    
-    if skill:
-        skill.level = level
-    else:
-        new_skill = SubjectSkill(user_id=current_user.id, subject_id=subject_id, level=level)
-        db.session.add(new_skill)
-    
-    db.session.commit()
-    return redirect(url_for('view_class', class_id=Subject.query.get(subject_id).class_id))
 
 
 # ---------- Templates ----------
@@ -2608,32 +2579,23 @@ CLASS_TEMPLATE = """
                     <div style="display: flex; flex-direction: column; gap: 5px; width: 100%;">
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                             <span>
-                                <a href="{{ url_for('view_subject', subject_id=subject['id']) }}">{{ subject['name'] }}</a>
+                                <a href="{{ url_for('view_subject', subject_id=subject['id']) }}" style="font-size: 1.1em;">{{ subject['name'] }}</a>
+                                
+                                {# --- HÄR ÄR LOGIKEN FÖR ALTERNATIV 2 --- #}
                                 {% if subject['weight'] and subject['weight'] != 'Ingen vikt' %}
-                                    <span style="color: #666;">({{ subject['weight'] }})</span>
+                                    <span style="color: #666; font-size: 0.9em; margin-left: 5px;">({{ subject['weight'] }})</span>
                                 {% endif %}
                             </span>
-                        
+                
+                            {% if is_admin %}
                             <span>
-                                <button type="button" class="btn-gray" onclick="toggleMenu('skill-{{ subject.id }}')" style="background-color: #17a2b8; color: white;">
-                                    📊 Nivå: {{ user_skills.get(subject.id, 'Ej vald') }}
-                                </button>
-                        
-                                {% if is_admin %}
-                                    <button type="button" class="btn-gray" onclick="toggleMenu('weight-{{ subject.id }}')">⚙️ Vikt</button>
-                                    {% endif %}
+                                <button type="button" class="btn-gray" onclick="toggleWeightMenu('{{ subject.id }}')" style="padding: 4px 8px;">⚙️ Vikt</button>
+                                <a href="{{ url_for('edit_subject', subject_id=subject['id']) }}"><button class="btn-gray">Ändra</button></a>
+                                <form method="post" action="{{ url_for('delete_subject', subject_id=subject['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker?');">
+                                    <button type="submit" class="btn-admin">Radera</button>
+                                </form>
                             </span>
-                        </div>
-                        
-                        <div id="skill-{{ subject.id }}" style="display: none; background: #f0f8ff; padding: 10px; border-radius: 6px; margin-top: 5px;">
-                            <form method="post" action="{{ url_for('update_skill', subject_id=subject.id) }}">
-                                <select name="level" onchange="this.form.submit()">
-                                    <option value="Ej vald" {% if user_skills.get(subject.id) == 'Ej vald' %}selected{% endif %}>Välj nivå...</option>
-                                    <option value="Låg" {% if user_skills.get(subject.id) == 'Låg' %}selected{% endif %}>Låg</option>
-                                    <option value="Medel" {% if user_skills.get(subject.id) == 'Medel' %}selected{% endif %}>Medel</option>
-                                    <option value="Hög" {% if user_skills.get(subject.id) == 'Hög' %}selected{% endif %}>Hög</option>
-                                </select>
-                            </form>
+                            {% endif %}
                         </div>
                 
                         {% if is_admin %}
@@ -4284,8 +4246,6 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
-
-
 
 
 
