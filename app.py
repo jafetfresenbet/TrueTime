@@ -592,7 +592,7 @@ def view_class(class_id):
 
     subjects = cls.subjects
     is_admin = membership and membership.role == 'admin'
-    return render_template_string(CLASS_TEMPLATE, class_data=cls, subjects=subjects, is_admin=is_admin)
+    return render_template_string(CLASS_TEMPLATE, class_data=cls, subjects=subjects, is_admin=is_admin, user_skills=user_skills)
 
 # ---------- Subject routes ----------
 @app.route('/class/<int:class_id>/add_subject', methods=['POST'])
@@ -2629,9 +2629,7 @@ CLASS_TEMPLATE = """
                                 </select>
                             </form>
                         </div>
-                        {% endif %}
-                        {% endif %}
-                    </div>
+                        {% endif %} </div>
                 </li>
             {% else %}
                 <li>Inga ämnen tillagda ännu.</li>
@@ -4271,6 +4269,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
