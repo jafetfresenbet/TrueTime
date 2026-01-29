@@ -588,7 +588,7 @@ def join_class():
 @app.route('/class/<int:class_id>')
 @login_required
 def view_class(class_id):
-    user = current_user
+    user = current_user()
     cls = Class.query.get_or_404(class_id)
 
     # Kontrollera medlemskap
@@ -4291,6 +4291,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
