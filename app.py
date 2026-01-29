@@ -1279,12 +1279,12 @@ def update_skill(subject_id): # Namnet här måste vara 'update_skill'
     level = request.form.get('level')
     
     # Kolla om användaren redan har sparat en nivå för detta ämne
-    skill = SubjectSkill.query.filter_by(user_id=current_user.id, subject_id=subject_id).first()
+    skill = SubjectSkill.query.filter_by(user_id=current_user().id, subject_id=subject_id).first()
     
     if skill:
         skill.level = level
     else:
-        new_skill = SubjectSkill(user_id=current_user.id, subject_id=subject_id, level=level)
+        new_skill = SubjectSkill(user_id=current_user().id, subject_id=subject_id, level=level)
         db.session.add(new_skill)
     
     db.session.commit()
@@ -4311,6 +4311,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
