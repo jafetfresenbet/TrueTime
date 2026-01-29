@@ -149,6 +149,13 @@ class Activity(db.Model):
     # Relationship
     user = db.relationship('User', backref=db.backref('activities', lazy=True))
 
+class SubjectSkill(db.Model):
+    __tablename__ = 'subject_skill'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
+    level = db.Column(db.String(20), default='Ej vald')
+
 # ---------- Auth helpers ----------
 def check_days_left_threshold(user, assignment):
     if not assignment.deadline:
@@ -581,10 +588,10 @@ def join_class():
 @app.route('/class/<int:class_id>')
 @login_required
 def view_class(class_id):
-    user = current_user()
+    user = current_user
     cls = Class.query.get_or_404(class_id)
 
-    # Check membership in class_members table
+    # Kontrollera medlemskap
     membership = ClassMember.query.filter_by(user_id=user.id, class_id=cls.id).first()
     if not membership:
         flash("Du är inte medlem i den här klassen.")
@@ -592,7 +599,22 @@ def view_class(class_id):
 
     subjects = cls.subjects
     is_admin = membership and membership.role == 'admin'
-    return render_template_string(CLASS_TEMPLATE, class_data=cls, subjects=subjects, is_admin=is_admin, user_skills=user_skills)
+
+    # --- HÄR ÄR DEN NYA KODEN SOM SAKNADES ---
+    # 1. Hämta alla sparade nivåer för den inloggade användaren
+    skills = SubjectSkill.query.filter_by(user_id=user.id).all()
+    
+    # 2. Skapa en "ordlista" (dictionary) som kopplar ämnes-ID till vald nivå
+    user_skills = {s.subject_id: s.level for s in skills}
+    # ----------------------------------------
+
+    return render_template_string(
+        CLASS_TEMPLATE, 
+        class_data=cls, 
+        subjects=subjects, 
+        is_admin=is_admin, 
+        user_skills=user_skills
+    )
 
 # ---------- Subject routes ----------
 @app.route('/class/<int:class_id>/add_subject', methods=['POST'])
@@ -4269,6 +4291,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
