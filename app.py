@@ -468,7 +468,7 @@ def index():
         item['priority_score'] = calculate_priority_score(item, user.dashboard_mode, user_skills_dict)
 
     # 3. Sortera efter Score (Högst först)
-    combined_items.sort(key=lambda x: x['score'], reverse=True)
+    combined_items.sort(key=lambda x: x['priority_score'], reverse=True)
 
     delete_expired_assignments()  # radera gamla uppgifter
 
@@ -4394,6 +4394,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
