@@ -20,6 +20,7 @@ from flask_rq2 import RQ
 
 from flask_mail import Message
 from twilio.rest import Client
+import math
 
 # ---------- Konfiguration ----------
 DATABASE = 'mvp.db'
@@ -72,6 +73,7 @@ class User(db.Model):
     reset_password_expires = db.Column(db.DateTime, nullable=True)
     classes = db.relationship('UserClass', back_populates='user', cascade="all, delete-orphan")
     notifications_enabled = db.Column(db.Boolean, default=True)
+    dashboard_mode = db.Column(db.String(20), default='sista_minuten')
 
 class Class(db.Model):
     __tablename__ = 'classes'
@@ -266,6 +268,42 @@ def compute_days_left(deadline):
 def generate_join_code():
     return uuid4().hex[:6].upper()
 
+def calculate_priority_score(item, mode, user_skills):
+    # T = Dagar kvar (nuvarande tid till deadline/start)
+    now = datetime.now()
+    
+    if item['type'] == 'assignment':
+        dt = item['deadline'] or datetime.max
+        delta = dt - now
+        t = max(0, delta.days + (delta.seconds / 86400))
+        
+        # Hämta Tyngd (W) - mappar strängar till siffervärden
+        # Vi antar att du har sparat vikt i din databasmodell för ämnet
+        weight_map = {'50p': 1, '100p': 2, '150p': 3, 'Gymnasiearbete': 4}
+        # Vi behöver hämta vikten från databasen baserat på subject_name eller liknande
+        # För enkelhetens skull i denna loop sätter vi standard till 2 (100p) om ej hittad
+        w = 2 
+        
+        # Svårighetsfaktor (S) baserat på nivå
+        # Låg nivå = 3 (behöver mer fokus), Hög = 1
+        skill_level = user_skills.get(item.get('subject_id'), 'Ej vald')
+        skill_map = {'Låg': 3, 'Medel': 2, 'Hög': 1, 'Ej vald': 1.5}
+        s = skill_map.get(skill_level, 1.5)
+        
+        if mode == 'planerare':
+            # Modell 2: Score = (W*S) / (sqrt(T) + 1)
+            return (w * s) / (math.sqrt(t) + 1)
+        else:
+            # Modell 1: Score = (W*S) / (T + 1)^1.5
+            return (w * s) / ((t + 1) ** 1.5)
+            
+    else: # Aktivitet
+        dt = item['start_time']
+        delta = dt - now
+        t = max(0, delta.days + (delta.seconds / 86400))
+        # Aktiviteter har en fast "vikt" så de flyter med naturligt
+        return 1.8 / (t + 1)
+
 # ---------- Routes ----------
 @app.route('/profile')
 @login_required
@@ -339,6 +377,8 @@ def index():
 
     user = current_user()
 
+    weight_map = {'50p': 1, '100p': 2, '150p': 3, 'Gymnasiearbete': 4, 'Ingen vikt': 1}
+
     # Hämta alla medlemskap för denna användare
     memberships = ClassMember.query.filter_by(user_id=user.id).all()
     classes = [m.class_obj for m in memberships if m.class_obj is not None]
@@ -392,14 +432,17 @@ def index():
                 combined_items.append({
                     'id': a.id,
                     'title': a.title,
-                    'type': 'assignment',  # markera som uppgift/prov
+                    'type': 'assignment',
                     'deadline': a.deadline,
                     'subject_name': subj.name,
+                    'subject_id': subj.id,             # <-- NY: För att hitta din nivå (S)
+                    'weight': weight_map.get(subj.weight, 1), # <-- NY: För att få kursens tyngd (W)
                     'class_name': cls.name,
                     'class_id': cls.id,
                     'created_by': a.created_by,
                     'color': color,
-                    'role': role
+                    'role': role,
+                    'assignment_type': a.type
                 })
 
     # Hämta alla aktiviteter
@@ -412,17 +455,20 @@ def index():
             'start_time': act.start_time,
             'end_time': act.end_time,
             'role': 'owner',  # alltid admin för egna aktiviteter
-            'color': '#cce5ff'  # ljusblå bakgrund
+            'color': '#cce5ff',  # ljusblå bakgrund
+            'subject_id': subj.id
         })
 
-    # Sortera allt efter datum/tid (deadline för uppgifter, starttid för aktiviteter)
-    def sort_key(item):
-        if item['type'] == 'assignment':
-            return item['deadline'] or datetime.max
-        else:
-            return item['start_time']
+    # 1. Hämta användarens färdighetsnivåer för beräkning
+    skills = SubjectSkill.query.filter_by(user_id=user.id).all()
+    user_skills_dict = {s.subject_id: s.level for s in skills}
 
-    combined_items.sort(key=sort_key)
+    # 2. Räkna ut Prioritets-score för varje objekt
+    for item in combined_items:
+        item['priority_score'] = calculate_priority_score(item, user.dashboard_mode, user_skills_dict)
+
+    # 3. Sortera efter Score (Högst först)
+    combined_items.sort(key=lambda x: x['score'], reverse=True)
 
     delete_expired_assignments()  # radera gamla uppgifter
 
@@ -1294,6 +1340,15 @@ def update_skill(subject_id): # Namnet här måste vara 'update_skill'
     subj = Subject.query.get_or_404(subject_id)
     return redirect(url_for('view_class', class_id=subj.class_id))
 
+@app.route('/set_mode/<mode>')
+def set_dashboard_mode(mode):
+    if not current_user(): return redirect(url_for('login'))
+    if mode in ['sista_minuten', 'planerare']:
+        user = current_user()
+        user.dashboard_mode = mode
+        db.session.commit()
+    return redirect(url_for('index'))
+
 
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
@@ -2018,6 +2073,15 @@ DASH_TEMPLATE = """
         <a href="{{ url_for('profile') }}" style="padding: 8px 12px; background-color: #007bff; color: white;">
             Min profil
         </a>
+
+        <div style="margin-left: 20px; display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.1); padding: 5px 15px; border-radius: 20px;">
+            <span style="font-size: 0.8em; color: white; font-weight: bold;">PROFIL:</span>
+            <a href="{{ url_for('set_dashboard_mode', mode='sista_minuten') }}" 
+               style="background: {{ '#dc3545' if user.dashboard_mode == 'sista_minuten' else 'transparent' }}; padding: 5px 10px; font-size: 0.8em;">🔥 Sista minuten</a>
+            <a href="{{ url_for('set_dashboard_mode', mode='planerare') }}" 
+               style="background: {{ '#28a745' if user.dashboard_mode == 'planerare' else 'transparent' }}; padding: 5px 10px; font-size: 0.8em;">📅 Planerare</a>
+        </div>
+        
     </nav>
 
     <div class="container">
@@ -2074,6 +2138,8 @@ DASH_TEMPLATE = """
                     {% if a.type == 'assignment' %}
                         <li data-class-id="{{ a['class_id'] }}" style="background-color: {{ a['color'] }};">
                             <span>
+                                {% if loop.first %}⭐ {% endif %}
+                                
                                 <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }} ({{ a['class_name'] }})
                                 {% if a['deadline'] %}
                                     {% if a['type'] in ['Uppgift','assignment'] %}
@@ -2095,6 +2161,8 @@ DASH_TEMPLATE = """
                     {% elif a.type == 'activity' %}
                         <li style="background-color: {{ a['color'] }}; color:#004085; font-weight:bold;">
                             <span>
+                                {% if loop.first %}⭐ {% endif %}
+                
                                 {{ a['title'] }} — Start: {{ a['start_time'].strftime('%Y/%m/%d %H:%M') }} | Slut: {{ a['end_time'].strftime('%Y/%m/%d %H:%M') }}
                             </span>
                             <span>
@@ -4326,6 +4394,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
