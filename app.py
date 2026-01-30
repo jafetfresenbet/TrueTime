@@ -2077,9 +2077,16 @@ DASH_TEMPLATE = """
         <div style="margin-left: 20px; display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.1); padding: 5px 15px; border-radius: 20px;">
             <span style="font-size: 0.8em; color: white; font-weight: bold;">PROFIL:</span>
             <a href="{{ url_for('set_dashboard_mode', mode='sista_minuten') }}" 
-               style="background: {{ '#dc3545' if user.dashboard_mode == 'sista_minuten' else 'transparent' }}; padding: 5px 10px; font-size: 0.8em;">🔥 Sista minuten</a>
+               title="Prioriterar stenhårt efter deadline. För dig som vill veta vad som brinner mest i knuten just nu."
+               style="background: {{ '#dc3545' if user.dashboard_mode == 'sista_minuten' else 'transparent' }}; padding: 5px 10px; font-size: 0.8em; border-radius: 15px; color: white; text-decoration: none;">
+               🔥 Sista minuten
+            </a>
+            
             <a href="{{ url_for('set_dashboard_mode', mode='planerare') }}" 
-               style="background: {{ '#28a745' if user.dashboard_mode == 'planerare' else 'transparent' }}; padding: 5px 10px; font-size: 0.8em;">📅 Planerare</a>
+               title="Viktar tunga och svåra ämnen högre även om deadline är längre bort. För dig som vill börja i god tid."
+               style="background: {{ '#28a745' if user.dashboard_mode == 'planerare' else 'transparent' }}; padding: 5px 10px; font-size: 0.8em; border-radius: 15px; color: white; text-decoration: none;">
+               📅 Planerare
+            </a>
         </div>
         
     </nav>
@@ -4394,6 +4401,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
