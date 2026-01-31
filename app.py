@@ -455,7 +455,7 @@ def index():
             'start_time': act.start_time,
             'end_time': act.end_time,
             'role': 'owner',  # alltid admin för egna aktiviteter
-            'color': '#0097CA'  # Din nya bakgrundsfärg
+            'color': '#0097CA',  # Din nya bakgrundsfärg
             'subject_id': subj.id
         })
 
@@ -4486,6 +4486,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
