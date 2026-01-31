@@ -2035,6 +2035,53 @@ DASH_TEMPLATE = """
             nav {
                 gap: 8px;
             }
+
+            /* Behållaren för knappen */
+            .tooltip-container {
+                position: relative;
+                display: inline-block;
+            }
+            
+            /* Själva popup-boxen */
+            .tooltip-text {
+                visibility: hidden;
+                width: 200px;
+                background-color: rgba(0, 0, 0, 0.85);
+                color: #fff;
+                text-align: center;
+                border-radius: 8px;
+                padding: 10px;
+                position: absolute;
+                z-index: 100;
+                bottom: 125%; /* Placerar den ovanför knappen */
+                left: 50%;
+                transform: translateX(-50%) translateY(10px); /* Startläge för animation */
+                opacity: 0;
+                transition: opacity 0.3s, transform 0.3s;
+                font-size: 0.85em;
+                line-height: 1.4;
+                pointer-events: none; /* Så att den inte stör musen */
+                box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+            }
+            
+            /* Den lilla pilen under boxen */
+            .tooltip-text::after {
+                content: "";
+                position: absolute;
+                top: 100%;
+                left: 50%;
+                margin-left: -5px;
+                border-width: 5px;
+                border-style: solid;
+                border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
+            }
+            
+            /* Hover-effekten: Visa och animera uppåt */
+            .tooltip-container:hover .tooltip-text {
+                visibility: visible;
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
         }
     </style>
 </head>
@@ -2075,18 +2122,22 @@ DASH_TEMPLATE = """
         </a>
 
         <div style="margin-left: 20px; display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.1); padding: 5px 15px; border-radius: 20px;">
-            <span style="font-size: 0.8em; color: white; font-weight: bold;">PROFIL:</span>
-            <a href="{{ url_for('set_dashboard_mode', mode='sista_minuten') }}" 
-               title="Prioriterar stenhårt efter deadline. För dig som vill veta vad som brinner mest i knuten just nu."
-               style="background: {{ '#dc3545' if user.dashboard_mode == 'sista_minuten' else 'transparent' }}; padding: 5px 10px; font-size: 0.8em; border-radius: 15px; color: white; text-decoration: none;">
-               🔥 Sista minuten
-            </a>
+            <span style="font-size: 0.8em; color: white; font-weight: bold;">VÄLJ:</span>
+            <div class="tooltip-container">
+                <a href="{{ url_for('set_dashboard_mode', mode='sista_minuten') }}" 
+                   style="background: {{ '#dc3545' if user.dashboard_mode == 'sista_minuten' else 'transparent' }}; padding: 8px 15px; font-size: 0.8em; border-radius: 20px; color: white; text-decoration: none; display: inline-block; border: 1px solid rgba(255,255,255,0.2);">
+                   🔥 Sista minuten
+                </a>
+                <span class="tooltip-text">Prioriterar stenhårt efter deadline. För dig som vill veta vad som brinner mest i knuten just nu.</span>
+            </div>
             
-            <a href="{{ url_for('set_dashboard_mode', mode='planerare') }}" 
-               title="Viktar tunga och svåra ämnen högre även om deadline är längre bort. För dig som vill börja i god tid."
-               style="background: {{ '#28a745' if user.dashboard_mode == 'planerare' else 'transparent' }}; padding: 5px 10px; font-size: 0.8em; border-radius: 15px; color: white; text-decoration: none;">
-               📅 Planerare
-            </a>
+            <div class="tooltip-container">
+                <a href="{{ url_for('set_dashboard_mode', mode='planerare') }}" 
+                   style="background: {{ '#28a745' if user.dashboard_mode == 'planerare' else 'transparent' }}; padding: 8px 15px; font-size: 0.8em; border-radius: 20px; color: white; text-decoration: none; display: inline-block; border: 1px solid rgba(255,255,255,0.2);">
+                   📅 Planerare
+                </a>
+                <span class="tooltip-text">Viktar tunga och svåra ämnen högre. Perfekt för dig som vill ha framförhållning i plugget.</span>
+            </div>
         </div>
         
     </nav>
@@ -4401,6 +4452,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
