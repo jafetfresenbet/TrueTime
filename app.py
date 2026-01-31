@@ -2082,6 +2082,25 @@ DASH_TEMPLATE = """
                 opacity: 1;
                 transform: translateX(-50%) translateY(0);
             }
+            /* Container för stjärnan */
+            .star-tooltip {
+                position: relative;
+                display: inline-block;
+                cursor: help;
+            }
+            
+            /* Tooltip för stjärnan */
+            .star-tooltip .tooltip-text {
+                width: 180px;
+                bottom: 140%; /* Lite högre upp för att inte täcka texten */
+                left: 0%;
+                transform: translateX(0%) translateY(10px);
+            }
+            
+            /* Justera pilen för stjärnan */
+            .star-tooltip .tooltip-text::after {
+                left: 20%;
+            }
         }
     </style>
 </head>
@@ -2196,7 +2215,15 @@ DASH_TEMPLATE = """
                     {% if a.type == 'assignment' %}
                         <li data-class-id="{{ a['class_id'] }}" style="background-color: {{ a['color'] }};">
                             <span>
-                                {% if loop.first %}⭐ {% endif %}
+                                {% if loop.first %}
+                                <div class="star-tooltip">
+                                    <span style="margin-right: 8px; font-size: 1.2em;">⭐</span>
+                                    <span class="tooltip-text">
+                                        <strong>Rekommenderat fokus:</strong><br>
+                                        Baserat på din {{ 'Sista minuten' if user.dashboard_mode == 'sista_minuten' else 'Planerar' }}-profil.
+                                    </span>
+                                </div>
+                                {% endif %}
                                 
                                 <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }} ({{ a['class_name'] }})
                                 {% if a['deadline'] %}
@@ -2217,9 +2244,17 @@ DASH_TEMPLATE = """
                             {% endif %}
                         </li>
                     {% elif a.type == 'activity' %}
-                        <li style="background-color: {{ a['color'] }}; color:#004085; font-weight:bold;">
+                        <li style="background-color: {{ a['color'] }}; ...">
                             <span>
-                                {% if loop.first %}⭐ {% endif %}
+                                {% if loop.first %}
+                                <div class="star-tooltip">
+                                    <span style="margin-right: 8px; font-size: 1.2em;">⭐</span>
+                                    <span class="tooltip-text">
+                                        <strong>Dagens viktigaste:</strong><br>
+                                        Denna aktivitet kräver din uppmärksamhet nu.
+                                    </span>
+                                </div>
+                                {% endif %}
                 
                                 {{ a['title'] }} — Start: {{ a['start_time'].strftime('%Y/%m/%d %H:%M') }} | Slut: {{ a['end_time'].strftime('%Y/%m/%d %H:%M') }}
                             </span>
@@ -4452,6 +4487,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
