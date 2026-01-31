@@ -1356,7 +1356,7 @@ def set_dashboard_mode(mode):
 @app.route('/mark_guide_seen', methods=['POST'])
 @login_required
 def mark_guide_seen():
-    current_user.has_seen_guide = True
+    current_user().has_seen_guide = True
     db.session.commit()
     return '', 204
 
@@ -4600,6 +4600,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
