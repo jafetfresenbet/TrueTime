@@ -74,7 +74,7 @@ class User(db.Model):
     classes = db.relationship('UserClass', back_populates='user', cascade="all, delete-orphan")
     notifications_enabled = db.Column(db.Boolean, default=True)
     dashboard_mode = db.Column(db.String(20), default='sista_minuten')
-    has_seen_guide = db.Column(db.Boolean, default=False)
+    has_seen_guide = db.Column(db.Boolean, default=False, nullable=False)
 
 class Class(db.Model):
     __tablename__ = 'classes'
@@ -4600,6 +4600,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
