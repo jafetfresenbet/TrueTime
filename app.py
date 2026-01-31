@@ -2255,7 +2255,7 @@ DASH_TEMPLATE = """
                                 </div>
                                 {% endif %}
                         
-                                {{ a['title'] }} — Start: {{ a['start_time'].strftime('%H:%M') }} | Slut: {{ a['end_time'].strftime('%H:%M') }}
+                                {{ a['title'] }} — Start: {{ a['start_time'].strftime('%Y/%m/%d %H:%M') }} | Slut: {{ a['end_time'].strftime('%Y/%m/%d %H:%M') }}
                             </span>
                             <span>
                                 <a class="button-link" href="{{ url_for('edit_activity', activity_id=a['id']) }}">
@@ -4488,6 +4488,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
