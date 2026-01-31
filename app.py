@@ -2042,26 +2042,24 @@ DASH_TEMPLATE = """
                 display: inline-block;
             }
             
-            /* Själva popup-boxen */
+            /* Själva popup-boxen - SKA VARA OSYNLIG SOM STANDARD */
             .tooltip-text {
-                visibility: hidden;
-                width: 200px;
-                background-color: rgba(0, 0, 0, 0.85);
+                visibility: hidden; /* Gör den osynlig för musen */
+                opacity: 0;         /* Gör den helt genomskinlig */
+                position: absolute;
+                background-color: rgba(0, 0, 0, 0.9);
                 color: #fff;
                 text-align: center;
                 border-radius: 8px;
                 padding: 10px;
-                position: absolute;
                 z-index: 100;
-                bottom: 125%; /* Placerar den ovanför knappen */
+                bottom: 125%; 
                 left: 50%;
-                transform: translateX(-50%) translateY(10px); /* Startläge för animation */
-                opacity: 0;
-                transition: opacity 0.3s, transform 0.3s;
+                transform: translateX(-50%) translateY(10px);
+                transition: opacity 0.3s, transform 0.3s, visibility 0.3s; /* Mjuk övergång */
+                width: 200px;
                 font-size: 0.85em;
-                line-height: 1.4;
-                pointer-events: none; /* Så att den inte stör musen */
-                box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+                pointer-events: none; /* Hindrar boxen från att flimra när man rör musen */
             }
             
             /* Den lilla pilen under boxen */
@@ -2076,8 +2074,9 @@ DASH_TEMPLATE = """
                 border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
             }
             
-            /* Hover-effekten: Visa och animera uppåt */
-            .tooltip-container:hover .tooltip-text {
+            /* Hover-effekten: Visa boxen när man hovrar över containern */
+            .tooltip-container:hover .tooltip-text,
+            .star-tooltip:hover .tooltip-text {
                 visibility: visible;
                 opacity: 1;
                 transform: translateX(-50%) translateY(0);
@@ -4487,6 +4486,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
