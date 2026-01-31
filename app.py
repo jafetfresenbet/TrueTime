@@ -2378,7 +2378,7 @@ DASH_TEMPLATE = """
                 break;
             case 5:
                 html = `<h3>📅 Aktiviteter & Mobil</h3>
-                        <p>Du kan nu lägga till egna aktiviteter! Dessutom har vi trimmat vyn så att allt fungerar perfekt på din mobil.</p>
+                        <p>Du kan nu lägga till egna aktiviteter! Klicka på "Skapa" knappen i menyn och följ instruktionerna.</p>
                         <button onclick="showStep(6)" class="guide-next">Nästa</button>`;
                 break;
             case 6:
@@ -4600,6 +4600,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
