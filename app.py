@@ -455,7 +455,7 @@ def index():
             'start_time': act.start_time,
             'end_time': act.end_time,
             'role': 'owner',  # alltid admin för egna aktiviteter
-            'color': '#cce5ff',  # ljusblå bakgrund
+            'color': '#0097CA'  # Din nya bakgrundsfärg
             'subject_id': subj.id
         })
 
@@ -2243,7 +2243,7 @@ DASH_TEMPLATE = """
                             {% endif %}
                         </li>
                     {% elif a.type == 'activity' %}
-                        <li style="background-color: {{ a['color'] }}; ...">
+                        <li style="background-color: {{ a['color'] }}; color: #003C58; font-weight: bold; border: 1px solid rgba(0,0,0,0.1);">
                             <span>
                                 {% if loop.first %}
                                 <div class="star-tooltip">
@@ -4486,6 +4486,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
