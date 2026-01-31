@@ -74,6 +74,7 @@ class User(db.Model):
     classes = db.relationship('UserClass', back_populates='user', cascade="all, delete-orphan")
     notifications_enabled = db.Column(db.Boolean, default=True)
     dashboard_mode = db.Column(db.String(20), default='sista_minuten')
+    has_seen_guide = db.Column(db.Boolean, default=False)
 
 class Class(db.Model):
     __tablename__ = 'classes'
@@ -1349,6 +1350,13 @@ def set_dashboard_mode(mode):
         db.session.commit()
     return redirect(url_for('index'))
 
+@app.route('/mark_guide_seen', methods=['POST'])
+@login_required
+def mark_guide_seen():
+    current_user.has_seen_guide = True
+    db.session.commit()
+    return '', 204
+
 
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
@@ -2306,6 +2314,99 @@ DASH_TEMPLATE = """
             });
         });
     </script>
+
+    {% if not user.has_seen_guide %}
+    <div id="guideModal" style="position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+        <div style="background: white; padding: 35px; border-radius: 20px; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); color: #333; position: relative;">
+            <div id="guide-content">
+                <h2 style="color: #003C58; margin-bottom: 15px;">Nyheter i Plugghubben! 🚀</h2>
+                <p style="line-height: 1.6;">Vi har gjort stora uppdateringar för att hjälpa dig planera din tid bättre. Vill du se hur det fungerar?</p>
+                
+                <div style="margin-top: 25px; display: flex; gap: 12px; justify-content: center;">
+                    <button onclick="showStep(1)" style="background: #28a745; color: white; border: none; padding: 12px 25px; border-radius: 25px; cursor: pointer; font-weight: bold;">Ja, visa mig!</button>
+                    <button onclick="closeGuide()" style="background: #eee; color: #666; border: none; padding: 12px 25px; border-radius: 25px; cursor: pointer;">Hoppa över</button>
+                </div>
+            </div>
+            <div id="step-indicator" style="margin-top: 20px; font-size: 0.8em; color: #999; display: none;">Steg <span id="current-step">1</span> av 6</div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <script>
+    let currentStep = 0;
+    const isAdmin = {{ 'true' if user.role == 'admin' else 'false' }};
+    
+    function showStep(step) {
+        currentStep = step;
+        const content = document.getElementById('guide-content');
+        const indicator = document.getElementById('step-indicator');
+        indicator.style.display = 'block';
+        document.getElementById('current-step').innerText = step;
+    
+        let html = "";
+    
+        switch(step) {
+            case 1:
+                html = `<h3>⭐ Smart prioritering</h3>
+                        <p>Guldstjärnan visar vilken uppgift som är viktigast just nu baserat på deadline, kursens vikt och din egen färdighetsnivå.</p>
+                        <button onclick="showStep(2)" class="guide-next">Nästa</button>`;
+                break;
+            case 2:
+                html = `<h3>🔥 Planeringslägen</h3>
+                        <p>Väj mellan <b>Sista minuten</b> (deadline-fokus) eller <b>Planerare</b> (fokus på svåra/tunga kurser) i menyn.</p>
+                        <button onclick="showStep(3)" class="guide-next">Nästa</button>`;
+                break;
+            case 3:
+                html = `<h3>💪 Din färdighetsnivå</h3>
+                        <p>Väldigt viktigt! Under "Mina kurser" kan du sätta din nivå i varje ämne. Ju svårare du tycker det är, desto tidigare hamnar det på din att-göra-lista.</p>
+                        <button onclick="showStep(4)" class="guide-next">Nästa</button>`;
+                break;
+            case 4:
+                if (isAdmin) {
+                    html = `<h3>⚖️ Kursvikt (Admin)</h3>
+                            <p>Som lärare kan du nu välja om en kurs är 50p, 100p eller Gymnasiearbete. Detta styr hur tungt uppgifterna väger för eleverna.</p>`;
+                } else {
+                    html = `<h3>📅 Aktiviteter</h3>
+                            <p>Du kan nu lägga in träningar eller möten i ditt schema så att de syns direkt på dashboarden bredvid dina läxor.</p>`;
+                }
+                html += `<button onclick="showStep(5)" class="guide-next">Nästa</button>`;
+                break;
+            case 5:
+                html = `<h3>🔔 Notiser & Mobil</h3>
+                        <p>Du kan nu välja om du vill ha notiser eller inte i inställningarna. Dessutom är hela vyn nu helt mobilvänlig!</p>
+                        <button onclick="showStep(6)" class="guide-next">Sista steget</button>`;
+                break;
+            case 6:
+                html = `<h3>Klara, färdiga...</h3>
+                        <p>Nu är du redo att ta kontroll över plugget. Lycka till!</p>
+                        <button onclick="closeGuide()" style="background: #28a745; color: white; border: none; padding: 12px 30px; border-radius: 25px; cursor: pointer; font-weight: bold; margin-top: 15px;">Börja plugga!</button>`;
+                break;
+        }
+        content.innerHTML = html;
+    }
+    
+    function closeGuide() {
+        document.getElementById('guideModal').style.display = 'none';
+        fetch('/mark_guide_seen', { method: 'POST' });
+    }
+    </script>
+    
+    <style>
+    .guide-next {
+        background: #0097CA;
+        color: white;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 25px;
+        cursor: pointer;
+        margin-top: 15px;
+        font-weight: bold;
+    }
+    .guide-next:hover { background: #003C58; }
+    #guide-content h3 { color: #003C58; margin-bottom: 10px; }
+    #guide-content p { font-size: 0.95em; line-height: 1.5; color: #555; }
+    </style>
+    
 </body>
 </html>
 """
@@ -4489,6 +4590,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
