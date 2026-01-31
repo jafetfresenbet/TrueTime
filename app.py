@@ -475,11 +475,14 @@ def index():
 
     today = now.strftime('%Y-%m-%d')
 
+    is_any_admin = ClassMember.query.filter_by(user_id=user.id, role='admin').first() is not None
+
     return render_template_string(
         DASH_TEMPLATE,
         user=user,
         classes=classes_with_role,
         assignments=combined_items[:50],  # begränsa till 50 objekt
+        is_any_admin=is_any_admin,
         today=today
     )
 
@@ -2334,7 +2337,7 @@ DASH_TEMPLATE = """
     
     <script>
     let currentStep = 0;
-    const isAdmin = {{ 'true' if user.role == 'admin' else 'false' }};
+    const isAdmin = {{ 'true' if is_any_admin else 'false' }};
     
     function showStep(step) {
         currentStep = step;
@@ -2353,30 +2356,37 @@ DASH_TEMPLATE = """
                 break;
             case 2:
                 html = `<h3>🔥 Planeringslägen</h3>
-                        <p>Väj mellan <b>Sista minuten</b> (deadline-fokus) eller <b>Planerare</b> (fokus på svåra/tunga kurser) i menyn.</p>
+                        <p>Välj mellan <b>Sista minuten</b> (deadline-fokus) eller <b>Planerare</b> (fokus på svåra/tunga kurser) i menyn.</p>
                         <button onclick="showStep(3)" class="guide-next">Nästa</button>`;
                 break;
             case 3:
                 html = `<h3>💪 Din färdighetsnivå</h3>
-                        <p>Väldigt viktigt! Under "Mina kurser" kan du sätta din nivå i varje ämne. Ju svårare du tycker det är, desto tidigare hamnar det på din att-göra-lista.</p>
+                        <p>Väldigt viktigt! Om du klickar på din klass kan du, under dina kurser, sätta din nivå i varje ämne. Ju svårare du tycker det är, desto tidigare hamnar det på din att-göra-lista.</p>
                         <button onclick="showStep(4)" class="guide-next">Nästa</button>`;
                 break;
             case 4:
+                // Om man är admin någonstans, visa admin-infon först
                 if (isAdmin) {
                     html = `<h3>⚖️ Kursvikt (Admin)</h3>
-                            <p>Som lärare kan du nu välja om en kurs är 50p, 100p eller Gymnasiearbete. Detta styr hur tungt uppgifterna väger för eleverna.</p>`;
+                            <p>Som lärare kan du nu ställa in kursens vikt (t.ex. 100p eller 150p). Detta är avgörande för att elevernas prioritering ska bli korrekt.</p>
+                            <button onclick="showStep(5)" class="guide-next">Nästa</button>`;
                 } else {
-                    html = `<h3>📅 Aktiviteter</h3>
-                            <p>Du kan nu lägga in träningar eller möten i ditt schema så att de syns direkt på dashboarden bredvid dina läxor.</p>`;
+                    // Om man inte är admin, hoppa direkt till Aktiviteter
+                    showStep(5); 
+                    return;
                 }
-                html += `<button onclick="showStep(5)" class="guide-next">Nästa</button>`;
                 break;
             case 5:
-                html = `<h3>🔔 Notiser & Mobil</h3>
-                        <p>Du kan nu välja om du vill ha notiser eller inte i inställningarna. Dessutom är hela vyn nu helt mobilvänlig!</p>
-                        <button onclick="showStep(6)" class="guide-next">Sista steget</button>`;
+                html = `<h3>📅 Aktiviteter & Mobil</h3>
+                        <p>Du kan nu lägga till egna aktiviteter! Dessutom har vi trimmat vyn så att allt fungerar perfekt på din mobil.</p>
+                        <button onclick="showStep(6)" class="guide-next">Nästa</button>`;
                 break;
             case 6:
+                html = `<h3>🔔 Notiser & Mobil</h3>
+                        <p>Du kan nu välja om du vill ha notiser eller inte i din profil. Dessutom är hela vyn nu helt mobilvänlig!</p>
+                        <button onclick="showStep(7)" class="guide-next">Sista steget</button>`;
+                break;
+            case 7:
                 html = `<h3>Klara, färdiga...</h3>
                         <p>Nu är du redo att ta kontroll över plugget. Lycka till!</p>
                         <button onclick="closeGuide()" style="background: #28a745; color: white; border: none; padding: 12px 30px; border-radius: 25px; cursor: pointer; font-weight: bold; margin-top: 15px;">Börja plugga!</button>`;
@@ -4590,6 +4600,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
