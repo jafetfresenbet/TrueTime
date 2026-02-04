@@ -2151,6 +2151,12 @@ DASH_TEMPLATE = """
         </a>
 
         <div style="margin-left: 20px; display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.1); padding: 5px 15px; border-radius: 20px;">
+            <button onclick="restartGuide()" 
+                    title="Visa guiden igen"
+                    style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 5px 12px; border-radius: 15px; cursor: pointer; font-size: 0.8em; margin-right: 5px;">
+                ❓ Guide
+            </button>
+        
             <span style="font-size: 0.8em; color: white; font-weight: bold; letter-spacing: 0.5px;">VÄLJ:</span>
             
             <a href="{{ url_for('set_dashboard_mode', mode='sista_minuten') }}" 
@@ -2318,8 +2324,7 @@ DASH_TEMPLATE = """
         });
     </script>
 
-    {% if not user.has_seen_guide %}
-    <div id="guideModal" style="position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+    <div id="guideModal" style="position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center; backdrop-filter: blur(5px); display: {{ 'none' if user.has_seen_guide else 'flex' }};">
         <div style="background: white; padding: 35px; border-radius: 20px; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); color: #333; position: relative;">
             <div id="guide-content">
                 <h2 style="color: #003C58; margin-bottom: 15px;">Nyheter i Plugghubben! 🚀</h2>
@@ -2333,7 +2338,6 @@ DASH_TEMPLATE = """
             <div id="step-indicator" style="margin-top: 20px; font-size: 0.8em; color: #999; display: none;">Steg <span id="current-step">1</span> av 6</div>
         </div>
     </div>
-    {% endif %}
     
     <script>
     let currentStep = 0;
@@ -2396,8 +2400,18 @@ DASH_TEMPLATE = """
     }
     
     function closeGuide() {
-        document.getElementById('guideModal').style.display = 'none';
+        const modal = document.getElementById('guideModal');
+        if (modal) modal.style.display = 'none';
         fetch('/mark_guide_seen', { method: 'POST' });
+    }
+    
+    // Ny funktion för att starta om guiden när man klickar på knappen
+    function restartGuide() {
+        const modal = document.getElementById('guideModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            showStep(1); // Går direkt till steg 1 istället för välkomstskärmen
+        }
     }
     </script>
     
@@ -4600,6 +4614,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
