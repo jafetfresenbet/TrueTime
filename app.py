@@ -2372,7 +2372,7 @@ DASH_TEMPLATE = """
                 // Om man är admin någonstans, visa admin-infon först
                 if (isAdmin) {
                     html = `<h3>⚖️ Kursvikt (Admin)</h3>
-                            <p>Som lärare kan du nu ställa in kursens vikt (t.ex. 100p eller 150p). Detta är avgörande för att elevernas prioritering ska bli korrekt.</p>
+                            <p>Som admin kan du nu ställa in kursens vikt (t.ex. 100p eller 150p). Detta är avgörande för att elevernas prioritering ska bli korrekt.</p>
                             <button onclick="showStep(5)" class="guide-next">Nästa</button>`;
                 } else {
                     // Om man inte är admin, hoppa direkt till Aktiviteter
@@ -2381,7 +2381,7 @@ DASH_TEMPLATE = """
                 }
                 break;
             case 5:
-                html = `<h3>📅 Aktiviteter & Mobil</h3>
+                html = `<h3>📅 Aktiviteter</h3>
                         <p>Du kan nu lägga till egna aktiviteter! Klicka på "Skapa" knappen i menyn och följ instruktionerna.</p>
                         <button onclick="showStep(6)" class="guide-next">Nästa</button>`;
                 break;
@@ -4614,6 +4614,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
