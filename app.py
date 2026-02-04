@@ -377,8 +377,12 @@ def index():
         return render_template_string(HOME_TEMPLATE)
 
     user = current_user()
-
+    now = datetime.now()
     weight_map = {'50p': 1, '100p': 2, '150p': 3, 'Gymnasiearbete': 4, 'Ingen vikt': 1}
+
+    # 1. Hämta användarens färdighetsnivåer tidigt (behövs för både filtrering och scoring)
+    skills = SubjectSkill.query.filter_by(user_id=user.id).all()
+    user_skills_dict = {s.subject_id: s.level for s in skills}
 
     # Hämta alla medlemskap för denna användare
     memberships = ClassMember.query.filter_by(user_id=user.id).all()
@@ -393,14 +397,18 @@ def index():
         role = membership.role if membership else 'member'
         classes_with_role.append({'class': class_obj, 'role': role})
 
-    now = datetime.now()
-
     # Förbered uppgifter och prov
     combined_items = []
     for item in classes_with_role:
         cls = item['class']
         role = item['role']
         for subj in cls.subjects:
+            
+            # --- FILTRERING: Om användaren valt "Läser ej", hoppa över hela ämnet ---
+            if user_skills_dict.get(subj.id) == 'Läser ej':
+                continue
+            # -----------------------------------------------------------------------
+
             for a in subj.assignments:
                 # Hoppa över uppgifter/prov som passerat deadline
                 if a.type == 'Uppgift' and a.deadline and a.deadline < now:
@@ -436,8 +444,8 @@ def index():
                     'type': 'assignment',
                     'deadline': a.deadline,
                     'subject_name': subj.name,
-                    'subject_id': subj.id,             # <-- NY: För att hitta din nivå (S)
-                    'weight': weight_map.get(subj.weight, 1), # <-- NY: För att få kursens tyngd (W)
+                    'subject_id': subj.id,
+                    'weight': weight_map.get(subj.weight, 1),
                     'class_name': cls.name,
                     'class_id': cls.id,
                     'created_by': a.created_by,
@@ -456,15 +464,10 @@ def index():
             'start_time': act.start_time,
             'end_time': act.end_time,
             'role': 'owner',  # alltid admin för egna aktiviteter
-            'color': '#7da0ff',  # Din nya bakgrundsfärg
-            'subject_id': subj.id
+            'color': '#7da0ff'
         })
 
-    # 1. Hämta användarens färdighetsnivåer för beräkning
-    skills = SubjectSkill.query.filter_by(user_id=user.id).all()
-    user_skills_dict = {s.subject_id: s.level for s in skills}
-
-    # 2. Räkna ut Prioritets-score för varje objekt
+    # 2. Räkna ut Prioritets-score för varje objekt (som inte filtrerats bort)
     for item in combined_items:
         item['priority_score'] = calculate_priority_score(item, user.dashboard_mode, user_skills_dict)
 
@@ -2960,6 +2963,9 @@ CLASS_TEMPLATE = """
                             <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #01579b;">Hur känns {{ subject.name }} just nu?</label>
                             <select name="level" onchange="this.form.submit()" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #b3e5fc; cursor:pointer;">
                                 <option value="Ej vald" {% if user_skills.get(subject.id) == 'Ej vald' %}selected{% endif %}>Välj din nuvarande nivå...</option>
+                                
+                                <option value="Läser ej" {% if user_skills.get(subject.id) == 'Läser ej' %}selected{% endif %}>❌ Läser ej denna kurs</option>
+                                
                                 <option value="Låg" {% if user_skills.get(subject.id) == 'Låg' %}selected{% endif %}>🔴 Låg (Behöver mycket hjälp)</option>
                                 <option value="Medel" {% if user_skills.get(subject.id) == 'Medel' %}selected{% endif %}>🟡 Medel (Klarar det mesta själv)</option>
                                 <option value="Hög" {% if user_skills.get(subject.id) == 'Hög' %}selected{% endif %}>🟢 Hög (Siktar på toppresultat)</option>
@@ -4614,6 +4620,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
