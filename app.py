@@ -2971,6 +2971,13 @@ CLASS_TEMPLATE = """
                                 <option value="Hög" {% if user_skills.get(subject.id) == 'Hög' %}selected{% endif %}>🟢 Hög (Siktar på toppresultat)</option>
                             </select>
                         </form>
+
+                        {% if user_skills.get(subject.id) == 'Läser ej' %}
+                        <div style="margin-top: 10px; padding: 8px; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 6px; font-size: 0.85em; color: #856404; display: flex; align-items: center; gap: 8px;">
+                            <span>⚠️</span>
+                            <span>Kursen är inaktiverad. Uppgifter och prov kopplade till {{ subject.name }} visas inte på din dashboard.</span>
+                        </div>
+                        {% endif %}
                     </div>
 
                     {% if is_admin %}
@@ -4620,6 +4627,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
