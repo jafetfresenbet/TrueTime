@@ -2335,7 +2335,7 @@ DASH_TEMPLATE = """
                     <button onclick="closeGuide()" style="background: #eee; color: #666; border: none; padding: 12px 25px; border-radius: 25px; cursor: pointer;">Hoppa över</button>
                 </div>
             </div>
-            <div id="step-indicator" style="margin-top: 20px; font-size: 0.8em; color: #999; display: none;">Steg <span id="current-step">1</span> av 6</div>
+            <div id="step-indicator" style="margin-top: 20px; font-size: 0.8em; color: #999; display: none;">Steg <span id="current-step">1</span> av 7</div>
         </div>
     </div>
     
@@ -4614,6 +4614,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
