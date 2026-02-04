@@ -480,6 +480,13 @@ def index():
 
     is_any_admin = ClassMember.query.filter_by(user_id=user.id, role='admin').first() is not None
 
+    # Hämta den absoluta topp-uppgiften för countdown (om den har en deadline)
+    top_assignment = None
+    if combined_items and combined_items[0].get('type') == 'assignment':
+        first_item = combined_items[0]
+        if first_item.get('deadline'):
+            top_assignment = first_item
+
     return render_template_string(
         DASH_TEMPLATE,
         user=user,
@@ -2114,6 +2121,14 @@ DASH_TEMPLATE = """
             .star-tooltip .tooltip-text::after {
                 left: 20%;
             }
+
+            /* Styling för countdown-enheterna */
+            .time-unit {
+                background: rgba(255, 255, 255, 0.1);
+                padding: 10px;
+                border-radius: 10px;
+                min-width: 60px;
+            }
         }
     </style>
 </head>
@@ -2185,15 +2200,23 @@ DASH_TEMPLATE = """
         <div class="dashboard-card">
 
             {% with messages = get_flashed_messages() %}
-              {% if messages %}
-                <div class="flash-message">
-                  {% for message in messages %}
-                    {{ message }}<br>
-                  {% endfor %}
+                {% endwith %}
+        
+            {% if top_assignment %}
+            <div id="focus-countdown" style="background: linear-gradient(135deg, #003C58 0%, #005a84 100%); color: white; padding: 25px; border-radius: 20px; margin-bottom: 30px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; overflow: hidden;">
+                <div style="position: absolute; top: -10px; right: -10px; font-size: 5em; opacity: 0.1;">⭐</div>
+                <h3 style="margin: 0; font-size: 0.8em; text-transform: uppercase; letter-spacing: 2px; opacity: 0.8; color: white;">Ditt största fokus just nu</h3>
+                <h2 style="margin: 10px 0; font-size: 1.6em; color: white;">{{ top_assignment.title }}</h2>
+                
+                <div id="timer-display" style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
+                    <div class="time-unit"><span id="days" style="font-size: 1.8em; font-weight: bold; display: block;">--</span> dagar</div>
+                    <div class="time-unit"><span id="hours" style="font-size: 1.8em; font-weight: bold; display: block;">--</span> tim</div>
+                    <div class="time-unit"><span id="minutes" style="font-size: 1.8em; font-weight: bold; display: block;">--</span> min</div>
+                    <div class="time-unit"><span id="seconds" style="font-size: 1.8em; font-weight: bold; display: block;">--</span> sek</div>
                 </div>
-              {% endif %}
-            {% endwith %}
-
+            </div>
+            {% endif %}
+        
             <div class="section">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <h3>Dina klasser</h3>
@@ -2416,6 +2439,29 @@ DASH_TEMPLATE = """
             showStep(1); // Går direkt till steg 1 istället för välkomstskärmen
         }
     }
+
+    {% if top_assignment and top_assignment.deadline %}
+    const deadline = new Date("{{ top_assignment.deadline.strftime('%Y-%m-%dT%H:%M:%S') }}").getTime();
+    
+    function updateTimer() {
+        const now = new Date().getTime();
+        const t = deadline - now;
+    
+        if (t >= 0) {
+            document.getElementById("days").innerText = Math.floor(t / (1000 * 60 * 60 * 24));
+            document.getElementById("hours").innerText = Math.floor((t % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            document.getElementById("minutes").innerText = Math.floor((t % (1000 * 60 * 60)) / (1000 * 60));
+            document.getElementById("seconds").innerText = Math.floor((t % (1000 * 60)) / 1000);
+        } else {
+            document.getElementById("focus-countdown").innerHTML = "<h2>Deadline uppnådd! 🏁</h2>";
+        }
+    }
+    
+    // Uppdatera varje sekund
+    setInterval(updateTimer, 1000);
+    updateTimer(); // Kör direkt
+    {% endif %}
+    
     </script>
     
     <style>
@@ -4626,6 +4672,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
