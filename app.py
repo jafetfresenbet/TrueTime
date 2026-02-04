@@ -2973,9 +2973,8 @@ CLASS_TEMPLATE = """
                         </form>
 
                         {% if user_skills.get(subject.id) == 'Läser ej' %}
-                        <div style="margin-top: 10px; padding: 8px; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 6px; font-size: 0.85em; color: #856404; display: flex; align-items: center; gap: 8px;">
-                            <span>⚠️</span>
-                            <span>Kursen är inaktiverad. Uppgifter och prov kopplade till {{ subject.name }} visas inte på din dashboard.</span>
+                        <div style="margin-top: 10px; font-size: 0.85em; color: #c62828; font-weight: bold; display: flex; align-items: center; gap: 5px;">
+                            <span>🚫</span> Dold från dashboarden
                         </div>
                         {% endif %}
                     </div>
@@ -4627,6 +4626,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
