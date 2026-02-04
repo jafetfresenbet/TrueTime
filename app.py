@@ -491,9 +491,11 @@ def index():
         DASH_TEMPLATE,
         user=user,
         classes=classes_with_role,
-        assignments=combined_items[:50],  # begränsa till 50 objekt
+        assignments=combined_items[:50],
         is_any_admin=is_any_admin,
-        today=today
+        today=today,
+        top_assignment=top_assignment,  # <-- VIKTIGT: Skicka med denna!
+        now=now
     )
 
 @app.route('/register', methods=['GET','POST'])
@@ -4672,6 +4674,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
