@@ -3016,7 +3016,7 @@ CLASS_TEMPLATE = """
                                 
                                 <option value="Låg" {% if user_skills.get(subject.id) == 'Låg' %}selected{% endif %}>🔴 Låg (Behöver mycket hjälp)</option>
                                 <option value="Medel" {% if user_skills.get(subject.id) == 'Medel' %}selected{% endif %}>🟡 Medel (Klarar det mesta själv)</option>
-                                <option value="Hög" {% if user_skills.get(subject.id) == 'Hög' %}selected{% endif %}>🟢 Hög (Siktar på toppresultat)</option>
+                                <option value="Hög" {% if user_skills.get(subject.id) == 'Hög' %}selected{% endif %}>🟢 Hög (Känns mer säkert)</option>
                             </select>
                         </form>
 
@@ -4674,6 +4674,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
