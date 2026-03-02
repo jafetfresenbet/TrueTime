@@ -1,12 +1,3 @@
-try:
-    import pkg_resources
-except ImportError:
-    import pip
-    import subprocess
-    import sys
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "setuptools"])
-    import pkg_resources
-
 # --- Standardbibliotek ---
 from datetime import datetime, timedelta
 from uuid import uuid4
@@ -4683,6 +4674,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
