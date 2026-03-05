@@ -1,3 +1,6 @@
+import pkg_resources
+print("pkg_resources version:", pkg_resources.__version__)
+
 # --- Standardbibliotek ---
 from datetime import datetime, timedelta
 from uuid import uuid4
@@ -4674,6 +4677,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
