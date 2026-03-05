@@ -11,6 +11,5 @@ itsdangerous
 twilio
 APScheduler
 flask-rq2
-setuptools>=70.0.0
-setuptools
+setuptools>=70
 
