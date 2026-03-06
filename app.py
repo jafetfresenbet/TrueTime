@@ -2168,10 +2168,6 @@ DASH_TEMPLATE = """
                                 {% endif %}
                                 
                                 <strong>{{ a['title'] }}</strong> 
-                                
-                                <button class="study-plan-trigger" onclick="checkMathSubject('{{ a['title'] }}', '{{ a['id'] }}', '{{ a['deadline'] }}')">
-                                    🚀 Aktivera Studieplan
-                                </button>
                         
                                 — {{ a['subject_name'] }} ({{ a['class_name'] }})
                                 {% if a['deadline'] %}
@@ -2181,6 +2177,11 @@ DASH_TEMPLATE = """
                                         — datum: {{ a['deadline'].strftime('%Y/%m/%d') }}
                                     {% endif %}
                                 {% endif %}
+
+                                <button class="study-plan-trigger" onclick="checkMathSubject('{{ a['title'] }}', '{{ a['id'] }}', '{{ a['deadline'] }}')">
+                                    🚀 Aktivera Studieplan
+                                </button>
+                                
                             </span>
                             
                             {% if a['role'] == 'admin' %}
@@ -4585,6 +4586,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
