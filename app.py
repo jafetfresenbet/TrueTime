@@ -1920,15 +1920,12 @@ DASH_TEMPLATE = """
             text-align: center;
             box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
         }
-        header h2 {
-            margin: 0;
-        }
         nav {
             display: flex;
             justify-content: center;
             margin: 15px 0;
             gap: 15px;
-            flex-wrap: wrap; /* ✅ Added for mobile wrapping */
+            flex-wrap: wrap;
         }
         nav a {
             text-decoration: none;
@@ -1937,9 +1934,6 @@ DASH_TEMPLATE = """
             padding: 10px 15px;
             border-radius: 6px;
             transition: 0.2s;
-        }
-        nav a:hover {
-            background-color: #218838;
         }
         .container {
             display: flex;
@@ -1953,17 +1947,10 @@ DASH_TEMPLATE = """
             box-shadow: 0px 8px 20px rgba(0,0,0,0.12);
             padding: 25px;
         }
-        .dashboard-card h3 {
-            margin-top: 0;
-            color: #007bff;
-        }
-        .section {
-            margin-bottom: 30px;
-        }
-        ul {
-            list-style: none;
-            padding-left: 0;
-        }
+        .section { margin-bottom: 30px; }
+        ul { list-style: none; padding-left: 0; }
+        
+        /* Grundstilen för rader */
         li {
             background-color: #f8f9fa;
             margin: 8px 0;
@@ -1972,201 +1959,75 @@ DASH_TEMPLATE = """
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: background 0.2s, color 0.2s;
-            flex-wrap: wrap; /* ✅ Added for mobile wrapping */
-        }
-        li a {
-            color: #007bff;
-            text-decoration: none;
-        }
-        li a:hover {
-            text-decoration: underline;
-        }
-        .flash-message {
-            text-align: center;
-            margin-bottom: 15px;
-            font-weight: bold;
-            color: #1a7f37;
         }
 
-        /* Hidden class styling */
-        .hidden-class {
-            background-color: #222 !important;
-            color: #fff !important;
-        }
-        .hidden-class a {
+        /* --- NYA STUDIEPLAN-KNAPPEN --- */
+        .study-plan-trigger {
+            visibility: hidden; /* Gör den osynlig men tar upp plats för att undvika hopp */
+            opacity: 0;
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
             color: white !important;
-        }
-
-        .assignments li {
-            background-color: #f1f3f5;
-        }
-        .assignments li.hidden-class {
-            background-color: #222 !important;
-            color: white !important;
-        }
-
-        button {
-            cursor: pointer;
-            border-radius: 6px;
             border: none;
-            padding: 6px 12px;
-            font-size: 14px;
-            transition: 0.2s;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: opacity 0.2s, visibility 0.2s;
         }
-        .hide-btn {
-            background-color: #6c757d;
-            color: white;
-            margin-right: 5px;
-        }
-        .hide-btn:hover {
-            background-color: #5a6268;
-        }
-        .edit-btn {
-            background-color: gray;
-            color: white;
-            margin-left: 5px;
-        }
-        .edit-btn:hover {
-            background-color: #555;
-        }
-        .delete-btn {
-            background-color: red;
-            color: white;
-            margin-left: 3px;
-        }
-        .delete-btn:hover {
-            background-color: #a10000;
-        }
-        .leave-btn {
-            background-color: orange;
-            color: white;
-            margin-left: 5px;
-        }
-        .leave-btn:hover {
-            background-color: #e69500;
+        
+        /* Visa vid hovring */
+        .assignment-row:hover .study-plan-trigger {
+            visibility: visible;
+            opacity: 1;
         }
 
-        a.button-link {
-            text-decoration: none;
+        /* --- TIMERN --- */
+        .time-unit {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+            min-width: 60px;
         }
 
-        /* ✅ Mobile adjustments */
+        /* Tooltips och övrigt */
+        .star-tooltip { position: relative; display: inline-block; cursor: help; }
+        .tooltip-text {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 10px;
+            z-index: 100;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: opacity 0.3s;
+            width: 200px;
+            font-size: 0.85em;
+        }
+        .star-tooltip:hover .tooltip-text { visibility: visible; opacity: 1; }
+
+        /* Knappar */
+        button { cursor: pointer; border-radius: 6px; border: none; padding: 6px 12px; }
+        .hide-btn { background-color: #6c757d; color: white; }
+        .delete-btn { background-color: red; color: white; }
+        .edit-btn { background-color: gray; color: white; }
+
+        /* Guiden */
+        .guide-next { background: #0097CA; color: white; padding: 10px 25px; border-radius: 25px; margin-top: 15px; font-weight: bold; }
+
+        /* ✅ MOBILE ADJUSTMENTS - STÄNGS KORREKT NU */
         @media (max-width: 700px) {
-            .dashboard-card {
-                width: 100%;
-                padding: 20px;
-            }
-
-            li {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            li span {
-                margin-bottom: 5px;
-            }
-
-            nav {
-                gap: 8px;
-            }
-
-            /* Behållaren för knappen */
-            .tooltip-container {
-                position: relative;
-                display: inline-block;
-            }
-            
-            /* Själva popup-boxen - SKA VARA OSYNLIG SOM STANDARD */
-            .tooltip-text {
-                visibility: hidden; /* Gör den osynlig för musen */
-                opacity: 0;         /* Gör den helt genomskinlig */
-                position: absolute;
-                background-color: rgba(0, 0, 0, 0.9);
-                color: #fff;
-                text-align: center;
-                border-radius: 8px;
-                padding: 10px;
-                z-index: 100;
-                bottom: 125%; 
-                left: 50%;
-                transform: translateX(-50%) translateY(10px);
-                transition: opacity 0.3s, transform 0.3s, visibility 0.3s; /* Mjuk övergång */
-                width: 200px;
-                font-size: 0.85em;
-                pointer-events: none; /* Hindrar boxen från att flimra när man rör musen */
-            }
-            
-            /* Den lilla pilen under boxen */
-            .tooltip-text::after {
-                content: "";
-                position: absolute;
-                top: 100%;
-                left: 50%;
-                margin-left: -5px;
-                border-width: 5px;
-                border-style: solid;
-                border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
-            }
-            
-            /* Hover-effekten: Visa boxen när man hovrar över containern */
-            .tooltip-container:hover .tooltip-text,
-            .star-tooltip:hover .tooltip-text {
-                visibility: visible;
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
-            /* Container för stjärnan */
-            .star-tooltip {
-                position: relative;
-                display: inline-block;
-                cursor: help;
-            }
-            
-            /* Tooltip för stjärnan */
-            .star-tooltip .tooltip-text {
-                width: 180px;
-                bottom: 140%; /* Lite högre upp för att inte täcka texten */
-                left: 0%;
-                transform: translateX(0%) translateY(10px);
-            }
-            
-            /* Justera pilen för stjärnan */
-            .star-tooltip .tooltip-text::after {
-                left: 20%;
-            }
-
-            /* Styling för countdown-enheterna */
-            .time-unit {
-                background: rgba(255, 255, 255, 0.1);
-                padding: 10px;
-                border-radius: 10px;
-                min-width: 60px;
-            }
-
-            .study-plan-trigger {
-                display: none; /* Dold som standard */
-                background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-                color: white;
-                border: none;
-                padding: 4px 12px;
-                border-radius: 20px;
-                font-size: 0.75rem;
-                font-weight: 600;
-                cursor: pointer;
-                margin-left: 10px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                transition: transform 0.2s;
-            }
-            
-            .study-plan-trigger:hover {
-                transform: scale(1.05);
-            }
-            
-            /* Visa knappen när man hovrar över raden */
-            .assignment-row:hover .study-plan-trigger {
-                display: inline-block;
-            }
+            .dashboard-card { width: 100%; padding: 15px; }
+            li { flex-direction: column; align-items: flex-start; }
+            .study-plan-trigger { visibility: visible; opacity: 1; margin: 10px 0; }
+            nav { gap: 8px; }
         }
     </style>
 </head>
@@ -4730,6 +4591,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
