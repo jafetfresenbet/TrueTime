@@ -1907,6 +1907,7 @@ DASH_TEMPLATE = """
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
 
     <style>
+        /* 1. GRUNDSTIL (Denna läses alltid in) */
         body {
             font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #ffffff 0%, #0385ff 100%);
@@ -1927,13 +1928,16 @@ DASH_TEMPLATE = """
             gap: 15px;
             flex-wrap: wrap;
         }
-        nav a {
+        nav a, #create-btn {
             text-decoration: none;
             background-color: #28a745;
             color: #fff;
             padding: 10px 15px;
             border-radius: 6px;
             transition: 0.2s;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
         }
         .container {
             display: flex;
@@ -1947,10 +1951,17 @@ DASH_TEMPLATE = """
             box-shadow: 0px 8px 20px rgba(0,0,0,0.12);
             padding: 25px;
         }
-        .section { margin-bottom: 30px; }
-        ul { list-style: none; padding-left: 0; }
-        
-        /* Grundstilen för rader */
+    
+        /* 2. TIMER-FIX (Flyttad utanför media-query så den syns på datorn!) */
+        .time-unit {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 10px;
+            border-radius: 10px;
+            min-width: 70px;
+            display: inline-block;
+        }
+    
+        /* 3. UPPGIFTS-LISTA & HOVER-KNAPP */
         li {
             background-color: #f8f9fa;
             margin: 8px 0;
@@ -1959,76 +1970,51 @@ DASH_TEMPLATE = """
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: relative; /* Viktigt för knappen */
         }
-
-        /* --- NYA STUDIEPLAN-KNAPPEN --- */
+    
         .study-plan-trigger {
-            visibility: hidden; /* Gör den osynlig men tar upp plats för att undvika hopp */
-            opacity: 0;
+            opacity: 0; /* Osynlig som standard */
+            visibility: hidden;
             background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-            color: white !important;
+            color: white;
             border: none;
-            padding: 4px 12px;
+            padding: 6px 14px;
             border-radius: 20px;
             font-size: 0.75rem;
             font-weight: 600;
             cursor: pointer;
-            margin-left: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: opacity 0.2s, visibility 0.2s;
+            transition: all 0.2s ease-in-out;
         }
         
-        /* Visa vid hovring */
+        /* Visa knappen vid hovring på hela raden */
         .assignment-row:hover .study-plan-trigger {
-            visibility: visible;
             opacity: 1;
+            visibility: visible;
         }
-
-        /* --- TIMERN --- */
-        .time-unit {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 10px;
-            border-radius: 10px;
-            min-width: 60px;
-        }
-
-        /* Tooltips och övrigt */
-        .star-tooltip { position: relative; display: inline-block; cursor: help; }
-        .tooltip-text {
-            visibility: hidden;
-            opacity: 0;
-            position: absolute;
-            background-color: rgba(0, 0, 0, 0.9);
-            color: #fff;
-            text-align: center;
-            border-radius: 8px;
-            padding: 10px;
-            z-index: 100;
-            bottom: 125%;
-            left: 50%;
-            transform: translateX(-50%);
-            transition: opacity 0.3s;
-            width: 200px;
-            font-size: 0.85em;
-        }
-        .star-tooltip:hover .tooltip-text { visibility: visible; opacity: 1; }
-
-        /* Knappar */
-        button { cursor: pointer; border-radius: 6px; border: none; padding: 6px 12px; }
-        .hide-btn { background-color: #6c757d; color: white; }
-        .delete-btn { background-color: red; color: white; }
-        .edit-btn { background-color: gray; color: white; }
-
-        /* Guiden */
-        .guide-next { background: #0097CA; color: white; padding: 10px 25px; border-radius: 25px; margin-top: 15px; font-weight: bold; }
-
-        /* ✅ MOBILE ADJUSTMENTS - STÄNGS KORREKT NU */
+    
+        /* 4. MOBIL-ANPASSNING (Här stänger vi måsvingen korrekt!) */
         @media (max-width: 700px) {
-            .dashboard-card { width: 100%; padding: 15px; }
-            li { flex-direction: column; align-items: flex-start; }
-            .study-plan-trigger { visibility: visible; opacity: 1; margin: 10px 0; }
-            nav { gap: 8px; }
-        }
+            .dashboard-card {
+                width: 100%;
+                padding: 15px;
+            }
+            li {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .study-plan-trigger {
+                opacity: 1; /* Alltid synlig på mobilen eftersom man inte kan hovra */
+                visibility: visible;
+                margin-top: 10px;
+            }
+        } /* <--- Denna måsvinge saknades i din förra kod! */
+    
+        /* Övrig styling för guiden */
+        .guide-next { background: #0097CA; color: white; border: none; padding: 10px 25px; border-radius: 25px; cursor: pointer; margin-top: 15px; font-weight: bold; }
+        .star-tooltip { position: relative; display: inline-block; cursor: help; }
+        .tooltip-text { visibility: hidden; opacity: 0; position: absolute; background: #222; color: #fff; padding: 8px; border-radius: 5px; bottom: 125%; left: 50%; transform: translateX(-50%); width: 180px; z-index: 10; transition: 0.3s; font-size: 12px; }
+        .star-tooltip:hover .tooltip-text { visibility: visible; opacity: 1; }
     </style>
 </head>
 <body>
@@ -4591,6 +4577,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
