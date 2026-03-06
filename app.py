@@ -47,9 +47,6 @@ app.config['SESSION_SQLALCHEMY'] = db
 migrate = Migrate(app, db)
 Session(app)
 
-app.config['RQ_REDIS_URL'] = 'redis://localhost:6379/0'
-rq = RQ(app)
-
 # Mail-konfiguration
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER')
 app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
@@ -4689,6 +4686,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
