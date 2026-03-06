@@ -2143,6 +2143,30 @@ DASH_TEMPLATE = """
                 border-radius: 10px;
                 min-width: 60px;
             }
+
+            .study-plan-trigger {
+                display: none; /* Dold som standard */
+                background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+                color: white;
+                border: none;
+                padding: 4px 12px;
+                border-radius: 20px;
+                font-size: 0.75rem;
+                font-weight: 600;
+                cursor: pointer;
+                margin-left: 10px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                transition: transform 0.2s;
+            }
+            
+            .study-plan-trigger:hover {
+                transform: scale(1.05);
+            }
+            
+            /* Visa knappen när man hovrar över raden */
+            .assignment-row:hover .study-plan-trigger {
+                display: inline-block;
+            }
         }
     </style>
 </head>
@@ -2270,7 +2294,7 @@ DASH_TEMPLATE = """
                 <ul class="assignments">
                 {% for a in assignments %}
                     {% if a.type == 'assignment' %}
-                        <li data-class-id="{{ a['class_id'] }}" style="background-color: {{ a['color'] }};">
+                        <li class="assignment-row" data-class-id="{{ a['class_id'] }}" style="background-color: {{ a['color'] }}; display: flex; align-items: center; justify-content: space-between;">
                             <span>
                                 {% if loop.first %}
                                 <div class="star-tooltip">
@@ -2282,7 +2306,13 @@ DASH_TEMPLATE = """
                                 </div>
                                 {% endif %}
                                 
-                                <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }} ({{ a['class_name'] }})
+                                <strong>{{ a['title'] }}</strong> 
+                                
+                                <button class="study-plan-trigger" onclick="checkMathSubject('{{ a['title'] }}', '{{ a['id'] }}', '{{ a['deadline'] }}')">
+                                    🚀 Aktivera Studieplan
+                                </button>
+                        
+                                — {{ a['subject_name'] }} ({{ a['class_name'] }})
                                 {% if a['deadline'] %}
                                     {% if a['type'] in ['Uppgift','assignment'] %}
                                         — deadline: {{ a['deadline'].strftime('%Y/%m/%d %H:%M') }}
@@ -2291,13 +2321,14 @@ DASH_TEMPLATE = """
                                     {% endif %}
                                 {% endif %}
                             </span>
+                            
                             {% if a['role'] == 'admin' %}
-                                <span>
-                                    <a class="button-link" href="{{ url_for('edit_assignment', assignment_id=a['id']) }}"><button class="edit-btn">Ändra</button></a>
-                                    <form method="post" action="{{ url_for('delete_assignment', assignment_id=a['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera uppgiften?');">
-                                        <button type="submit" class="delete-btn">Radera</button>
-                                    </form>
-                                </span>
+                            <span>
+                                <a class="button-link" href="{{ url_for('edit_assignment', assignment_id=a['id']) }}"><button class="edit-btn">Ändra</button></a>
+                                <form method="post" action="{{ url_for('delete_assignment', assignment_id=a['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera uppgiften?');">
+                                    <button type="submit" class="delete-btn">Radera</button>
+                                </form>
+                            </span>
                             {% endif %}
                         </li>
                     {% elif a.type == 'activity' %}
@@ -2475,6 +2506,19 @@ DASH_TEMPLATE = """
     setInterval(updateTimer, 1000);
     updateTimer(); // Kör direkt
     {% endif %}
+
+    function checkMathSubject(title, id, deadline) {
+        // Definiera vad som räknas som matte
+        const mathKeywords = ['matte', 'matematik', 'ma1', 'ma2', 'ma3', 'ma4', 'ma5'];
+        const isMath = mathKeywords.some(k => title.toLowerCase().includes(k));
+    
+        if (isMath) {
+            // Här kommer vi senare öppna vår Onboarding-Modal
+            alert("🚀 Matematik-uppgift identifierad!\nVi förbereder nu din personliga studieplan för: " + title);
+        } else {
+            alert("ℹ️ PlugIt+ Studieplanerare är just nu endast tillgänglig för Matematik-kurser (1-5).");
+        }
+    }
     
     </script>
     
@@ -4686,6 +4730,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
