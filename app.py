@@ -22,9 +22,6 @@ from twilio.rest import Client
 import math
 
 from flask_apscheduler import APScheduler
-scheduler = APScheduler()
-scheduler.init_app(app)
-scheduler.start()
 
 # ---------- Konfiguration ----------
 DATABASE = 'mvp.db'
@@ -35,6 +32,10 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRET_KEY
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', f'sqlite:///{DATABASE}')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+scheduler = APScheduler()
+scheduler.init_app(app)
+scheduler.start()
 
 # Session
 app.config['SESSION_TYPE'] = 'sqlalchemy'
@@ -4688,6 +4689,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
