@@ -2272,115 +2272,109 @@ DASH_TEMPLATE = """
     </div>
     
     <script>
-    let currentStep = 0;
-    const isAdmin = {{ 'true' if is_any_admin else 'false' }};
+        // --- GUIDE FUNKTIONALITET ---
+        let currentStep = 0;
+        const isAdmin = {{ 'true' if is_any_admin else 'false' }};
+        
+        function showStep(step) {
+            currentStep = step;
+            const content = document.getElementById('guide-content');
+            const indicator = document.getElementById('step-indicator');
+            if (indicator) {
+                indicator.style.display = 'block';
+                document.getElementById('current-step').innerText = step;
+            }
+        
+            let html = "";
+            switch(step) {
+                case 1:
+                    html = `<h3>⭐ Smart prioritering</h3><p>Guldstjärnan visar vilken uppgift som är viktigast just nu.</p><button onclick="showStep(2)" class="guide-next">Nästa</button>`;
+                    break;
+                case 2:
+                    html = `<h3>🔥 Planeringslägen</h3><p>Välj mellan Sista minuten eller Planerare i menyn.</p><button onclick="showStep(3)" class="guide-next">Nästa</button>`;
+                    break;
+                case 3:
+                    html = `<h3>💪 Din färdighetsnivå</h3><p>Sätt din nivå i varje ämne under klassvyn.</p><button onclick="showStep(4)" class="guide-next">Nästa</button>`;
+                    break;
+                case 4:
+                    if (isAdmin) {
+                        html = `<h3>⚖️ Kursvikt (Admin)</h3><p>Ställ in kursens vikt för korrekt prioritering.</p><button onclick="showStep(5)" class="guide-next">Nästa</button>`;
+                    } else { showStep(5); return; }
+                    break;
+                case 5:
+                    html = `<h3>📅 Aktiviteter</h3><p>Lägg till egna aktiviteter via Skapa-knappen.</p><button onclick="showStep(6)" class="guide-next">Nästa</button>`;
+                    break;
+                case 6:
+                    html = `<h3>🔔 Notiser & Mobil</h3><p>Hela vyn är nu mobilvänlig!</p><button onclick="showStep(7)" class="guide-next">Sista steget</button>`;
+                    break;
+                case 7:
+                    html = `<h3>Klara, färdiga...</h3><p>Lycka till med plugget!</p><button onclick="closeGuide()" style="background: #28a745; color: white; border: none; padding: 12px 30px; border-radius: 25px; cursor: pointer; font-weight: bold; margin-top: 15px;">Börja plugga!</button>`;
+                    break;
+            }
+            if (content) content.innerHTML = html;
+        }
+        
+        function closeGuide() {
+            const modal = document.getElementById('guideModal');
+            if (modal) modal.style.display = 'none';
+            fetch('/mark_guide_seen', { method: 'POST' });
+        }
+        
+        function restartGuide() {
+            const modal = document.getElementById('guideModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                showStep(1);
+            }
+        }
     
-    function showStep(step) {
-        currentStep = step;
-        const content = document.getElementById('guide-content');
-        const indicator = document.getElementById('step-indicator');
-        indicator.style.display = 'block';
-        document.getElementById('current-step').innerText = step;
-    
-        let html = "";
-    
-        switch(step) {
-            case 1:
-                html = `<h3>⭐ Smart prioritering</h3>
-                        <p>Guldstjärnan visar vilken uppgift som är viktigast just nu baserat på deadline, kursens vikt och din egen färdighetsnivå.</p>
-                        <button onclick="showStep(2)" class="guide-next">Nästa</button>`;
-                break;
-            case 2:
-                html = `<h3>🔥 Planeringslägen</h3>
-                        <p>Välj mellan <b>Sista minuten</b> (deadline-fokus) eller <b>Planerare</b> (fokus på svåra/tunga kurser) i menyn.</p>
-                        <button onclick="showStep(3)" class="guide-next">Nästa</button>`;
-                break;
-            case 3:
-                html = `<h3>💪 Din färdighetsnivå</h3>
-                        <p>Väldigt viktigt! Om du klickar på din klass kan du, under dina kurser, sätta din nivå i varje ämne. Ju svårare du tycker det är, desto tidigare hamnar det på din att-göra-lista.</p>
-                        <button onclick="showStep(4)" class="guide-next">Nästa</button>`;
-                break;
-            case 4:
-                // Om man är admin någonstans, visa admin-infon först
-                if (isAdmin) {
-                    html = `<h3>⚖️ Kursvikt (Admin)</h3>
-                            <p>Som admin kan du nu ställa in kursens vikt (t.ex. 100p eller 150p). Detta är avgörande för att elevernas prioritering ska bli korrekt.</p>
-                            <button onclick="showStep(5)" class="guide-next">Nästa</button>`;
+        // --- TIMER FUNKTIONALITET (FIXAD) ---
+        {% if top_assignment and top_assignment.deadline %}
+        (function() {
+            // Skapar datumet och säkerställer att JS förstår formatet
+            const deadlineStr = "{{ top_assignment.deadline.strftime('%Y-%m-%dT%H:%M:%S') }}";
+            const deadline = new Date(deadlineStr).getTime();
+        
+            function updateTimer() {
+                const now = new Date().getTime();
+                const t = deadline - now;
+        
+                // Hämta elementen
+                const dEl = document.getElementById("days");
+                const hEl = document.getElementById("hours");
+                const mEl = document.getElementById("minutes");
+                const sEl = document.getElementById("seconds");
+        
+                // Avbryt om elementen saknas (förhindrar krasch)
+                if (!dEl || !hEl || !mEl || !sEl) return;
+        
+                if (t >= 0) {
+                    dEl.innerText = Math.floor(t / (1000 * 60 * 60 * 24));
+                    hEl.innerText = Math.floor((t % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    mEl.innerText = Math.floor((t % (1000 * 60 * 60)) / (1000 * 60));
+                    sEl.innerText = Math.floor((t % (1000 * 60)) / 1000);
                 } else {
-                    // Om man inte är admin, hoppa direkt till Aktiviteter
-                    showStep(5); 
-                    return;
+                    const timerBox = document.getElementById("focus-countdown");
+                    if (timerBox) timerBox.innerHTML = "<h2>Deadline uppnådd! 🏁</h2>";
                 }
-                break;
-            case 5:
-                html = `<h3>📅 Aktiviteter</h3>
-                        <p>Du kan nu lägga till egna aktiviteter! Klicka på "Skapa" knappen i menyn och följ instruktionerna.</p>
-                        <button onclick="showStep(6)" class="guide-next">Nästa</button>`;
-                break;
-            case 6:
-                html = `<h3>🔔 Notiser & Mobil</h3>
-                        <p>Du kan nu välja om du vill ha notiser eller inte i din profil. Dessutom är hela vyn nu helt mobilvänlig!</p>
-                        <button onclick="showStep(7)" class="guide-next">Sista steget</button>`;
-                break;
-            case 7:
-                html = `<h3>Klara, färdiga...</h3>
-                        <p>Nu är du redo att ta kontroll över plugget. Lycka till!</p>
-                        <button onclick="closeGuide()" style="background: #28a745; color: white; border: none; padding: 12px 30px; border-radius: 25px; cursor: pointer; font-weight: bold; margin-top: 15px;">Börja plugga!</button>`;
-                break;
+            }
+        
+            updateTimer();
+            setInterval(updateTimer, 1000);
+        })();
+        {% endif %}
+    
+        // --- STUDIEPLAN CHECK ---
+        function checkMathSubject(title, id, deadline) {
+            const mathKeywords = ['matte', 'matematik', 'ma1', 'ma2', 'ma3', 'ma4', 'ma5'];
+            const isMath = mathKeywords.some(k => title.toLowerCase().includes(k));
+        
+            if (isMath) {
+                alert("🚀 Matematik-uppgift identifierad!\nVi förbereder din studieplan för: " + title);
+            } else {
+                alert("ℹ️ Studieplaneraren är just nu endast tillgänglig för Matematik.");
+            }
         }
-        content.innerHTML = html;
-    }
-    
-    function closeGuide() {
-        const modal = document.getElementById('guideModal');
-        if (modal) modal.style.display = 'none';
-        fetch('/mark_guide_seen', { method: 'POST' });
-    }
-    
-    // Ny funktion för att starta om guiden när man klickar på knappen
-    function restartGuide() {
-        const modal = document.getElementById('guideModal');
-        if (modal) {
-            modal.style.display = 'flex';
-            showStep(1); // Går direkt till steg 1 istället för välkomstskärmen
-        }
-    }
-
-    {% if top_assignment and top_assignment.deadline %}
-    const deadline = new Date("{{ top_assignment.deadline.strftime('%Y-%m-%dT%H:%M:%S') }}").getTime();
-    
-    function updateTimer() {
-        const now = new Date().getTime();
-        const t = deadline - now;
-    
-        if (t >= 0) {
-            document.getElementById("days").innerText = Math.floor(t / (1000 * 60 * 60 * 24));
-            document.getElementById("hours").innerText = Math.floor((t % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            document.getElementById("minutes").innerText = Math.floor((t % (1000 * 60 * 60)) / (1000 * 60));
-            document.getElementById("seconds").innerText = Math.floor((t % (1000 * 60)) / 1000);
-        } else {
-            document.getElementById("focus-countdown").innerHTML = "<h2>Deadline uppnådd! 🏁</h2>";
-        }
-    }
-    
-    // Uppdatera varje sekund
-    setInterval(updateTimer, 1000);
-    updateTimer(); // Kör direkt
-    {% endif %}
-
-    function checkMathSubject(title, id, deadline) {
-        // Definiera vad som räknas som matte
-        const mathKeywords = ['matte', 'matematik', 'ma1', 'ma2', 'ma3', 'ma4', 'ma5'];
-        const isMath = mathKeywords.some(k => title.toLowerCase().includes(k));
-    
-        if (isMath) {
-            // Här kommer vi senare öppna vår Onboarding-Modal
-            alert("🚀 Matematik-uppgift identifierad!\nVi förbereder nu din personliga studieplan för: " + title);
-        } else {
-            alert("ℹ️ PlugIt+ Studieplanerare är just nu endast tillgänglig för Matematik-kurser (1-5).");
-        }
-    }
-    
     </script>
     
     <style>
@@ -4591,6 +4585,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
