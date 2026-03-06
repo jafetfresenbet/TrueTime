@@ -9,7 +9,5 @@ Flask-Migrate
 Flask-Mail
 itsdangerous
 twilio
-APScheduler
-flask-rq2
-setuptools>=70
-
+flask-apscheduler
+python-dotenv
