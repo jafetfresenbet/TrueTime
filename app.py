@@ -16,11 +16,15 @@ from flask_migrate import Migrate
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 
-from flask_rq2 import RQ
+from threading import Thread  # Ersätter RQ
 
-from flask_mail import Message
 from twilio.rest import Client
 import math
+
+from flask_apscheduler import APScheduler
+scheduler = APScheduler()
+scheduler.init_app(app)
+scheduler.start()
 
 # ---------- Konfiguration ----------
 DATABASE = 'mvp.db'
@@ -228,13 +232,23 @@ def delete_expired_assignments():
 
     db.session.commit()
 
-@rq.job
+def send_async_email(app, msg):
+    """Hjälpfunktion för att skicka mejl utanför huvudtråden"""
+    with app.app_context():
+        try:
+            mail.send(msg)
+        except Exception as e:
+            print(f"Mejlfel i bakgrundstråd: {e}")
+
 def send_email_job(user_id, subject, body):
-    from models import User
+    """Ersätter RQ-jobbet med en tråd"""
+    # Vi behöver importera User inuti eller se till att den finns tillgänglig
+    from models import User 
     user = User.query.get(user_id)
     if user:
         msg = Message(subject, recipients=[user.email], body=body)
-        mail.send(msg)
+        # Vi skickar med 'app' så att tråden har tillgång till konfigurationen
+        Thread(target=send_async_email, args=(app, msg)).start()
 
 def current_user():
     uid = session.get('user_id')
@@ -4674,6 +4688,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
