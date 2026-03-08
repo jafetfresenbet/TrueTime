@@ -1927,7 +1927,7 @@ DASH_TEMPLATE = """
             justify-content: center;
             margin: 15px 0;
             gap: 15px;
-            flex-wrap: wrap; /* ✅ Added for mobile wrapping */
+            flex-wrap: wrap; 
         }
         nav a {
             text-decoration: none;
@@ -1972,7 +1972,7 @@ DASH_TEMPLATE = """
             justify-content: space-between;
             align-items: center;
             transition: background 0.2s, color 0.2s;
-            flex-wrap: wrap; /* ✅ Added for mobile wrapping */
+            flex-wrap: wrap;
         }
         li a {
             color: #007bff;
@@ -1988,7 +1988,6 @@ DASH_TEMPLATE = """
             color: #1a7f37;
         }
 
-        /* Hidden class styling */
         .hidden-class {
             background-color: #222 !important;
             color: #fff !important;
@@ -2050,7 +2049,27 @@ DASH_TEMPLATE = """
             text-decoration: none;
         }
 
-        /* ✅ Mobile adjustments */
+        /* Styling för Studieplan-knappen */
+        .study-plan-trigger {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 10px;
+            font-size: 0.85em;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .study-plan-trigger:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+            filter: brightness(1.1);
+        }
+
         @media (max-width: 700px) {
             .dashboard-card {
                 width: 100%;
@@ -2070,16 +2089,14 @@ DASH_TEMPLATE = """
                 gap: 8px;
             }
 
-            /* Behållaren för knappen */
             .tooltip-container {
                 position: relative;
                 display: inline-block;
             }
             
-            /* Själva popup-boxen - SKA VARA OSYNLIG SOM STANDARD */
             .tooltip-text {
-                visibility: hidden; /* Gör den osynlig för musen */
-                opacity: 0;         /* Gör den helt genomskinlig */
+                visibility: hidden;
+                opacity: 0;
                 position: absolute;
                 background-color: rgba(0, 0, 0, 0.9);
                 color: #fff;
@@ -2090,13 +2107,12 @@ DASH_TEMPLATE = """
                 bottom: 125%; 
                 left: 50%;
                 transform: translateX(-50%) translateY(10px);
-                transition: opacity 0.3s, transform 0.3s, visibility 0.3s; /* Mjuk övergång */
+                transition: opacity 0.3s, transform 0.3s, visibility 0.3s;
                 width: 200px;
                 font-size: 0.85em;
-                pointer-events: none; /* Hindrar boxen från att flimra när man rör musen */
+                pointer-events: none;
             }
             
-            /* Den lilla pilen under boxen */
             .tooltip-text::after {
                 content: "";
                 position: absolute;
@@ -2108,34 +2124,30 @@ DASH_TEMPLATE = """
                 border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
             }
             
-            /* Hover-effekten: Visa boxen när man hovrar över containern */
             .tooltip-container:hover .tooltip-text,
             .star-tooltip:hover .tooltip-text {
                 visibility: visible;
                 opacity: 1;
                 transform: translateX(-50%) translateY(0);
             }
-            /* Container för stjärnan */
+            
             .star-tooltip {
                 position: relative;
                 display: inline-block;
                 cursor: help;
             }
             
-            /* Tooltip för stjärnan */
             .star-tooltip .tooltip-text {
                 width: 180px;
-                bottom: 140%; /* Lite högre upp för att inte täcka texten */
+                bottom: 140%;
                 left: 0%;
                 transform: translateX(0%) translateY(10px);
             }
             
-            /* Justera pilen för stjärnan */
             .star-tooltip .tooltip-text::after {
                 left: 20%;
             }
 
-            /* Styling för countdown-enheterna */
             .time-unit {
                 background: rgba(255, 255, 255, 0.1);
                 padding: 10px;
@@ -2189,7 +2201,6 @@ DASH_TEMPLATE = """
             <span style="font-size: 0.8em; color: white; font-weight: bold; letter-spacing: 0.5px;">VÄLJ:</span>
             
             <a href="{{ url_for('set_dashboard_mode', mode='sista_minuten') }}" 
-               title="Prioriterar stenhårt efter deadline. För dig som vill veta vad som brinner mest i knuten just nu."
                style="background: {{ '#dc3545' if user.dashboard_mode == 'sista_minuten' else 'transparent' }}; 
                       padding: 5px 12px; font-size: 0.8em; border-radius: 15px; color: white; 
                       text-decoration: none; border: 1px solid {{ '#dc3545' if user.dashboard_mode == 'sista_minuten' else 'rgba(255,255,255,0.2)' }};">
@@ -2197,7 +2208,6 @@ DASH_TEMPLATE = """
             </a>
         
             <a href="{{ url_for('set_dashboard_mode', mode='planerare') }}" 
-               title="Viktar tunga och svåra ämnen högre även om deadline är längre bort. För dig som vill börja i god tid."
                style="background: {{ '#28a745' if user.dashboard_mode == 'planerare' else 'transparent' }}; 
                       padding: 5px 12px; font-size: 0.8em; border-radius: 15px; color: white; 
                       text-decoration: none; border: 1px solid {{ '#28a745' if user.dashboard_mode == 'planerare' else 'rgba(255,255,255,0.2)' }};">
@@ -2211,7 +2221,7 @@ DASH_TEMPLATE = """
         <div class="dashboard-card">
 
             {% with messages = get_flashed_messages() %}
-                {% endwith %}
+            {% endwith %}
         
             {% if top_assignment %}
             <div id="focus-countdown" style="background: linear-gradient(135deg, #003C58 0%, #005a84 100%); color: white; padding: 25px; border-radius: 20px; margin-bottom: 30px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; overflow: hidden;">
@@ -2281,19 +2291,10 @@ DASH_TEMPLATE = """
                                 
                                 <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }} ({{ a['class_name'] }})
                                 {% if a['deadline'] %}
-                                
-                                    {% if a['type'] in ['Uppgift','assignment'] %}
-                                        — deadline: {{ a['deadline'].strftime('%Y/%m/%d %H:%M') }}
-                                    {% elif a['type'] in ['Prov','exam'] %}
-                                        — datum: {{ a['deadline'].strftime('%Y/%m/%d') }}
-                                    {% endif %}
+                                    — deadline: {{ a['deadline'].strftime('%Y/%m/%d %H:%M') }}
+                                {% endif %}
 
-
-                                {# ✅ HÄR LÄGGER VI IN KNAPPEN SIST I RADEN #}
-                                {% if a.type == 'assignment' %}
                                 <button class="study-plan-trigger" onclick="checkMathSubject('{{ a.title }}')">🚀 Aktivera studieplan</button>
-                                {% endif %}
-                                {% endif %}
                             </span>
                             {% if a['role'] == 'admin' %}
                                 <span>
@@ -2366,6 +2367,14 @@ DASH_TEMPLATE = """
                 btn.textContent = classCard.classList.contains('hidden-class') ? 'Unhide' : 'Hide';
             });
         });
+
+        function checkMathSubject(title) {
+            if (title.toLowerCase().includes('matte')) {
+                window.location.href = "/study-plan"; 
+            } else {
+                alert("Studieplaner för " + title + " kommer snart! Just nu stöder vi endast Matematik.");
+            }
+        }
     </script>
 
     <div id="guideModal" style="position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center; backdrop-filter: blur(5px); display: {{ 'none' if user.has_seen_guide else 'flex' }};">
@@ -2409,29 +2418,27 @@ DASH_TEMPLATE = """
                 break;
             case 3:
                 html = `<h3>💪 Din färdighetsnivå</h3>
-                        <p>Väldigt viktigt! Om du klickar på din klass kan du, under dina kurser, sätta din nivå i varje ämne. Ju svårare du tycker det är, desto tidigare hamnar det på din att-göra-lista.</p>
+                        <p>Om du klickar på din klass kan du sätta din nivå i varje ämne. Ju svårare du tycker det är, desto tidigare hamnar det på din att-göra-lista.</p>
                         <button onclick="showStep(4)" class="guide-next">Nästa</button>`;
                 break;
             case 4:
-                // Om man är admin någonstans, visa admin-infon först
                 if (isAdmin) {
                     html = `<h3>⚖️ Kursvikt (Admin)</h3>
-                            <p>Som admin kan du nu ställa in kursens vikt (t.ex. 100p eller 150p). Detta är avgörande för att elevernas prioritering ska bli korrekt.</p>
+                            <p>Som admin kan du ställa in kursens vikt. Detta är avgörande för att prioriteringen ska bli korrekt.</p>
                             <button onclick="showStep(5)" class="guide-next">Nästa</button>`;
                 } else {
-                    // Om man inte är admin, hoppa direkt till Aktiviteter
                     showStep(5); 
                     return;
                 }
                 break;
             case 5:
                 html = `<h3>📅 Aktiviteter</h3>
-                        <p>Du kan nu lägga till egna aktiviteter! Klicka på "Skapa" knappen i menyn och följ instruktionerna.</p>
+                        <p>Du kan nu lägga till egna aktiviteter! Klicka på "Skapa" knappen i menyn.</p>
                         <button onclick="showStep(6)" class="guide-next">Nästa</button>`;
                 break;
             case 6:
                 html = `<h3>🔔 Notiser & Mobil</h3>
-                        <p>Du kan nu välja om du vill ha notiser eller inte i din profil. Dessutom är hela vyn nu helt mobilvänlig!</p>
+                        <p>Välj notisinställningar i din profil. Hela vyn är nu mobilvänlig!</p>
                         <button onclick="showStep(7)" class="guide-next">Sista steget</button>`;
                 break;
             case 7:
@@ -2449,12 +2456,11 @@ DASH_TEMPLATE = """
         fetch('/mark_guide_seen', { method: 'POST' });
     }
     
-    // Ny funktion för att starta om guiden när man klickar på knappen
     function restartGuide() {
         const modal = document.getElementById('guideModal');
         if (modal) {
             modal.style.display = 'flex';
-            showStep(1); // Går direkt till steg 1 istället för välkomstskärmen
+            showStep(1);
         }
     }
 
@@ -2475,27 +2481,25 @@ DASH_TEMPLATE = """
         }
     }
     
-    // Uppdatera varje sekund
     setInterval(updateTimer, 1000);
-    updateTimer(); // Kör direkt
+    updateTimer();
     {% endif %}
-    
     </script>
     
     <style>
-    .guide-next {
-        background: #0097CA;
-        color: white;
-        border: none;
-        padding: 10px 25px;
-        border-radius: 25px;
-        cursor: pointer;
-        margin-top: 15px;
-        font-weight: bold;
-    }
-    .guide-next:hover { background: #003C58; }
-    #guide-content h3 { color: #003C58; margin-bottom: 10px; }
-    #guide-content p { font-size: 0.95em; line-height: 1.5; color: #555; }
+        .guide-next {
+            background: #0097CA;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .guide-next:hover { background: #003C58; }
+        #guide-content h3 { color: #003C58; margin-bottom: 10px; }
+        #guide-content p { font-size: 0.95em; line-height: 1.5; color: #555; }
     </style>
     
 </body>
@@ -4690,6 +4694,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
