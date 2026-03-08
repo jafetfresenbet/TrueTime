@@ -1894,11 +1894,17 @@ DASH_TEMPLATE = """
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>PlugIt+ - Översikt</title>
 
     <link rel="icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
-    
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -1913,23 +1919,26 @@ DASH_TEMPLATE = """
             text-align: center;
             box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
         }
+        header h2 {
+            margin: 0;
+        }
         nav {
             display: flex;
             justify-content: center;
             margin: 15px 0;
             gap: 15px;
-            flex-wrap: wrap;
+            flex-wrap: wrap; /* ✅ Added for mobile wrapping */
         }
-        nav a, #create-btn {
+        nav a {
             text-decoration: none;
             background-color: #28a745;
             color: #fff;
             padding: 10px 15px;
             border-radius: 6px;
             transition: 0.2s;
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
+        }
+        nav a:hover {
+            background-color: #218838;
         }
         .container {
             display: flex;
@@ -1943,6 +1952,17 @@ DASH_TEMPLATE = """
             box-shadow: 0px 8px 20px rgba(0,0,0,0.12);
             padding: 25px;
         }
+        .dashboard-card h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
         li {
             background-color: #f8f9fa;
             margin: 8px 0;
@@ -1951,51 +1971,178 @@ DASH_TEMPLATE = """
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: 0.2s;
-            flex-wrap: wrap;
+            transition: background 0.2s, color 0.2s;
+            flex-wrap: wrap; /* ✅ Added for mobile wrapping */
         }
-
-        /* ✅ TIMER FIX - Flyttad utanför media query så den alltid syns */
-        .time-unit {
-            background: rgba(255, 255, 255, 0.15);
-            padding: 10px;
-            border-radius: 10px;
-            min-width: 70px;
+        li a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        li a:hover {
+            text-decoration: underline;
+        }
+        .flash-message {
             text-align: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: #1a7f37;
         }
 
-        /* ✅ STUDIEPLAN KNAPP STYLING */
-        .study-plan-trigger {
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-            color: white;
+        /* Hidden class styling */
+        .hidden-class {
+            background-color: #222 !important;
+            color: #fff !important;
+        }
+        .hidden-class a {
+            color: white !important;
+        }
+
+        .assignments li {
+            background-color: #f1f3f5;
+        }
+        .assignments li.hidden-class {
+            background-color: #222 !important;
+            color: white !important;
+        }
+
+        button {
+            cursor: pointer;
+            border-radius: 6px;
             border: none;
             padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin-left: 10px;
-            opacity: 0;
-            transition: 0.3s;
+            font-size: 14px;
+            transition: 0.2s;
         }
-        li:hover .study-plan-trigger {
-            opacity: 1;
+        .hide-btn {
+            background-color: #6c757d;
+            color: white;
+            margin-right: 5px;
+        }
+        .hide-btn:hover {
+            background-color: #5a6268;
+        }
+        .edit-btn {
+            background-color: gray;
+            color: white;
+            margin-left: 5px;
+        }
+        .edit-btn:hover {
+            background-color: #555;
+        }
+        .delete-btn {
+            background-color: red;
+            color: white;
+            margin-left: 3px;
+        }
+        .delete-btn:hover {
+            background-color: #a10000;
+        }
+        .leave-btn {
+            background-color: orange;
+            color: white;
+            margin-left: 5px;
+        }
+        .leave-btn:hover {
+            background-color: #e69500;
         }
 
-        .hidden-class { background-color: #222 !important; color: #fff !important; }
-        .hidden-class a { color: white !important; }
+        a.button-link {
+            text-decoration: none;
+        }
 
+        /* ✅ Mobile adjustments */
         @media (max-width: 700px) {
-            .dashboard-card { width: 100%; padding: 20px; }
-            li { flex-direction: column; align-items: flex-start; }
-            .study-plan-trigger { opacity: 1; margin-top: 10px; margin-left: 0; }
-        }
+            .dashboard-card {
+                width: 100%;
+                padding: 20px;
+            }
 
-        /* Tooltip & Guide Styles */
-        .star-tooltip { position: relative; display: inline-block; cursor: help; }
-        .tooltip-text { visibility: hidden; opacity: 0; position: absolute; background: #222; color: #fff; padding: 8px; border-radius: 5px; bottom: 125%; left: 50%; transform: translateX(-50%); width: 180px; z-index: 10; transition: 0.3s; font-size: 12px; }
-        .star-tooltip:hover .tooltip-text { visibility: visible; opacity: 1; }
-        .guide-next { background: #0097CA; color: white; border: none; padding: 10px 25px; border-radius: 25px; cursor: pointer; margin-top: 15px; font-weight: bold; }
+            li {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            li span {
+                margin-bottom: 5px;
+            }
+
+            nav {
+                gap: 8px;
+            }
+
+            /* Behållaren för knappen */
+            .tooltip-container {
+                position: relative;
+                display: inline-block;
+            }
+            
+            /* Själva popup-boxen - SKA VARA OSYNLIG SOM STANDARD */
+            .tooltip-text {
+                visibility: hidden; /* Gör den osynlig för musen */
+                opacity: 0;         /* Gör den helt genomskinlig */
+                position: absolute;
+                background-color: rgba(0, 0, 0, 0.9);
+                color: #fff;
+                text-align: center;
+                border-radius: 8px;
+                padding: 10px;
+                z-index: 100;
+                bottom: 125%; 
+                left: 50%;
+                transform: translateX(-50%) translateY(10px);
+                transition: opacity 0.3s, transform 0.3s, visibility 0.3s; /* Mjuk övergång */
+                width: 200px;
+                font-size: 0.85em;
+                pointer-events: none; /* Hindrar boxen från att flimra när man rör musen */
+            }
+            
+            /* Den lilla pilen under boxen */
+            .tooltip-text::after {
+                content: "";
+                position: absolute;
+                top: 100%;
+                left: 50%;
+                margin-left: -5px;
+                border-width: 5px;
+                border-style: solid;
+                border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
+            }
+            
+            /* Hover-effekten: Visa boxen när man hovrar över containern */
+            .tooltip-container:hover .tooltip-text,
+            .star-tooltip:hover .tooltip-text {
+                visibility: visible;
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+            /* Container för stjärnan */
+            .star-tooltip {
+                position: relative;
+                display: inline-block;
+                cursor: help;
+            }
+            
+            /* Tooltip för stjärnan */
+            .star-tooltip .tooltip-text {
+                width: 180px;
+                bottom: 140%; /* Lite högre upp för att inte täcka texten */
+                left: 0%;
+                transform: translateX(0%) translateY(10px);
+            }
+            
+            /* Justera pilen för stjärnan */
+            .star-tooltip .tooltip-text::after {
+                left: 20%;
+            }
+
+            /* Styling för countdown-enheterna */
+            .time-unit {
+                background: rgba(255, 255, 255, 0.1);
+                padding: 10px;
+                border-radius: 10px;
+                min-width: 60px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -2006,52 +2153,111 @@ DASH_TEMPLATE = """
     <nav>
         <a href="{{ url_for('logout') }}">Logga ut</a>
         <button id="create-btn">Skapa</button>
-        <a href="{{ url_for('join_class') }}">Gå med i klass</a>
-        <a href="{{ url_for('profile') }}">Min profil</a>
-
-        <div style="margin-left: 10px; display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.1); padding: 5px 15px; border-radius: 20px;">
-            <button onclick="restartGuide()" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 5px 12px; border-radius: 15px; cursor: pointer; font-size: 0.8em;">❓ Guide</button>
-            <a href="{{ url_for('set_dashboard_mode', mode='sista_minuten') }}" style="color: white; text-decoration: none; font-size: 0.8em; padding: 5px 10px; border-radius: 15px; background: {{ '#dc3545' if user.dashboard_mode == 'sista_minuten' else 'transparent' }};">🔥 Sista minuten</a>
-            <a href="{{ url_for('set_dashboard_mode', mode='planerare') }}" style="color: white; text-decoration: none; font-size: 0.8em; padding: 5px 10px; border-radius: 15px; background: {{ '#28a745' if user.dashboard_mode == 'planerare' else 'transparent' }};">📅 Planerare</a>
+        
+        <div id="create-card" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); 
+             background-color:white; padding:20px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.2); z-index:1000;">
+            <h3>Välj vad du vill skapa</h3>
+            <button onclick="window.location.href='{{ url_for('create_class') }}'">Skapa klass</button>
+            <button onclick="window.location.href='{{ url_for('create_activity') }}'">Skapa aktivitet</button>
+            <button onclick="closeCreateCard()">Avbryt</button>
         </div>
-    </nav>
+        
+        <script>
+            const createBtn = document.getElementById('create-btn');
+            const createCard = document.getElementById('create-card');
+        
+            createBtn.addEventListener('click', () => {
+                createCard.style.display = 'block';
+            });
+        
+            function closeCreateCard() {
+                createCard.style.display = 'none';
+            }
+        </script>
+        <a href="{{ url_for('join_class') }}">Gå med i klass</a>
+        <a href="{{ url_for('profile') }}" style="padding: 8px 12px; background-color: #007bff; color: white;">
+            Min profil
+        </a>
 
-    <div id="create-card" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:white; padding:20px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.2); z-index:1000;">
-        <h3>Välj vad du vill skapa</h3>
-        <button onclick="window.location.href='{{ url_for('create_class') }}'">Skapa klass</button>
-        <button onclick="window.location.href='{{ url_for('create_activity') }}'">Skapa aktivitet</button>
-        <button onclick="document.getElementById('create-card').style.display='none'">Avbryt</button>
-    </div>
+        <div style="margin-left: 20px; display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.1); padding: 5px 15px; border-radius: 20px;">
+            <button onclick="restartGuide()" 
+                    title="Visa guiden igen"
+                    style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 5px 12px; border-radius: 15px; cursor: pointer; font-size: 0.8em; margin-right: 5px;">
+                ❓ Guide
+            </button>
+        
+            <span style="font-size: 0.8em; color: white; font-weight: bold; letter-spacing: 0.5px;">VÄLJ:</span>
+            
+            <a href="{{ url_for('set_dashboard_mode', mode='sista_minuten') }}" 
+               title="Prioriterar stenhårt efter deadline. För dig som vill veta vad som brinner mest i knuten just nu."
+               style="background: {{ '#dc3545' if user.dashboard_mode == 'sista_minuten' else 'transparent' }}; 
+                      padding: 5px 12px; font-size: 0.8em; border-radius: 15px; color: white; 
+                      text-decoration: none; border: 1px solid {{ '#dc3545' if user.dashboard_mode == 'sista_minuten' else 'rgba(255,255,255,0.2)' }};">
+                🔥 Sista minuten
+            </a>
+        
+            <a href="{{ url_for('set_dashboard_mode', mode='planerare') }}" 
+               title="Viktar tunga och svåra ämnen högre även om deadline är längre bort. För dig som vill börja i god tid."
+               style="background: {{ '#28a745' if user.dashboard_mode == 'planerare' else 'transparent' }}; 
+                      padding: 5px 12px; font-size: 0.8em; border-radius: 15px; color: white; 
+                      text-decoration: none; border: 1px solid {{ '#28a745' if user.dashboard_mode == 'planerare' else 'rgba(255,255,255,0.2)' }};">
+                📅 Planerare
+            </a>
+        </div>
+        
+    </nav>
 
     <div class="container">
         <div class="dashboard-card">
-            
+
+            {% with messages = get_flashed_messages() %}
+                {% endwith %}
+        
             {% if top_assignment %}
-            <div id="focus-countdown" style="background: linear-gradient(135deg, #003C58 0%, #005a84 100%); color: white; padding: 25px; border-radius: 20px; margin-bottom: 30px; text-align: center; position: relative;">
-                <h3 style="margin: 0; font-size: 0.8em; text-transform: uppercase; opacity: 0.8; color: white;">Ditt största fokus just nu</h3>
+            <div id="focus-countdown" style="background: linear-gradient(135deg, #003C58 0%, #005a84 100%); color: white; padding: 25px; border-radius: 20px; margin-bottom: 30px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; overflow: hidden;">
+                <div style="position: absolute; top: -10px; right: -10px; font-size: 5em; opacity: 0.1;">⭐</div>
+                <h3 style="margin: 0; font-size: 0.8em; text-transform: uppercase; letter-spacing: 2px; opacity: 0.8; color: white;">Ditt största fokus just nu</h3>
                 <h2 style="margin: 10px 0; font-size: 1.6em; color: white;">{{ top_assignment.title }}</h2>
+                
                 <div id="timer-display" style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
-                    <div class="time-unit"><span id="days">--</span> dagar</div>
-                    <div class="time-unit"><span id="hours">--</span> tim</div>
-                    <div class="time-unit"><span id="minutes">--</span> min</div>
-                    <div class="time-unit"><span id="seconds">--</span> sek</div>
+                    <div class="time-unit"><span id="days" style="font-size: 1.8em; font-weight: bold; display: block;">--</span> dagar</div>
+                    <div class="time-unit"><span id="hours" style="font-size: 1.8em; font-weight: bold; display: block;">--</span> tim</div>
+                    <div class="time-unit"><span id="minutes" style="font-size: 1.8em; font-weight: bold; display: block;">--</span> min</div>
+                    <div class="time-unit"><span id="seconds" style="font-size: 1.8em; font-weight: bold; display: block;">--</span> sek</div>
                 </div>
             </div>
             {% endif %}
-
+        
             <div class="section">
-                <h3>Dina klasser</h3>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <h3>Dina klasser</h3>
+                    <span style="font-weight:bold; color:#007bff;">Dagens datum: {{ today }}</span>
+                </div>
+
                 <ul>
                 {% for c in classes %}
                     <li id="class-{{ c['class'].id }}">
-                        <span><a href="{{ url_for('view_class', class_id=c['class'].id) }}">{{ c['class'].name }}</a> (kod: {{ c['class'].join_code }})</span>
+                        <span>
+                            <a href="{{ url_for('view_class', class_id=c['class'].id) }}">{{ c['class'].name }}</a> 
+                            (kod: {{ c['class'].join_code }})
+                        </span>
                         <span>
                             <button class="hide-btn" data-class-id="{{ c['class'].id }}">Hide</button>
+
                             {% if c['role'] == 'admin' %}
-                                <a href="{{ url_for('edit_class', class_id=c['class'].id) }}"><button class="edit-btn">Ändra</button></a>
+                                <a class="button-link" href="{{ url_for('edit_class', class_id=c['class'].id) }}"><button class="edit-btn">Ändra</button></a>
+                                <form method="post" action="{{ url_for('delete_class', class_id=c['class'].id) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera klassen?');">
+                                    <button type="submit" class="delete-btn">Radera</button>
+                                </form>
+                            {% else %}
+                                <form method="post" action="{{ url_for('leave_class', class_id=c['class'].id) }}" style="display:inline;" onsubmit="return confirm('Vill du lämna klassen?');">
+                                    <button type="submit" class="leave-btn">Lämna</button>
+                                </form>
                             {% endif %}
                         </span>
                     </li>
+                {% else %}
+                    <li>Inga klasser ännu.</li>
                 {% endfor %}
                 </ul>
             </div>
@@ -2060,74 +2266,239 @@ DASH_TEMPLATE = """
                 <h3>Kommande uppgifter & aktiviteter</h3>
                 <ul class="assignments">
                 {% for a in assignments %}
-                    <li data-class-id="{{ a['class_id'] }}" style="background-color: {{ a['color'] }};">
-                        <span>
-                            <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }}
-                            {% if a['deadline'] %} — {{ a['deadline'].strftime('%Y/%m/%d %H:%M') }}{% endif %}
-                            
-                            {# ✅ HÄR LÄGGER VI IN KNAPPEN SIST I RADEN #}
-                            {% if a.type == 'assignment' %}
-                            <button class="study-plan-trigger" onclick="checkMathSubject('{{ a.title }}')">🚀 Aktivera studieplan</button>
+                    {% if a.type == 'assignment' %}
+                        <li data-class-id="{{ a['class_id'] }}" style="background-color: {{ a['color'] }};">
+                            <span>
+                                {% if loop.first %}
+                                <div class="star-tooltip">
+                                    <span style="margin-right: 8px; font-size: 1.2em;">⭐</span>
+                                    <span class="tooltip-text">
+                                        <strong>Rekommenderat fokus:</strong><br>
+                                        Baserat på din {{ 'Sista minuten' if user.dashboard_mode == 'sista_minuten' else 'Planerar' }}-profil.
+                                    </span>
+                                </div>
+                                {% endif %}
+                                
+                                <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }} ({{ a['class_name'] }})
+                                {% if a['deadline'] %}
+                                    {% if a['type'] in ['Uppgift','assignment'] %}
+                                        — deadline: {{ a['deadline'].strftime('%Y/%m/%d %H:%M') }}
+                                    {% elif a['type'] in ['Prov','exam'] %}
+                                        — datum: {{ a['deadline'].strftime('%Y/%m/%d') }}
+                                    {% endif %}
+                                {% endif %}
+                            </span>
+                            {% if a['role'] == 'admin' %}
+                                <span>
+                                    <a class="button-link" href="{{ url_for('edit_assignment', assignment_id=a['id']) }}"><button class="edit-btn">Ändra</button></a>
+                                    <form method="post" action="{{ url_for('delete_assignment', assignment_id=a['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera uppgiften?');">
+                                        <button type="submit" class="delete-btn">Radera</button>
+                                    </form>
+                                </span>
                             {% endif %}
-                        </span>
-                    </li>
+                        </li>
+                    {% elif a.type == 'activity' %}
+                        <li style="background-color: {{ a['color'] }}; color: #003C58; font-weight: bold; border: 1px solid rgba(0,0,0,0.1);">
+                            <span>
+                                {% if loop.first %}
+                                <div class="star-tooltip">
+                                    <span style="margin-right: 8px; font-size: 1.2em;">⭐</span>
+                                    <span class="tooltip-text">
+                                        <strong>Dagens viktigaste:</strong><br>
+                                        Denna aktivitet kräver din uppmärksamhet nu.
+                                    </span>
+                                </div>
+                                {% endif %}
+                        
+                                {{ a['title'] }} — Start: {{ a['start_time'].strftime('%Y/%m/%d %H:%M') }} | Slut: {{ a['end_time'].strftime('%Y/%m/%d %H:%M') }}
+                            </span>
+                            <span>
+                                <a class="button-link" href="{{ url_for('edit_activity', activity_id=a['id']) }}">
+                                    <button class="edit-btn" style="background-color: rgba(255,255,255,0.2); color: #003C58; border: 1px solid #003C58;">Ändra</button>
+                                </a>
+                                <form method="post" action="{{ url_for('delete_activity', activity_id=a['id']) }}" style="display:inline;" onsubmit="return confirm('Är du säker på att du vill radera aktiviteten?');">
+                                    <button type="submit" class="delete-btn">Radera</button>
+                                </form>
+                            </span>
+                        </li>
+                    {% endif %}
+                {% else %}
+                    <li>Inga uppgifter eller aktiviteter hittades.</li>
                 {% endfor %}
                 </ul>
+                
+                <div style="margin-top: 20px; text-align: center;">
+                    <a href="{{ url_for('study_plan') }}" style="text-decoration: none;">
+                        <button style="background: linear-gradient(135deg, #28a745 0%, #218838 100%); color: white; padding: 12px 25px; border-radius: 30px; font-weight: bold; font-size: 1.1em; box-shadow: 0 4px 15px rgba(40,167,69,0.3); border: none; width: 100%; max-width: 400px;">
+                            ✨ Aktivera din studieplan
+                        </button>
+                    </a>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <div id="guideModal" style="position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center; display: {{ 'none' if user.has_seen_guide else 'flex' }};">
-        <div style="background: white; padding: 30px; border-radius: 20px; max-width: 400px; text-align: center;">
-            <div id="guide-content">
-                <h2>Nyheter! 🚀</h2>
-                <p>Vi har uppdaterat hur du planerar. Vill du se?</p>
-                <button onclick="showStep(1)" class="guide-next">Ja, visa mig!</button>
-                <button onclick="closeGuide()" style="border:none; background:none; color:#999; cursor:pointer; display:block; margin: 10px auto;">Hoppa över</button>
+            <div class="section">
+                <h3>Integritet & Användarvillkor</h3>
+                <a href="{{ url_for('privacy_policy') }}">Visa sekretesspolicy</a><br>
+                <a href="{{ url_for('download_user_data') }}">Ladda ner dina uppgifter</a>
             </div>
+
+            <div class="section">
+                <h3>Följ oss på sociala medier:</h3>
+                <a href="https://www.instagram.com/truetimeuf/" target="_blank">Instagram</a><br>
+                <a href="https://www.tiktok.com/@truetimeuf" target="_blank">TikTok</a><br>
+                <a href="https://www.youtube.com/@TrueTimeUF" target="_blank">YouTube</a>
+            </div>
+
         </div>
     </div>
 
     <script>
-        // Timer Logic
-        {% if top_assignment and top_assignment.deadline %}
-        (function() {
-            const deadline = new Date("{{ top_assignment.deadline.strftime('%Y-%m-%dT%H:%M:%S') }}").getTime();
-            function updateTimer() {
-                const t = deadline - new Date().getTime();
-                if (t >= 0) {
-                    document.getElementById("days").innerText = Math.floor(t / (1000 * 60 * 60 * 24));
-                    document.getElementById("hours").innerText = Math.floor((t % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    document.getElementById("minutes").innerText = Math.floor((t % (1000 * 60 * 60)) / (1000 * 60));
-                    document.getElementById("seconds").innerText = Math.floor((t % (1000 * 60)) / 1000);
-                }
-            }
-            setInterval(updateTimer, 1000); updateTimer();
-        })();
-        {% endif %}
+        document.querySelectorAll('.hide-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const classId = btn.dataset.classId;
+                const classCard = document.getElementById('class-' + classId);
 
-        // Study Plan Alert
-        function checkMathSubject(title) {
-            const isMath = ['matte', 'matematik', 'ma1', 'ma2', 'ma3'].some(k => title.toLowerCase().includes(k));
-            if (isMath) {
-                alert("🚀 Matte-uppgift! Vi skapar din studieplan nu för: " + title);
-            } else {
-                alert("ℹ️ Studieplaneraren fungerar just nu bara för matematik.");
-            }
-        }
+                classCard.classList.toggle('hidden-class');
 
-        // Create Card Logic
-        const createBtn = document.getElementById('create-btn');
-        if(createBtn) createBtn.onclick = () => document.getElementById('create-card').style.display='block';
+                document.querySelectorAll(`.assignments li[data-class-id='${classId}']`).forEach(a => {
+                    a.classList.toggle('hidden-class');
+                });
 
-        // Guide Logic
-        function showStep(s) { 
-            let h = s===1 ? "<h3>Smart prioritering</h3><p>Guldstjärnan visar vad som är viktigast.</p><button onclick='closeGuide()' class='guide-next'>Fattar!</button>" : "";
-            document.getElementById('guide-content').innerHTML = h;
-        }
-        function closeGuide() { document.getElementById('guideModal').style.display='none'; fetch('/mark_guide_seen', {method:'POST'}); }
-        function restartGuide() { document.getElementById('guideModal').style.display='flex'; showStep(1); }
+                btn.textContent = classCard.classList.contains('hidden-class') ? 'Unhide' : 'Hide';
+            });
+        });
     </script>
+
+    <div id="guideModal" style="position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center; backdrop-filter: blur(5px); display: {{ 'none' if user.has_seen_guide else 'flex' }};">
+        <div style="background: white; padding: 35px; border-radius: 20px; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); color: #333; position: relative;">
+            <div id="guide-content">
+                <h2 style="color: #003C58; margin-bottom: 15px;">Nyheter i Plugghubben! 🚀</h2>
+                <p style="line-height: 1.6;">Vi har gjort stora uppdateringar för att hjälpa dig planera din tid bättre. Vill du se hur det fungerar?</p>
+                
+                <div style="margin-top: 25px; display: flex; gap: 12px; justify-content: center;">
+                    <button onclick="showStep(1)" style="background: #28a745; color: white; border: none; padding: 12px 25px; border-radius: 25px; cursor: pointer; font-weight: bold;">Ja, visa mig!</button>
+                    <button onclick="closeGuide()" style="background: #eee; color: #666; border: none; padding: 12px 25px; border-radius: 25px; cursor: pointer;">Hoppa över</button>
+                </div>
+            </div>
+            <div id="step-indicator" style="margin-top: 20px; font-size: 0.8em; color: #999; display: none;">Steg <span id="current-step">1</span> av 7</div>
+        </div>
+    </div>
+    
+    <script>
+    let currentStep = 0;
+    const isAdmin = {{ 'true' if is_any_admin else 'false' }};
+    
+    function showStep(step) {
+        currentStep = step;
+        const content = document.getElementById('guide-content');
+        const indicator = document.getElementById('step-indicator');
+        indicator.style.display = 'block';
+        document.getElementById('current-step').innerText = step;
+    
+        let html = "";
+    
+        switch(step) {
+            case 1:
+                html = `<h3>⭐ Smart prioritering</h3>
+                        <p>Guldstjärnan visar vilken uppgift som är viktigast just nu baserat på deadline, kursens vikt och din egen färdighetsnivå.</p>
+                        <button onclick="showStep(2)" class="guide-next">Nästa</button>`;
+                break;
+            case 2:
+                html = `<h3>🔥 Planeringslägen</h3>
+                        <p>Välj mellan <b>Sista minuten</b> (deadline-fokus) eller <b>Planerare</b> (fokus på svåra/tunga kurser) i menyn.</p>
+                        <button onclick="showStep(3)" class="guide-next">Nästa</button>`;
+                break;
+            case 3:
+                html = `<h3>💪 Din färdighetsnivå</h3>
+                        <p>Väldigt viktigt! Om du klickar på din klass kan du, under dina kurser, sätta din nivå i varje ämne. Ju svårare du tycker det är, desto tidigare hamnar det på din att-göra-lista.</p>
+                        <button onclick="showStep(4)" class="guide-next">Nästa</button>`;
+                break;
+            case 4:
+                // Om man är admin någonstans, visa admin-infon först
+                if (isAdmin) {
+                    html = `<h3>⚖️ Kursvikt (Admin)</h3>
+                            <p>Som admin kan du nu ställa in kursens vikt (t.ex. 100p eller 150p). Detta är avgörande för att elevernas prioritering ska bli korrekt.</p>
+                            <button onclick="showStep(5)" class="guide-next">Nästa</button>`;
+                } else {
+                    // Om man inte är admin, hoppa direkt till Aktiviteter
+                    showStep(5); 
+                    return;
+                }
+                break;
+            case 5:
+                html = `<h3>📅 Aktiviteter</h3>
+                        <p>Du kan nu lägga till egna aktiviteter! Klicka på "Skapa" knappen i menyn och följ instruktionerna.</p>
+                        <button onclick="showStep(6)" class="guide-next">Nästa</button>`;
+                break;
+            case 6:
+                html = `<h3>🔔 Notiser & Mobil</h3>
+                        <p>Du kan nu välja om du vill ha notiser eller inte i din profil. Dessutom är hela vyn nu helt mobilvänlig!</p>
+                        <button onclick="showStep(7)" class="guide-next">Sista steget</button>`;
+                break;
+            case 7:
+                html = `<h3>Klara, färdiga...</h3>
+                        <p>Nu är du redo att ta kontroll över plugget. Lycka till!</p>
+                        <button onclick="closeGuide()" style="background: #28a745; color: white; border: none; padding: 12px 30px; border-radius: 25px; cursor: pointer; font-weight: bold; margin-top: 15px;">Börja plugga!</button>`;
+                break;
+        }
+        content.innerHTML = html;
+    }
+    
+    function closeGuide() {
+        const modal = document.getElementById('guideModal');
+        if (modal) modal.style.display = 'none';
+        fetch('/mark_guide_seen', { method: 'POST' });
+    }
+    
+    // Ny funktion för att starta om guiden när man klickar på knappen
+    function restartGuide() {
+        const modal = document.getElementById('guideModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            showStep(1); // Går direkt till steg 1 istället för välkomstskärmen
+        }
+    }
+
+    {% if top_assignment and top_assignment.deadline %}
+    const deadline = new Date("{{ top_assignment.deadline.strftime('%Y-%m-%dT%H:%M:%S') }}").getTime();
+    
+    function updateTimer() {
+        const now = new Date().getTime();
+        const t = deadline - now;
+    
+        if (t >= 0) {
+            document.getElementById("days").innerText = Math.floor(t / (1000 * 60 * 60 * 24));
+            document.getElementById("hours").innerText = Math.floor((t % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            document.getElementById("minutes").innerText = Math.floor((t % (1000 * 60 * 60)) / (1000 * 60));
+            document.getElementById("seconds").innerText = Math.floor((t % (1000 * 60)) / 1000);
+        } else {
+            document.getElementById("focus-countdown").innerHTML = "<h2>Deadline uppnådd! 🏁</h2>";
+        }
+    }
+    
+    // Uppdatera varje sekund
+    setInterval(updateTimer, 1000);
+    updateTimer(); // Kör direkt
+    {% endif %}
+    
+    </script>
+    
+    <style>
+    .guide-next {
+        background: #0097CA;
+        color: white;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 25px;
+        cursor: pointer;
+        margin-top: 15px;
+        font-weight: bold;
+    }
+    .guide-next:hover { background: #003C58; }
+    #guide-content h3 { color: #003C58; margin-bottom: 10px; }
+    #guide-content p { font-size: 0.95em; line-height: 1.5; color: #555; }
+    </style>
+    
 </body>
 </html>
 """
@@ -4320,6 +4691,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
