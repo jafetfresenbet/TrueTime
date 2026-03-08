@@ -2286,6 +2286,11 @@ DASH_TEMPLATE = """
                                     {% elif a['type'] in ['Prov','exam'] %}
                                         — datum: {{ a['deadline'].strftime('%Y/%m/%d') }}
                                     {% endif %}
+
+
+                                {# ✅ HÄR LÄGGER VI IN KNAPPEN SIST I RADEN #}
+                                {% if a.type == 'assignment' %}
+                                <button class="study-plan-trigger" onclick="checkMathSubject('{{ a.title }}')">🚀 Aktivera studieplan</button>
                                 {% endif %}
                             </span>
                             {% if a['role'] == 'admin' %}
@@ -2326,14 +2331,6 @@ DASH_TEMPLATE = """
                     <li>Inga uppgifter eller aktiviteter hittades.</li>
                 {% endfor %}
                 </ul>
-                
-                <div style="margin-top: 20px; text-align: center;">
-                    <a href="#" style="text-decoration: none;">
-                        <button style="background: linear-gradient(135deg, #28a745 0%, #218838 100%); color: white; padding: 12px 25px; border-radius: 30px; font-weight: bold; font-size: 1.1em; box-shadow: 0 4px 15px rgba(40,167,69,0.3); border: none; width: 100%; max-width: 400px;">
-                            ✨ Aktivera din studieplan
-                        </button>
-                    </a>
-                </div>
             </div>
 
             <div class="section">
@@ -4691,6 +4688,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
