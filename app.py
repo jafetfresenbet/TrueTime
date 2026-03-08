@@ -2154,6 +2154,48 @@ DASH_TEMPLATE = """
                 border-radius: 10px;
                 min-width: 60px;
             }
+
+            /* Dölj knappen som standard */
+            .study-plan-trigger {
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+            }
+            
+            /* Visa knappen vid hover på li-elementet */
+            .assignments li:hover .study-plan-trigger {
+                opacity: 1;
+                visibility: visible;
+            }
+            
+            /* Modal-styling */
+            #studyPlanModal {
+                display: none;
+                position: fixed;
+                z-index: 20000;
+                left: 0; top: 0; width: 100%; height: 100%;
+                background-color: rgba(0,0,0,0.7);
+                backdrop-filter: blur(8px);
+                align-items: center; justify-content: center;
+            }
+            
+            .modal-content {
+                background: white;
+                padding: 30px;
+                border-radius: 20px;
+                width: 90%;
+                max-width: 550px;
+                box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+            }
+            
+            .step { display: none; }
+            .step.active { display: block; }
+            
+            .stepper-btn {
+                background: #007bff; color: white; border: none;
+                padding: 10px 20px; border-radius: 20px; cursor: pointer;
+                margin-top: 20px; font-weight: bold;
+            }
         }
     </style>
 </head>
@@ -2370,10 +2412,26 @@ DASH_TEMPLATE = """
 
         function checkMathSubject(title) {
             if (title.toLowerCase().includes('matte')) {
-                window.location.href = "/study-plan"; 
+                document.getElementById('studyPlanModal').style.display = 'flex';
             } else {
-                alert("Studieplaner för " + title + " kommer snart! Just nu stöder vi endast Matematik.");
+                alert("Just nu stöder vi endast Matematik. Fler ämnen kommer snart!");
             }
+        }
+
+        // Stepper-logik
+        function nextStep(step) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById('step' + step).classList.add('active');
+        }
+
+        // Slutsteg
+        function generateFinalPlan() {
+            const course = document.getElementById('course-select').value;
+            const book = document.getElementById('book-select').value;
+            const goal = document.getElementById('grade-goal').value;
+            
+            alert(`Plan skapas för ${course} (${book}) med mål ${goal}. Laddar uppgifter och videor...`);
+            document.getElementById('studyPlanModal').style.display = 'none';
         }
     </script>
 
@@ -2501,6 +2559,49 @@ DASH_TEMPLATE = """
         #guide-content h3 { color: #003C58; margin-bottom: 10px; }
         #guide-content p { font-size: 0.95em; line-height: 1.5; color: #555; }
     </style>
+
+    <div id="studyPlanModal">
+        <div class="modal-content">
+            <div id="step1" class="step active">
+                <h2 style="color: #003C58;">🚀 Aktivera Matte-motorn</h2>
+                <p>Först behöver vi veta vilken utrustning du använder.</p>
+                <label>Vilken kurs läser du?</label><br>
+                <select id="course-select" style="width: 100%; padding: 10px; margin: 10px 0;">
+                    <option value="matematik_1c">Matematik 1c</option>
+                    <option value="matematik_2c">Matematik 2c</option>
+                    <option value="matematik_3c">Matematik 3c</option>
+                </select><br>
+                <label>Vilken lärobok har du?</label><br>
+                <select id="book-select" style="width: 100%; padding: 10px; margin: 10px 0;">
+                    <option value="matte_5000">Matematik 5000+</option>
+                    <option value="liber_matematik">Liber Matematik</option>
+                    <option value="origon">Origo</option>
+                </select>
+                <button class="stepper-btn" onclick="nextStep(2)">Nästa: Kunskapskarta</button>
+            </div>
+    
+            <div id="step2" class="step">
+                <h3>📊 Kunskapskartan</h3>
+                <p>Hur bra koll har du på de olika delarna i kursen?</p>
+                <div id="topic-sliders">
+                    <label>Algebra & Ekvationer</label>
+                    <input type="range" min="1" max="5" value="3" style="width: 100%;">
+                </div>
+                <button class="stepper-btn" onclick="nextStep(3)">Nästa: Ambition</button>
+            </div>
+    
+            <div id="step3" class="step">
+                <h3>🏆 Din Ambition</h3>
+                <p>Vad siktar vi på för betyg på detta provet?</p>
+                <select id="grade-goal" style="width: 100%; padding: 10px; margin: 10px 0;">
+                    <option value="E">Betyg E - Jag vill bara bli godkänd</option>
+                    <option value="C">Betyg C - Jag vill förstå bra</option>
+                    <option value="A">Betyg A - Jag siktar på toppen</option>
+                </select>
+                <button class="stepper-btn" onclick="generateFinalPlan()">Generera min plan!</button>
+            </div>
+        </div>
+    </div>
     
 </body>
 </html>
@@ -4694,6 +4795,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
