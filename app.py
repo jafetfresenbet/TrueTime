@@ -1,4 +1,4 @@
-f# --- Standardbibliotek ---
+# --- Standardbibliotek ---
 from datetime import datetime, timedelta
 from uuid import uuid4
 import os
@@ -4320,6 +4320,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
