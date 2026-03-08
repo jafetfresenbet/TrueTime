@@ -2281,6 +2281,7 @@ DASH_TEMPLATE = """
                                 
                                 <strong>{{ a['title'] }}</strong> — {{ a['subject_name'] }} ({{ a['class_name'] }})
                                 {% if a['deadline'] %}
+                                
                                     {% if a['type'] in ['Uppgift','assignment'] %}
                                         — deadline: {{ a['deadline'].strftime('%Y/%m/%d %H:%M') }}
                                     {% elif a['type'] in ['Prov','exam'] %}
@@ -2291,6 +2292,7 @@ DASH_TEMPLATE = """
                                 {# ✅ HÄR LÄGGER VI IN KNAPPEN SIST I RADEN #}
                                 {% if a.type == 'assignment' %}
                                 <button class="study-plan-trigger" onclick="checkMathSubject('{{ a.title }}')">🚀 Aktivera studieplan</button>
+                                {% endif %}
                                 {% endif %}
                             </span>
                             {% if a['role'] == 'admin' %}
@@ -4688,6 +4690,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
