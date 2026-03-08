@@ -2328,7 +2328,7 @@ DASH_TEMPLATE = """
                 </ul>
                 
                 <div style="margin-top: 20px; text-align: center;">
-                    <a href="{{ url_for('study_plan') }}" style="text-decoration: none;">
+                    <a href="#" style="text-decoration: none;">
                         <button style="background: linear-gradient(135deg, #28a745 0%, #218838 100%); color: white; padding: 12px 25px; border-radius: 30px; font-weight: bold; font-size: 1.1em; box-shadow: 0 4px 15px rgba(40,167,69,0.3); border: none; width: 100%; max-width: 400px;">
                             ✨ Aktivera din studieplan
                         </button>
@@ -4691,6 +4691,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
