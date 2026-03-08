@@ -2560,48 +2560,7 @@ DASH_TEMPLATE = """
         #guide-content p { font-size: 0.95em; line-height: 1.5; color: #555; }
     </style>
 
-    <div id="studyPlanModal">
-        <div class="modal-content">
-            <div id="step1" class="step active">
-                <h2 style="color: #003C58;">🚀 Aktivera Matte-motorn</h2>
-                <p>Först behöver vi veta vilken utrustning du använder.</p>
-                <label>Vilken kurs läser du?</label><br>
-                <select id="course-select" style="width: 100%; padding: 10px; margin: 10px 0;">
-                    <option value="matematik_1c">Matematik 1c</option>
-                    <option value="matematik_2c">Matematik 2c</option>
-                    <option value="matematik_3c">Matematik 3c</option>
-                </select><br>
-                <label>Vilken lärobok har du?</label><br>
-                <select id="book-select" style="width: 100%; padding: 10px; margin: 10px 0;">
-                    <option value="matte_5000">Matematik 5000+</option>
-                    <option value="liber_matematik">Liber Matematik</option>
-                    <option value="origon">Origo</option>
-                </select>
-                <button class="stepper-btn" onclick="nextStep(2)">Nästa: Kunskapskarta</button>
-            </div>
     
-            <div id="step2" class="step">
-                <h3>📊 Kunskapskartan</h3>
-                <p>Hur bra koll har du på de olika delarna i kursen?</p>
-                <div id="topic-sliders">
-                    <label>Algebra & Ekvationer</label>
-                    <input type="range" min="1" max="5" value="3" style="width: 100%;">
-                </div>
-                <button class="stepper-btn" onclick="nextStep(3)">Nästa: Ambition</button>
-            </div>
-    
-            <div id="step3" class="step">
-                <h3>🏆 Din Ambition</h3>
-                <p>Vad siktar vi på för betyg på detta provet?</p>
-                <select id="grade-goal" style="width: 100%; padding: 10px; margin: 10px 0;">
-                    <option value="E">Betyg E - Jag vill bara bli godkänd</option>
-                    <option value="C">Betyg C - Jag vill förstå bra</option>
-                    <option value="A">Betyg A - Jag siktar på toppen</option>
-                </select>
-                <button class="stepper-btn" onclick="generateFinalPlan()">Generera min plan!</button>
-            </div>
-        </div>
-    </div>
     
 </body>
 </html>
@@ -4795,6 +4754,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
