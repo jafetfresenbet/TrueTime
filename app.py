@@ -2434,11 +2434,42 @@ DASH_TEMPLATE = """
             }
         }
     
+        // Definition av områden per kurs
+        const courseModules = {
+            "matematik_1c": ["Taluppfattning", "Geometri", "Algebra", "Funktioner", "Sannolikhet & Statistik"],
+            "matematik_2c": ["Tal & Logik", "Andragradsfunktioner", "Geometri & Trigonometri", "Statistik"],
+            "matematik_3c": ["Polynom & Rationella uttryck", "Derivata", "Deriveringsregler", "Integraler"]
+        };
+        
         function nextStep(step) {
-            // Göm alla steg, visa bara det aktuella
+            // Om vi går till Steg 3, generera listan på områden baserat på vald kurs
+            if (step === 3) {
+                const selectedCourse = document.getElementById('course-select').value;
+                const modules = courseModules[selectedCourse] || [];
+                const container = document.getElementById('modules-container');
+                
+                container.innerHTML = ""; // Rensa gamla områden
+                
+                modules.forEach(module => {
+                    const div = document.createElement('div');
+                    div.style.margin = "10px 0";
+                    div.innerHTML = `
+                        <label style="display:block; font-size:0.9em; margin-bottom:5px;">${module}</label>
+                        <select class="module-rating" data-module="${module}" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ddd;">
+                            <option value="1">🔴 Kan inte alls</option>
+                            <option value="2">🟠 Lite osäker</option>
+                            <option value="3">🟡 Har koll på grunderna</option>
+                            <option value="4">🟢 Behärskar det bra</option>
+                        </select>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+        
+            // Standard stepper-logik
             document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-            const targetStep = document.getElementById('step' + step);
-            if (targetStep) targetStep.classList.add('active');
+            const target = document.getElementById('step' + step);
+            if (target) target.classList.add('active');
         }
     
         function closeStudyModal() {
@@ -2519,15 +2550,15 @@ DASH_TEMPLATE = """
             </div>
     
             <div id="step3" class="step">
-                <h3 style="color: #003C58;">3. Hur duktig är du? 💪</h3>
-                <p style="font-size: 0.9em; color: #666;">Baserat på områdena i kursen, hur bekväm känner du dig generellt?</p>
-                <select id="skill-level" style="width: 100%; padding: 10px; margin: 15px 0; border-radius: 8px;">
-                    <option value="1">Nybörjare (Helt nytt)</option>
-                    <option value="2">Ganska osäker</option>
-                    <option value="3">Medel (Kan grunderna)</option>
-                    <option value="4">Säker (Behöver bara repetera)</option>
-                </select>
-                <button onclick="nextStep(4)" style="width: 100%; background: #0097CA; color: white; border: none; padding: 12px; border-radius: 10px; margin-top: 15px; cursor: pointer;">Nästa</button>
+                <h3 style="color: #003C58;">3. Hur bra koll har du? 💪</h3>
+                <p style="font-size: 0.9em; color: #666; margin-bottom: 15px;">
+                    Skatta din nivå på de olika delarna i <strong>kursen</strong> så vi kan prioritera rätt.
+                </p>
+                
+                <div id="modules-container" style="max-height: 250px; overflow-y: auto; padding-right: 5px; margin-bottom: 15px;">
+                    </div>
+            
+                <button onclick="nextStep(4)" style="width: 100%; background: #0097CA; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer;">Nästa: Tid & Strategi</button>
             </div>
     
             <div id="step4" class="step">
@@ -4875,6 +4906,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
