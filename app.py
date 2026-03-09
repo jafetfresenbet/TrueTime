@@ -2441,58 +2441,106 @@ DASH_TEMPLATE = """
             document.getElementById('studyPlanModal').style.display = 'none';
         }
     
+        // Samla in all data från de nya stegen
         function generateFinalPlan() {
-            const course = document.getElementById('course-select').value;
-            const book = document.getElementById('book-select').value;
-            const goal = document.getElementById('grade-goal').value;
+            const data = {
+                title: activeAssignmentTitle,
+                course: document.getElementById('course-select').value,
+                book: document.getElementById('book-select').value,
+                currentGrade: document.getElementById('current-grade').value,
+                targetGrade: document.getElementById('grade-goal').value,
+                hoursPerDay: document.getElementById('hours-range').value,
+                studyStyle: document.getElementById('study-style').value,
+                skillLevel: document.getElementById('skill-level').value // En förenklad skattning för nu
+            };
             
-            alert(`Plan skapas för ${course} (${book}) med mål ${goal}. Laddar uppgifter och videor...`);
+            console.log("Genererar plan med data:", data);
+            alert(`Skapar din personliga plan för ${data.title}...\nStil: ${data.studyStyle}\nTid: ${data.hoursPerDay}h/dag`);
+            
             closeStudyModal();
+            // Här kommer vi senare lägga till fetch('/generate_plan', { method: 'POST', body: JSON.stringify(data) })
+        }
+    
+        // Uppdatera tim-displayen när man drar i slidern
+        function updateHourDisplay(val) {
+            document.getElementById('hour-val').innerText = val;
         }
     </script>
 
     <div id="studyPlanModal" style="position: fixed; z-index: 10001; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center; backdrop-filter: blur(5px); display: none;">
-        <div style="background: white; padding: 30px; border-radius: 20px; max-width: 450px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.5); position: relative;">
+        <div style="background: white; padding: 30px; border-radius: 20px; max-width: 500px; width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.5); position: relative;">
             
             <div id="step0" class="step">
-                <h2 style="color: #003C58; margin-bottom: 15px;">Är detta matematik? 🔢</h2>
-                <p>Just nu kan vår AI-motor endast generera studieplaner för matematik-kurser.</p>
-                <div style="display: flex; gap: 10px; margin-top: 25px;">
-                    <button onclick="handleMathConfirm(true)" style="flex: 1; background: #28a745; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold;">Ja, det är matte</button>
-                    <button onclick="handleMathConfirm(false)" style="flex: 1; background: #eee; color: #666; border: none; padding: 12px; border-radius: 10px; cursor: pointer;">Nej, annat ämne</button>
+                <h2 style="color: #003C58;">Är detta matematik? 🔢</h2>
+                <p>Just nu stöder vi endast matematik-kurser.</p>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button onclick="handleMathConfirm(true)" style="flex: 1; background: #28a745; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold;">Ja</button>
+                    <button onclick="handleMathConfirm(false)" style="flex: 1; background: #eee; color: #666; border: none; padding: 12px; border-radius: 10px; cursor: pointer;">Nej</button>
                 </div>
             </div>
     
             <div id="step1" class="step">
-                <h2 style="color: #003C58; margin-bottom: 10px;">Konfigurera planen 🚀</h2>
-                <p style="font-size: 0.9em; color: #666; margin-bottom: 20px;">Uppgift: <span id="display-title" style="font-weight: bold; color: #0097CA;"></span></p>
-                
-                <label style="display:block; margin-bottom: 5px; font-weight: bold;">Vilken kurs läser du?</label>
-                <select id="course-select" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px;">
+                <h3 style="color: #003C58;">1. Kurs & Material</h3>
+                <label>Vilken kurs?</label>
+                <select id="course-select" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px;">
                     <option value="matematik_1c">Matematik 1c</option>
                     <option value="matematik_2c">Matematik 2c</option>
                     <option value="matematik_3c">Matematik 3c</option>
                 </select>
-    
-                <label style="display:block; margin-bottom: 5px; font-weight: bold;">Vilken bok använder ni?</label>
-                <select id="book-select" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
-                    <option value="matte_5000">Matematik 5000+ (Gul/Röd)</option>
-                    <option value="liber">Liber Matematik</option>
-                    <option value="origo">Origo</option>
+                <label>Vilken bok?</label>
+                <select id="book-select" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px;">
+                    <option value="matte_5000">Matematik 5000+</option>
+                    <option value="liber">Liber</option>
                 </select>
-    
-                <button onclick="nextStep(2)" style="width: 100%; background: #0097CA; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold;">Nästa: Sätt ditt mål</button>
+                <button onclick="nextStep(2)" style="width: 100%; background: #0097CA; color: white; border: none; padding: 12px; border-radius: 10px; margin-top: 15px; cursor: pointer;">Nästa</button>
             </div>
     
             <div id="step2" class="step">
-                <h2 style="color: #003C58; margin-bottom: 15px;">Vad är ditt mål? 🎯</h2>
-                <p>Vi anpassar antalet uppgifter och svårighetsgrad baserat på ditt önskade betyg.</p>
-                <select id="grade-goal" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin: 20px 0; font-size: 1.1em;">
-                    <option value="E">Betyg E (Grundläggande)</option>
-                    <option value="C">Betyg C (Goda kunskaper)</option>
-                    <option value="A">Betyg A (Avancerad nivå)</option>
+                <h3 style="color: #003C58;">2. Din nivå & Mål 🎯</h3>
+                <label>Var ligger du idag?</label>
+                <select id="current-grade" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px;">
+                    <option value="F">F (Behöver mycket hjälp)</option>
+                    <option value="E">E</option>
+                    <option value="D">D</option>
+                    <option value="C">C</option>
+                    <option value="B">B</option>
                 </select>
-                <button onclick="generateFinalPlan()" style="width: 100%; background: #28a745; color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: bold;">Skapa min personliga studieplan!</button>
+                <label>Vilket betyg siktar du på i detta prov?</label>
+                <select id="grade-goal" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px;">
+                    <option value="E">Minst E</option>
+                    <option value="C">Målsättning C</option>
+                    <option value="A">Siktar på A</option>
+                </select>
+                <button onclick="nextStep(3)" style="width: 100%; background: #0097CA; color: white; border: none; padding: 12px; border-radius: 10px; margin-top: 15px; cursor: pointer;">Nästa</button>
+            </div>
+    
+            <div id="step3" class="step">
+                <h3 style="color: #003C58;">3. Hur duktig är du? 💪</h3>
+                <p style="font-size: 0.9em; color: #666;">Baserat på områdena i kursen, hur bekväm känner du dig generellt?</p>
+                <select id="skill-level" style="width: 100%; padding: 10px; margin: 15px 0; border-radius: 8px;">
+                    <option value="1">Nybörjare (Helt nytt)</option>
+                    <option value="2">Ganska osäker</option>
+                    <option value="3">Medel (Kan grunderna)</option>
+                    <option value="4">Säker (Behöver bara repetera)</option>
+                </select>
+                <button onclick="nextStep(4)" style="width: 100%; background: #0097CA; color: white; border: none; padding: 12px; border-radius: 10px; margin-top: 15px; cursor: pointer;">Nästa</button>
+            </div>
+    
+            <div id="step4" class="step">
+                <h3 style="color: #003C58;">4. Tid & Strategi ⏱️</h3>
+                <label>Hur många timmar kan du lägga per dag?</label>
+                <div style="display: flex; align-items: center; gap: 10px; margin: 15px 0;">
+                    <input type="range" id="hours-range" min="0.5" max="6" step="0.5" value="2" oninput="updateHourDisplay(this.value)" style="flex: 1;">
+                    <span id="hour-val" style="font-weight: bold; width: 40px;">2</span> h
+                </div>
+    
+                <label>Vilken studiestil föredrar du?</label>
+                <select id="study-style" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px;">
+                    <option value="balanced">Balanced Mix (Blandat)</option>
+                    <option value="practice">Practice Heavy (Många uppgifter)</option>
+                    <option value="theory">Theory First (Fokus på koncept)</option>
+                </select>
+                <button onclick="generateFinalPlan()" style="width: 100%; background: #28a745; color: white; border: none; padding: 15px; border-radius: 10px; margin-top: 20px; cursor: pointer; font-weight: bold;">Skapa Studieplan! 🚀</button>
             </div>
     
             <button onclick="closeStudyModal()" style="margin-top: 15px; background: none; border: none; color: #999; cursor: pointer; font-size: 0.8em; width: 100%;">Avbryt</button>
@@ -4823,6 +4871,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
