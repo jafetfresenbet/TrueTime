@@ -2395,46 +2395,115 @@ DASH_TEMPLATE = """
     </div>
 
     <script>
+        // --- Befintlig logik för att dölja klasser ---
         document.querySelectorAll('.hide-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const classId = btn.dataset.classId;
                 const classCard = document.getElementById('class-' + classId);
-
                 classCard.classList.toggle('hidden-class');
-
                 document.querySelectorAll(`.assignments li[data-class-id='${classId}']`).forEach(a => {
                     a.classList.toggle('hidden-class');
                 });
-
                 btn.textContent = classCard.classList.contains('hidden-class') ? 'Unhide' : 'Hide';
             });
         });
-
+    
+        // --- NY LOGIK FÖR STUDIEPLAN ---
+        let activeAssignmentTitle = "";
+    
         function checkMathSubject(title) {
-            if (title.toLowerCase().includes('matte')) {
-                document.getElementById('studyPlanModal').style.display = 'flex';
+            activeAssignmentTitle = title;
+            // Öppna modalen och visa steg 0 (Frågan)
+            document.getElementById('studyPlanModal').style.display = 'flex';
+            nextStep(0); 
+        }
+    
+        function handleMathConfirm(isMath) {
+            if (isMath) {
+                // Om användaren klickar JA, gå till konfigurationen (steg 1)
+                document.getElementById('display-title').innerText = activeAssignmentTitle;
+                nextStep(1);
             } else {
-                alert("Denna funktion fungerar inte än. Tack för att du väntar!");
+                // Om NEJ, visa meddelandet och stäng
+                alert("PlugIt+ Studieplanerare stöder just nu endast matematik. Håll utkik efter fler ämnen snart!");
+                closeStudyModal();
             }
         }
-
-        // Stepper-logik
+    
         function nextStep(step) {
+            // Göm alla steg, visa bara det aktuella
             document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-            document.getElementById('step' + step).classList.add('active');
+            const targetStep = document.getElementById('step' + step);
+            if (targetStep) targetStep.classList.add('active');
         }
-
-        // Slutsteg
+    
+        function closeStudyModal() {
+            document.getElementById('studyPlanModal').style.display = 'none';
+        }
+    
         function generateFinalPlan() {
             const course = document.getElementById('course-select').value;
             const book = document.getElementById('book-select').value;
             const goal = document.getElementById('grade-goal').value;
             
             alert(`Plan skapas för ${course} (${book}) med mål ${goal}. Laddar uppgifter och videor...`);
-            document.getElementById('studyPlanModal').style.display = 'none';
+            closeStudyModal();
         }
     </script>
 
+    <div id="studyPlanModal" style="position: fixed; z-index: 10001; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center; backdrop-filter: blur(5px); display: none;">
+        <div style="background: white; padding: 30px; border-radius: 20px; max-width: 450px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.5); position: relative;">
+            
+            <div id="step0" class="step">
+                <h2 style="color: #003C58; margin-bottom: 15px;">Är detta matematik? 🔢</h2>
+                <p>Just nu kan vår AI-motor endast generera studieplaner för matematik-kurser.</p>
+                <div style="display: flex; gap: 10px; margin-top: 25px;">
+                    <button onclick="handleMathConfirm(true)" style="flex: 1; background: #28a745; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold;">Ja, det är matte</button>
+                    <button onclick="handleMathConfirm(false)" style="flex: 1; background: #eee; color: #666; border: none; padding: 12px; border-radius: 10px; cursor: pointer;">Nej, annat ämne</button>
+                </div>
+            </div>
+    
+            <div id="step1" class="step">
+                <h2 style="color: #003C58; margin-bottom: 10px;">Konfigurera planen 🚀</h2>
+                <p style="font-size: 0.9em; color: #666; margin-bottom: 20px;">Uppgift: <span id="display-title" style="font-weight: bold; color: #0097CA;"></span></p>
+                
+                <label style="display:block; margin-bottom: 5px; font-weight: bold;">Vilken kurs läser du?</label>
+                <select id="course-select" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px;">
+                    <option value="matematik_1c">Matematik 1c</option>
+                    <option value="matematik_2c">Matematik 2c</option>
+                    <option value="matematik_3c">Matematik 3c</option>
+                </select>
+    
+                <label style="display:block; margin-bottom: 5px; font-weight: bold;">Vilken bok använder ni?</label>
+                <select id="book-select" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
+                    <option value="matte_5000">Matematik 5000+ (Gul/Röd)</option>
+                    <option value="liber">Liber Matematik</option>
+                    <option value="origo">Origo</option>
+                </select>
+    
+                <button onclick="nextStep(2)" style="width: 100%; background: #0097CA; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold;">Nästa: Sätt ditt mål</button>
+            </div>
+    
+            <div id="step2" class="step">
+                <h2 style="color: #003C58; margin-bottom: 15px;">Vad är ditt mål? 🎯</h2>
+                <p>Vi anpassar antalet uppgifter och svårighetsgrad baserat på ditt önskade betyg.</p>
+                <select id="grade-goal" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin: 20px 0; font-size: 1.1em;">
+                    <option value="E">Betyg E (Grundläggande)</option>
+                    <option value="C">Betyg C (Goda kunskaper)</option>
+                    <option value="A">Betyg A (Avancerad nivå)</option>
+                </select>
+                <button onclick="generateFinalPlan()" style="width: 100%; background: #28a745; color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: bold;">Skapa min personliga studieplan!</button>
+            </div>
+    
+            <button onclick="closeStudyModal()" style="margin-top: 15px; background: none; border: none; color: #999; cursor: pointer; font-size: 0.8em; width: 100%;">Avbryt</button>
+        </div>
+    </div>
+    
+    <style>
+        .step { display: none; }
+        .step.active { display: block; }
+    </style>
+    
     <div id="guideModal" style="position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center; backdrop-filter: blur(5px); display: {{ 'none' if user.has_seen_guide else 'flex' }};">
         <div style="background: white; padding: 35px; border-radius: 20px; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); color: #333; position: relative;">
             <div id="guide-content">
@@ -4754,6 +4823,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
