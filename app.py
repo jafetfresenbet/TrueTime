@@ -23,6 +23,8 @@ import math
 
 from flask_apscheduler import APScheduler
 
+import google.generativeai as genai
+
 # ---------- Konfiguration ----------
 DATABASE = 'mvp.db'
 SECRET_KEY = 'BlirDetTrueTimePåStrawberryArenaNästaÅr?'
@@ -60,6 +62,10 @@ mail = Mail(app)
 
 # Serializer för token
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+
+# Konfigurera API
+genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+model = genai.GenerativeModel('gemini-1.5-flash') # 'flash' är snabb och billig
 
 # ---------- Models ----------
 class User(db.Model):
@@ -1386,35 +1392,54 @@ def mark_guide_seen():
 
 @app.route('/generate_plan', methods=['POST'])
 def generate_plan():
-    data = request.json
-    
-    # Skapa en kraftfull prompt till AI:n
-    prompt = f"""
-    Du är en expert på svensk gymnasieskola och matematik. 
-    Skapa en studieplan för en elev som läser {data['course']}.
-    Bok: {data['book']}.
-    Nuvarande betyg: {data['currentGrade']}, Målbetyg: {data['targetGrade']}.
-    Studiestil: {data['studyStyle']}.
-    Elevens självskattning av områden: {data['moduleRatings']}.
+    try:
+        data = request.json
+        
+        # 2. Här bygger vi prompten. 
+        # Vi lägger till en instruktion om att svaret MÅSTE vara ren JSON.
+        prompt = f"""
+        Du är en expert på svensk gymnasieskola och matematik. 
+        Skapa en studieplan för en elev som läser {data['course']}.
+        Bok: {data['book']}.
+        Nuvarande betyg: {data['currentGrade']}, Målbetyg: {data['targetGrade']}.
+        Studiestil: {data['studyStyle']}.
+        Elevens självskattning av områden (där lägre siffra betyder svårare): {data['moduleRatings']}.
 
-    Planen ska vara en JSON-lista med steg. Varje steg ska innehålla:
-    - 'title': Vad man ska göra.
-    - 'resource': Specifika sidor i boken eller specifika YouTube-sökningar.
-    - 'time': Beräknad tid i minuter.
-    - 'difficulty': Enkel/Medel/Svår.
-    """
+        UPPGIFT:
+        Skapa en konkret plan med specifika kapitel/sidor och videoförslag.
+        Eftersom du är en expert, hämta korrekta sidhänvisningar för {data['book']}.
 
-    # HÄR SKER AI-ANROPET (Exempel med pseudo-kod)
-    # response = client.chat.completions.create(model="gpt-4", messages=[{"role": "user", "content": prompt}])
-    # ai_plan = response.choices[0].message.content
+        Svara ENBART med en JSON-lista (inga andra ord eller markdown-formatering). 
+        Formatet ska vara:
+        [
+          {{"title": "Momentets namn", "resource": "Sida X-Y / YT-sökord", "time": "Tid i min", "difficulty": "Nivå"}}
+        ]
+        """
 
-    # För att testa innan du har en API-nyckel, returnerar vi ett fejkat svar:
-    dummy_plan = [
-        {"title": "Grundläggande Algebra", "resource": "Sida 12-15 i boken", "time": "30", "difficulty": "Enkel"},
-        {"title": "Se genomgång: Derivata", "resource": "Sök 'Matte 3c Derivata' på YT", "time": "15", "difficulty": "Medel"}
-    ]
+        # 3. Anropa AI:n
+        response = model.generate_content(prompt)
+        
+        # 4. Tvätta AI-svaret (ibland lägger AI in ```json ... ``` vilket vi måste ta bort)
+        raw_text = response.text.strip()
+        if raw_text.startswith("```"):
+            raw_text = raw_text.split("```")[1]
+            if raw_text.startswith("json"):
+                raw_text = raw_text[4:]
+        
+        # Gör om textsträngen till en riktig Python-lista
+        ai_plan = json.loads(raw_text)
 
-    return jsonify({"success": True, "plan": dummy_plan})
+        return jsonify({
+            "success": True, 
+            "plan": ai_plan
+        })
+
+    except Exception as e:
+        print(f"Ett fel uppstod: {e}")
+        return jsonify({
+            "success": False, 
+            "error": str(e)
+        }), 500
 
 
 # ---------- Templates ----------
@@ -4997,6 +5022,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
