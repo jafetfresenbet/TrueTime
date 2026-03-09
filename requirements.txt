@@ -11,3 +11,4 @@ itsdangerous
 twilio
 flask-apscheduler
 python-dotenv
+google-generativeai
