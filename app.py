@@ -1394,39 +1394,64 @@ def mark_guide_seen():
 def generate_plan():
     try:
         data = request.json
+        course = data.get('course')
         
-        # 2. Här bygger vi prompten. 
-        # Vi lägger till en instruktion om att svaret MÅSTE vara ren JSON.
+        # 1. Kontrollera om vi har PDF-filen för den valda kursen
+        # Vi utgår från att filerna heter t.ex. matematik_1c.pdf i mappen books
+        pdf_path = f"books/{course}.pdf"
+        
+        if not os.path.exists(pdf_path):
+            return jsonify({
+                "success": False, 
+                "error": "Vi har tyvärr inte hunnit lägga till stöd för denna kurs ännu. Just nu fungerar Matematik 1c, 2c, 3c och 4."
+            }), 400
+
+        # 2. Förbered innehållet som ska skickas till Gemini
+        # Vi skapar en lista som innehåller både PDF-filen och instruktionerna
+        content_to_send = []
+        
+        # Ladda upp PDF:en till Gemini (temporärt för detta anrop)
+        print(f"Laddar upp {pdf_path} till Gemini...")
+        uploaded_pdf = genai.upload_file(path=pdf_path, display_name=f"Bok {course}")
+        content_to_send.append(uploaded_pdf)
+
+        # 3. Bygg den specifika instruktionen (Prompten)
         prompt = f"""
-        Du är en expert på svensk gymnasieskola och matematik. 
-        Skapa en studieplan för en elev som läser {data['course']}.
-        Bok: {data['book']}.
-        Nuvarande betyg: {data['currentGrade']}, Målbetyg: {data['targetGrade']}.
-        Studiestil: {data['studyStyle']}.
-        Elevens självskattning av områden (där lägre siffra betyder svårare): {data['moduleRatings']}.
+        Du är en expert på matematik i den svenska gymnasieskolan.
+        Använd den bifogade PDF-filen (Matematik 5000+) för att skapa en studieplan.
+        
+        ELEVPROFIL:
+        - Kurs: {course}
+        - Nuvarande betyg: {data['currentGrade']}
+        - Målbetyg: {data['targetGrade']}
+        - Studiestil: {data['studyStyle']}
+        - Elevens självskattning av områden (1=behöver mycket hjälp, 4=kan bra): {data['moduleRatings']}
 
-        UPPGIFT:
-        Skapa en konkret plan med specifika kapitel/sidor och videoförslag.
-        Eftersom du är en expert, hämta korrekta sidhänvisningar för {data['book']}.
+        DIN UPPGIFT:
+        Skapa en konkret plan. Du MÅSTE ange exakta sidnummer och kapitelrubriker från den bifogade boken.
+        Anpassa planen efter elevens mål och självskattning. Om eleven har '1' på ett område, ge fler uppgifter och videoförslag där.
 
-        Svara ENBART med en JSON-lista (inga andra ord eller markdown-formatering). 
-        Formatet ska vara:
+        SVARFORMAT:
+        Svara ENBART med en JSON-lista (inga andra ord eller markdown-formatering).
         [
-          {{"title": "Momentets namn", "resource": "Sida X-Y / YT-sökord", "time": "Tid i min", "difficulty": "Nivå"}}
+          {{"title": "Kapitelnamn/Moment", "resource": "Sida X-Y + YT-sökord", "time": "Tid i minuter", "difficulty": "Enkel/Medel/Svår"}}
         ]
         """
+        content_to_send.append(prompt)
 
-        # 3. Anropa AI:n
-        response = model.generate_content(prompt)
+        # 4. Anropa Gemini 1.5 Flash (snabb och bra på PDF)
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        response = model.generate_content(content_to_send)
         
-        # 4. Tvätta AI-svaret (ibland lägger AI in ```json ... ``` vilket vi måste ta bort)
+        # 5. Tvätta och tolka svaret
         raw_text = response.text.strip()
-        if raw_text.startswith("```"):
-            raw_text = raw_text.split("```")[1]
-            if raw_text.startswith("json"):
-                raw_text = raw_text[4:]
         
-        # Gör om textsträngen till en riktig Python-lista
+        # Ta bort markdown-kodblock om AI:n råkade skicka med sådana
+        if "```json" in raw_text:
+            raw_text = raw_text.split("```json")[1].split("```")[0].strip()
+        elif "```" in raw_text:
+            raw_text = raw_text.split("```")[1].split("```")[0].strip()
+            
         ai_plan = json.loads(raw_text)
 
         return jsonify({
@@ -1435,10 +1460,10 @@ def generate_plan():
         })
 
     except Exception as e:
-        print(f"Ett fel uppstod: {e}")
+        print(f"FEL vid generering: {str(e)}")
         return jsonify({
             "success": False, 
-            "error": str(e)
+            "error": "Ett tekniskt fel uppstod när AI:n skulle läsa boken."
         }), 500
 
 
@@ -2609,38 +2634,21 @@ DASH_TEMPLATE = """
                 <h3 style="color: #003C58;">1. Kurs & Material 📚</h3>
                 <p style="font-size: 0.85em; color: #0097CA; margin-bottom: 15px;">Plan för: <span id="display-title" style="font-weight:bold;"></span></p>
                 
-                <label style="font-weight:bold; display:block; margin-bottom:5px;">Vilken kurs läser du?</label>
+                <label style="font-weight:bold; display:block; margin-bottom:5px;">Välj kurs (Endast 1c-4 stöds just nu):</label>
                 <select id="course-select" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px;">
-                    <optgroup label="Matematik 1">
-                        <option value="matematik_1a">Matematik 1a</option>
-                        <option value="matematik_1b">Matematik 1b</option>
-                        <option value="matematik_1c">Matematik 1c</option>
-                    </optgroup>
-                    <optgroup label="Matematik 2">
-                        <option value="matematik_2a">Matematik 2a</option>
-                        <option value="matematik_2b">Matematik 2b</option>
-                        <option value="matematik_2c">Matematik 2c</option>
-                    </optgroup>
-                    <optgroup label="Matematik 3">
-                        <option value="matematik_3a">Matematik 3a</option>
-                        <option value="matematik_3b">Matematik 3b</option>
-                        <option value="matematik_3c">Matematik 3c</option>
-                    </optgroup>
-                    <optgroup label="Avancerad">
-                        <option value="matematik_4">Matematik 4</option>
-                        <option value="matematik_5">Matematik 5</option>
-                    </optgroup>
+                    <option value="matematik_1c">Matematik 1c (Stöds ✅)</option>
+                    <option value="matematik_2c">Matematik 2c (Stöds ✅)</option>
+                    <option value="matematik_3c">Matematik 3c (Stöds ✅)</option>
+                    <option value="matematik_4">Matematik 4 (Stöds ✅)</option>
+                    <option value="" disabled>--- Fler kurser kommer snart ---</option>
+                    <option value="matematik_1a" disabled>Matematik 1a (Kommer snart)</option>
+                    <option value="matematik_5" disabled>Matematik 5 (Kommer snart)</option>
                 </select>
             
-                <label style="font-weight:bold; display:block; margin-bottom:5px;">Vilken lärobok använder du?</label>
+                <label style="font-weight:bold; display:block; margin-bottom:5px;">Välj lärobok:</label>
                 <select id="book-select" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
-                    <option value="m5000_gul">Matematik 5000+ (Gul)</option>
-                    <option value="m5000_rod">Matematik 5000+ (Röd)</option>
-                    <option value="m5000_bla">Matematik 5000+ (Blå)</option>
-                    <option value="liber">Liber Matematik</option>
-                    <option value="origo">Origo</option>
-                    <option value="exponent">Exponent</option>
-                    <option value="annat">Annan / Ingen bok</option>
+                    <option value="m5000">Matematik 5000+ (Stöds ✅)</option>
+                    <option value="annat" disabled>Liber/Origo (Kommer snart)</option>
                 </select>
             
                 <button onclick="nextStep(2)" style="width: 100%; background: #0097CA; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold;">Nästa: Din nivå</button>
@@ -5022,6 +5030,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
