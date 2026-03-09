@@ -1384,6 +1384,38 @@ def mark_guide_seen():
     db.session.commit()
     return '', 204
 
+@app.route('/generate_plan', methods=['POST'])
+def generate_plan():
+    data = request.json
+    
+    # Skapa en kraftfull prompt till AI:n
+    prompt = f"""
+    Du är en expert på svensk gymnasieskola och matematik. 
+    Skapa en studieplan för en elev som läser {data['course']}.
+    Bok: {data['book']}.
+    Nuvarande betyg: {data['currentGrade']}, Målbetyg: {data['targetGrade']}.
+    Studiestil: {data['studyStyle']}.
+    Elevens självskattning av områden: {data['moduleRatings']}.
+
+    Planen ska vara en JSON-lista med steg. Varje steg ska innehålla:
+    - 'title': Vad man ska göra.
+    - 'resource': Specifika sidor i boken eller specifika YouTube-sökningar.
+    - 'time': Beräknad tid i minuter.
+    - 'difficulty': Enkel/Medel/Svår.
+    """
+
+    # HÄR SKER AI-ANROPET (Exempel med pseudo-kod)
+    # response = client.chat.completions.create(model="gpt-4", messages=[{"role": "user", "content": prompt}])
+    # ai_plan = response.choices[0].message.content
+
+    # För att testa innan du har en API-nyckel, returnerar vi ett fejkat svar:
+    dummy_plan = [
+        {"title": "Grundläggande Algebra", "resource": "Sida 12-15 i boken", "time": "30", "difficulty": "Enkel"},
+        {"title": "Se genomgång: Derivata", "resource": "Sök 'Matte 3c Derivata' på YT", "time": "15", "difficulty": "Medel"}
+    ]
+
+    return jsonify({"success": True, "plan": dummy_plan})
+
 
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
@@ -2488,7 +2520,13 @@ DASH_TEMPLATE = """
         }
     
         // Samla in all data från de nya stegen
-        function generateFinalPlan() {
+        async function generateFinalPlan() {
+            // 1. Samla in all data från alla steg
+            const ratings = {};
+            document.querySelectorAll('.module-rating').forEach(select => {
+                ratings[select.dataset.module] = select.options[select.selectedIndex].text;
+            });
+        
             const data = {
                 title: activeAssignmentTitle,
                 course: document.getElementById('course-select').value,
@@ -2497,14 +2535,31 @@ DASH_TEMPLATE = """
                 targetGrade: document.getElementById('grade-goal').value,
                 hoursPerDay: document.getElementById('hours-range').value,
                 studyStyle: document.getElementById('study-style').value,
-                skillLevel: document.getElementById('skill-level').value // En förenklad skattning för nu
+                moduleRatings: ratings
             };
-            
-            console.log("Genererar plan med data:", data);
-            alert(`Skapar din personliga plan för ${data.title}...\nStil: ${data.studyStyle}\nTid: ${data.hoursPerDay}h/dag`);
-            
-            closeStudyModal();
-            // Här kommer vi senare lägga till fetch('/generate_plan', { method: 'POST', body: JSON.stringify(data) })
+        
+            // 2. Visa laddnings-skärm (valfritt men bra)
+            alert("Genererar din personliga AI-plan... Detta kan ta några sekunder.");
+        
+            try {
+                const response = await fetch('/generate_plan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+        
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log("Plan genererad:", result.plan);
+                    // Här kommer vi senare lägga till kod för att visa planen på skärmen!
+                    alert("Planen är klar! Kolla konsolen för att se resultatet.");
+                    closeStudyModal();
+                }
+            } catch (error) {
+                console.error("Fel vid generering:", error);
+                alert("Något gick fel när planen skulle skapas.");
+            }
         }
     
         // Uppdatera tim-displayen när man drar i slidern
@@ -4942,6 +4997,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
