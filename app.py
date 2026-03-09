@@ -2414,7 +2414,7 @@ DASH_TEMPLATE = """
             if (title.toLowerCase().includes('matte')) {
                 document.getElementById('studyPlanModal').style.display = 'flex';
             } else {
-                alert("Just nu stöder vi endast Matematik. Fler ämnen kommer snart!");
+                alert("Denna funktion fungerar inte än. Tack för att du väntar!");
             }
         }
 
@@ -4754,6 +4754,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
