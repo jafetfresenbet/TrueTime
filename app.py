@@ -2436,29 +2436,40 @@ DASH_TEMPLATE = """
     
         // Definition av områden per kurs
         const courseModules = {
-            "matematik_1c": ["Taluppfattning", "Geometri", "Algebra", "Funktioner", "Sannolikhet & Statistik"],
-            "matematik_2c": ["Tal & Logik", "Andragradsfunktioner", "Geometri & Trigonometri", "Statistik"],
-            "matematik_3c": ["Polynom & Rationella uttryck", "Derivata", "Deriveringsregler", "Integraler"]
+            "matematik_1a": ["Tal och beräkningar", "Algebra", "Funktioner", "Sannolikhet och statistik", "Geometri"],
+            "matematik_1b": ["Tal och procent", "Algebra och uttryck", "Funktioner", "Statistik", "Sannolikhet"],
+            "matematik_1c": ["Tal", "Algebra", "Funktioner", "Geometri", "Sannolikhet och statistik"],
+            "matematik_2a": ["Algebra och linjära funktioner", "Ekvationssystem", "Geometri", "Statistik", "Sannolikhet"],
+            "matematik_2b": ["Algebra och linjära modeller", "Andragradsekvationer", "Geometri", "Sannolikhet och statistik"],
+            "matematik_2c": ["Algebra och funktioner", "Andragradsekvationer", "Geometri", "Sannolikhet och statistik"],
+            "matematik_3a": ["Funktioner och förändring", "Derivata", "Statistik"],
+            "matematik_3b": ["Algebra och funktioner", "Derivata", "Sannolikhet och statistik"],
+            "matematik_3c": ["Algebra och funktioner", "Derivata", "Kurvor, derivator och integraler", "Trigonometri"],
+            "matematik_4": ["Trigonometri", "Derivata och funktioner", "Integraler", "Differentialekvationer"],
+            "matematik_5": ["Diskret matematik", "Gränsvärden", "Derivata och analys", "Integraler", "Differentialekvationer"]
         };
         
         function nextStep(step) {
-            // Om vi går till Steg 3, generera listan på områden baserat på vald kurs
             if (step === 3) {
                 const selectedCourse = document.getElementById('course-select').value;
                 const modules = courseModules[selectedCourse] || [];
                 const container = document.getElementById('modules-container');
                 
-                container.innerHTML = ""; // Rensa gamla områden
+                container.innerHTML = ""; 
                 
+                if (modules.length === 0) {
+                    container.innerHTML = "<p style='color:red;'>Välj en kurs i steg 1 först.</p>";
+                }
+        
                 modules.forEach(module => {
                     const div = document.createElement('div');
-                    div.style.margin = "10px 0";
+                    div.style.marginBottom = "15px";
                     div.innerHTML = `
-                        <label style="display:block; font-size:0.9em; margin-bottom:5px;">${module}</label>
-                        <select class="module-rating" data-module="${module}" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ddd;">
-                            <option value="1">🔴 Kan inte alls</option>
-                            <option value="2">🟠 Lite osäker</option>
-                            <option value="3">🟡 Har koll på grunderna</option>
+                        <label style="display:block; font-size:0.9em; margin-bottom:5px; font-weight:500;">${module}</label>
+                        <select class="module-rating" data-module="${module}" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: #f9f9f9;">
+                            <option value="1">🔴 Behöver lära mig från grunden</option>
+                            <option value="2">🟠 Kan lite grann</option>
+                            <option value="3">🟡 Bekväm med grunderna</option>
                             <option value="4">🟢 Behärskar det bra</option>
                         </select>
                     `;
@@ -2466,7 +2477,7 @@ DASH_TEMPLATE = """
                 });
             }
         
-            // Standard stepper-logik
+            // Visa/Dölj steg
             document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
             const target = document.getElementById('step' + step);
             if (target) target.classList.add('active');
@@ -2515,19 +2526,44 @@ DASH_TEMPLATE = """
             </div>
     
             <div id="step1" class="step">
-                <h3 style="color: #003C58;">1. Kurs & Material</h3>
-                <label>Vilken kurs?</label>
-                <select id="course-select" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px;">
-                    <option value="matematik_1c">Matematik 1c</option>
-                    <option value="matematik_2c">Matematik 2c</option>
-                    <option value="matematik_3c">Matematik 3c</option>
+                <h3 style="color: #003C58;">1. Kurs & Material 📚</h3>
+                <p style="font-size: 0.85em; color: #0097CA; margin-bottom: 15px;">Plan för: <span id="display-title" style="font-weight:bold;"></span></p>
+                
+                <label style="font-weight:bold; display:block; margin-bottom:5px;">Vilken kurs läser du?</label>
+                <select id="course-select" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px;">
+                    <optgroup label="Matematik 1">
+                        <option value="matematik_1a">Matematik 1a</option>
+                        <option value="matematik_1b">Matematik 1b</option>
+                        <option value="matematik_1c">Matematik 1c</option>
+                    </optgroup>
+                    <optgroup label="Matematik 2">
+                        <option value="matematik_2a">Matematik 2a</option>
+                        <option value="matematik_2b">Matematik 2b</option>
+                        <option value="matematik_2c">Matematik 2c</option>
+                    </optgroup>
+                    <optgroup label="Matematik 3">
+                        <option value="matematik_3a">Matematik 3a</option>
+                        <option value="matematik_3b">Matematik 3b</option>
+                        <option value="matematik_3c">Matematik 3c</option>
+                    </optgroup>
+                    <optgroup label="Avancerad">
+                        <option value="matematik_4">Matematik 4</option>
+                        <option value="matematik_5">Matematik 5</option>
+                    </optgroup>
                 </select>
-                <label>Vilken bok?</label>
-                <select id="book-select" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px;">
-                    <option value="matte_5000">Matematik 5000+</option>
-                    <option value="liber">Liber</option>
+            
+                <label style="font-weight:bold; display:block; margin-bottom:5px;">Vilken lärobok använder du?</label>
+                <select id="book-select" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
+                    <option value="m5000_gul">Matematik 5000+ (Gul)</option>
+                    <option value="m5000_rod">Matematik 5000+ (Röd)</option>
+                    <option value="m5000_bla">Matematik 5000+ (Blå)</option>
+                    <option value="liber">Liber Matematik</option>
+                    <option value="origo">Origo</option>
+                    <option value="exponent">Exponent</option>
+                    <option value="annat">Annan / Ingen bok</option>
                 </select>
-                <button onclick="nextStep(2)" style="width: 100%; background: #0097CA; color: white; border: none; padding: 12px; border-radius: 10px; margin-top: 15px; cursor: pointer;">Nästa</button>
+            
+                <button onclick="nextStep(2)" style="width: 100%; background: #0097CA; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold;">Nästa: Din nivå</button>
             </div>
     
             <div id="step2" class="step">
@@ -4906,6 +4942,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
