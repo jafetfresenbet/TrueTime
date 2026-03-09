@@ -2420,11 +2420,15 @@ DASH_TEMPLATE = """
     
         function handleMathConfirm(isMath) {
             if (isMath) {
-                // Om användaren klickar JA, gå till konfigurationen (steg 1)
-                document.getElementById('display-title').innerText = activeAssignmentTitle;
+                // 1. Uppdatera texten i nästa steg så användaren ser vilken uppgift det gäller
+                const displayTitle = document.getElementById('display-title');
+                if (displayTitle) {
+                    displayTitle.innerText = activeAssignmentTitle;
+                }
+                
+                // 2. Gå till Steg 1 (Kurs & Material)
                 nextStep(1);
             } else {
-                // Om NEJ, visa meddelandet och stäng
                 alert("PlugIt+ Studieplanerare stöder just nu endast matematik. Håll utkik efter fler ämnen snart!");
                 closeStudyModal();
             }
@@ -4871,6 +4875,7 @@ EDIT_ACTIVITY_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 
