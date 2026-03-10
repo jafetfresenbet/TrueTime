@@ -1394,48 +1394,92 @@ def mark_guide_seen():
 def generate_plan():
     try:
         data = request.json
-        course = data.get('course') 
+        course = data.get('course')
         pdf_path = f"books/{course}.pdf"
 
-        print(f"DEBUG: Försöker läsa lokal fil: {pdf_path}") # Detta syns i dina logs
-
-        # 1. Kontrollera om filen finns
+        # 1. Kontrollera om PDF-filen finns
         if not os.path.exists(pdf_path):
-            return jsonify({"success": False, "error": f"Filen {pdf_path} saknas."}), 400
+            return jsonify({
+                "success": False, 
+                "error": f"Hittade inte boken för {course}. Kontrollera att filen ligger i mappen /books."
+            }), 400
 
-        # 2. Extrahera text lokalt med PyPDF2 (Ingen uppladdning till Google!)
+        # 2. Läs text från PDF lokalt (första 10 sidorna för kontext)
         book_context = ""
         try:
             with open(pdf_path, "rb") as f:
                 reader = PyPDF2.PdfReader(f, strict=False)
-                # Vi läser bara de första 10 sidorna för att vara snabba och säkra
+                # Vi läser de första 10 sidorna (oftast index + intro)
                 pages_to_read = min(len(reader.pages), 10)
                 for i in range(pages_to_read):
                     text = reader.pages[i].extract_text()
                     if text:
                         book_context += text + "\n"
-        except Exception as e:
-            print(f"PDF-läsningsfel: {e}")
-            book_context = "Kunde inte läsa PDF, använder standardkursplan."
+            
+            if not book_context:
+                book_context = f"Standardkursplan för {course} i Sverige."
+        except Exception as pdf_err:
+            print(f"PDF-läsningsfel: {pdf_err}")
+            book_context = "Kunde inte läsa PDF-text, skapar allmän plan baserad på kursnamn."
 
-        # 3. Anrop till Groq
-        prompt = f"Skapa en studieplan för {course} baserat på: {book_context[:5000]}..."
+        # 3. Bygg prompten för Groq (Llama 3)
+        prompt = f"""
+        Du är en expert på matematik i den svenska gymnasieskolan (Matematik 5000+).
+        Använd följande utdrag från läroboken för att förstå strukturen:
+        ---
+        {book_context[:8000]}
+        ---
+        ELEVPROFIL:
+        - Kurs: {course}
+        - Nuvarande betyg: {data.get('currentGrade')}
+        - Målbetyg: {data.get('targetGrade')}
+        - Självskattning (1-4): {data.get('moduleRatings')}
+
+        UPPGIFT:
+        Skapa en konkret studieplan som en JSON-lista. Ange kapitelnamn och uppskattad tid.
         
+        Svara ENBART med JSON i detta format:
+        [
+          {{"title": "Kapitelnamn", "resource": "Sida X-Y + YT-sökord", "time": "60", "difficulty": "Medel"}}
+        ]
+        """
+
+        # 4. Anropa Groq API
         completion = groq_client.chat.completions.create(
             model="llama3-70b-8192",
             messages=[
-                {"role": "system", "content": "Du är en studiecoach som svarar med strikt JSON-lista."},
+                {"role": "system", "content": "Du är en assistent som endast svarar i strikt JSON-format."},
                 {"role": "user", "content": prompt}
             ],
+            temperature=0.2,
             response_format={"type": "json_object"}
         )
 
-        plan_data = json.loads(completion.choices[0].message.content)
-        return jsonify({"success": True, "plan": plan_data})
+        # 5. Hantera svaret
+        raw_text = completion.choices[0].message.content
+        ai_plan = json.loads(raw_text)
+
+        # Groq/Llama kan ibland lägga listan i ett objekt, t.ex. {"plan": [...]}
+        if isinstance(ai_plan, dict) and "plan" in ai_plan:
+            ai_plan = ai_plan["plan"]
+        elif isinstance(ai_plan, dict) and not isinstance(ai_plan, list):
+            # Om den skickar ett objekt med flera nycklar, försök hitta listan
+            for key in ai_plan:
+                if isinstance(ai_plan[key], list):
+                    ai_plan = ai_plan[key]
+                    break
+
+        return jsonify({
+            "success": True, 
+            "plan": ai_plan
+        })
 
     except Exception as e:
         print(f"FEL vid generering: {str(e)}")
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({
+            "success": False, 
+            "error": "Ett tekniskt fel uppstod vid kommunikation med Groq."
+        }), 500
 
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
