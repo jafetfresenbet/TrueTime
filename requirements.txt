@@ -11,4 +11,5 @@ itsdangerous
 twilio
 flask-apscheduler
 python-dotenv
-google-generativeai
+groq
+PyPDF2
