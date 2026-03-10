@@ -1398,89 +1398,97 @@ def generate_plan():
         data = request.json
         course = data.get('course')
         pdf_path = f"books/{course}.pdf"
+        
+        # Hämta datumen från frontenden
+        deadline = data.get('deadlineDate')
+        today = data.get('todayDate')
 
         # 1. Kontrollera om PDF-filen finns
         if not os.path.exists(pdf_path):
             return jsonify({
                 "success": False, 
-                "error": f"Hittade inte boken för {course}. Kontrollera att filen ligger i mappen /books."
+                "error": f"Hittade inte boken för {course}."
             }), 400
 
-        # 2. Läs text från PDF lokalt (första 10 sidorna för kontext)
+        # 2. Läs text från PDF lokalt
         book_context = ""
         try:
             with open(pdf_path, "rb") as f:
                 reader = PyPDF2.PdfReader(f, strict=False)
-                # Vi läser de första 10 sidorna (oftast index + intro)
                 pages_to_read = min(len(reader.pages), 10)
                 for i in range(pages_to_read):
                     text = reader.pages[i].extract_text()
                     if text:
                         book_context += text + "\n"
-            
-            if not book_context:
-                book_context = f"Standardkursplan för {course} i Sverige."
         except Exception as pdf_err:
             print(f"PDF-läsningsfel: {pdf_err}")
-            book_context = "Kunde inte läsa PDF-text, skapar allmän plan baserad på kursnamn."
+            book_context = "Standardkursplan."
 
-        # 3. Bygg prompten för Groq (Llama 3)
+        # 3. Bygg prompten med datumfokus
         prompt = f"""
-        Du är en expert på matematik i den svenska gymnasieskolan (Matematik 5000+).
-        Använd följande utdrag från läroboken för att förstå strukturen:
+        Du är en expert på matematik i den svenska gymnasieskolan.
+        Dagens datum: {today}
+        Deadline/Provdatum: {deadline}
+        
+        UPPGIFT:
+        Skapa en DAG-FÖR-DAG studieplan baserat på kapitlen i denna bok-kontext:
         ---
-        {book_context[:8000]}
+        {book_context[:6000]}
         ---
         ELEVPROFIL:
         - Kurs: {course}
-        - Nuvarande betyg: {data.get('currentGrade')}
         - Målbetyg: {data.get('targetGrade')}
-        - Självskattning (1-4): {data.get('moduleRatings')}
+        - Studiestil: {data.get('studyStyle')}
+        - Tillgänglig tid: {data.get('hoursPerDay')} timmar/dag
+        - Självskattning: {data.get('moduleRatings')}
 
-        UPPGIFT:
-        Skapa en konkret studieplan som en JSON-lista. Ange kapitelnamn och uppskattad tid.
-        
-        Svara ENBART med JSON i detta format:
-        [
-          {{"title": "Kapitelnamn", "resource": "Sida X-Y + YT-sökord", "time": "60", "difficulty": "Medel"}}
-        ]
+        INSTRUKTIONER:
+        1. Fördela studierna jämnt mellan {today} och dagen innan {deadline}.
+        2. Varje dag ska ha specifika sidnummer och ett ämne.
+        3. Svara med en JSON-lista där varje objekt representerar en dag.
+
+        SVARFORMAT (Strikt JSON):
+        {{
+          "plan": [
+            {{
+              "date": "YYYY-MM-DD",
+              "title": "Ämne för dagen",
+              "resource": "Sida X-Y + YT-sökord",
+              "time": "{data.get('hoursPerDay')}h",
+              "difficulty": "Medel"
+            }}
+          ]
+        }}
         """
 
         # 4. Anropa Groq API
         completion = groq_client.chat.completions.create(
             model="openai/gpt-oss-120b",
             messages=[
-                {"role": "system", "content": "Du är en assistent som endast svarar i strikt JSON-format."},
+                {"role": "system", "content": "Du är en studieplanerare som endast svarar i strikt JSON-format."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.2,
+            temperature=0.3, # Lite högre för bättre kreativitet i schemaläggningen
             response_format={"type": "json_object"}
         )
 
         # 5. Hantera svaret
         raw_text = completion.choices[0].message.content
-        ai_plan = json.loads(raw_text)
-
-        # Groq/Llama kan ibland lägga listan i ett objekt, t.ex. {"plan": [...]}
-        if isinstance(ai_plan, dict) and "plan" in ai_plan:
-            ai_plan = ai_plan["plan"]
-        elif isinstance(ai_plan, dict) and not isinstance(ai_plan, list):
-            # Om den skickar ett objekt med flera nycklar, försök hitta listan
-            for key in ai_plan:
-                if isinstance(ai_plan[key], list):
-                    ai_plan = ai_plan[key]
-                    break
+        ai_data = json.loads(raw_text)
+        
+        # Säkerställ att vi skickar en ren lista till frontenden
+        final_plan = ai_data.get("plan", ai_data)
 
         return jsonify({
             "success": True, 
-            "plan": ai_plan
+            "plan": final_plan
         })
 
     except Exception as e:
         print(f"FEL vid generering: {str(e)}")
         return jsonify({
             "success": False, 
-            "error": "Ett tekniskt fel uppstod vid kommunikation med Groq."
+            "error": str(e)
         }), 500
 
 # ---------- Templates ----------
@@ -2601,6 +2609,8 @@ DASH_TEMPLATE = """
                 targetGrade: document.getElementById('grade-goal').value,
                 hoursPerDay: document.getElementById('hours-range').value,
                 studyStyle: document.getElementById('study-style').value,
+                eadlineDate: document.getElementById('deadline-date').value,
+                todayDate: new Date().toISOString().split('T')[0],
                 moduleRatings: ratings
             };
         
@@ -2629,6 +2639,7 @@ DASH_TEMPLATE = """
                         stepDiv.style.cssText = "background: #f0f7fa; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid #0097CA;";
                         
                         stepDiv.innerHTML = `
+                            <div style="font-weight: bold; color: #0097CA; font-size: 0.8em; margin-bottom: 5px;">📅 ${item.date || 'Info saknas'}</div>
                             <h4 style="margin: 0 0 5px 0; color: #003C58;">${index + 1}. ${item.title}</h4>
                             <p style="margin: 5px 0; font-size: 0.9em;"><strong>📖 Material:</strong> ${item.resource}</p>
                             <div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #666; margin-top: 10px;">
@@ -2723,6 +2734,10 @@ DASH_TEMPLATE = """
     
             <div id="step4" class="step">
                 <h3 style="color: #003C58;">4. Tid & Strategi ⏱️</h3>
+                
+                <label style="font-weight:bold; display:block; margin-bottom:5px;">När är provet/deadline?</label>
+                <input type="date" id="deadline-date" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
+                
                 <label>Hur många timmar kan du lägga per dag?</label>
                 <div style="display: flex; align-items: center; gap: 10px; margin: 15px 0;">
                     <input type="range" id="hours-range" min="0.5" max="6" step="0.5" value="2" oninput="updateHourDisplay(this.value)" style="flex: 1;">
