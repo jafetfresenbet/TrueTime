@@ -64,8 +64,7 @@ mail = Mail(app)
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 
 # Konfigurera API
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-model = genai.GenerativeModel('gemini-1.5-flash') # 'flash' är snabb och billig
+groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 # ---------- Models ----------
 class User(db.Model):
