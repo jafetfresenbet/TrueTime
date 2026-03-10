@@ -1446,7 +1446,7 @@ def generate_plan():
 
         # 4. Anropa Groq API
         completion = groq_client.chat.completions.create(
-            model="llama3-70b-8192",
+            model="llama-3.3-70b-specdec",
             messages=[
                 {"role": "system", "content": "Du är en assistent som endast svarar i strikt JSON-format."},
                 {"role": "user", "content": prompt}
