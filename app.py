@@ -23,7 +23,8 @@ import math
 
 from flask_apscheduler import APScheduler
 
-import google.generativeai as genai
+from groq import Groq
+import PyPDF2 
 
 # ---------- Konfiguration ----------
 DATABASE = 'mvp.db'
