@@ -1394,78 +1394,48 @@ def mark_guide_seen():
 def generate_plan():
     try:
         data = request.json
-        course = data.get('course')
-        
-        # 1. Kontrollera om vi har PDF-filen för den valda kursen
-        # Vi utgår från att filerna heter t.ex. matematik_1c.pdf i mappen books
+        course = data.get('course') 
         pdf_path = f"books/{course}.pdf"
-        
+
+        print(f"DEBUG: Försöker läsa lokal fil: {pdf_path}") # Detta syns i dina logs
+
+        # 1. Kontrollera om filen finns
         if not os.path.exists(pdf_path):
-            return jsonify({
-                "success": False, 
-                "error": "Vi har tyvärr inte hunnit lägga till stöd för denna kurs ännu. Just nu fungerar Matematik 1c, 2c, 3c och 4."
-            }), 400
+            return jsonify({"success": False, "error": f"Filen {pdf_path} saknas."}), 400
 
-        # 2. Förbered innehållet som ska skickas till Gemini
-        # Vi skapar en lista som innehåller både PDF-filen och instruktionerna
-        content_to_send = []
+        # 2. Extrahera text lokalt med PyPDF2 (Ingen uppladdning till Google!)
+        book_context = ""
+        try:
+            with open(pdf_path, "rb") as f:
+                reader = PyPDF2.PdfReader(f, strict=False)
+                # Vi läser bara de första 10 sidorna för att vara snabba och säkra
+                pages_to_read = min(len(reader.pages), 10)
+                for i in range(pages_to_read):
+                    text = reader.pages[i].extract_text()
+                    if text:
+                        book_context += text + "\n"
+        except Exception as e:
+            print(f"PDF-läsningsfel: {e}")
+            book_context = "Kunde inte läsa PDF, använder standardkursplan."
+
+        # 3. Anrop till Groq
+        prompt = f"Skapa en studieplan för {course} baserat på: {book_context[:5000]}..."
         
-        # Ladda upp PDF:en till Gemini (temporärt för detta anrop)
-        print(f"Laddar upp {pdf_path} till Gemini...")
-        uploaded_pdf = genai.upload_file(path=pdf_path, display_name=f"Bok {course}")
-        content_to_send.append(uploaded_pdf)
+        completion = groq_client.chat.completions.create(
+            model="llama3-70b-8192",
+            messages=[
+                {"role": "system", "content": "Du är en studiecoach som svarar med strikt JSON-lista."},
+                {"role": "user", "content": prompt}
+            ],
+            response_format={"type": "json_object"}
+        )
 
-        # 3. Bygg den specifika instruktionen (Prompten)
-        prompt = f"""
-        Du är en expert på matematik i den svenska gymnasieskolan.
-        Använd den bifogade PDF-filen (Matematik 5000+) för att skapa en studieplan.
-        
-        ELEVPROFIL:
-        - Kurs: {course}
-        - Nuvarande betyg: {data['currentGrade']}
-        - Målbetyg: {data['targetGrade']}
-        - Studiestil: {data['studyStyle']}
-        - Elevens självskattning av områden (1=behöver mycket hjälp, 4=kan bra): {data['moduleRatings']}
-
-        DIN UPPGIFT:
-        Skapa en konkret plan. Du MÅSTE ange exakta sidnummer och kapitelrubriker från den bifogade boken.
-        Anpassa planen efter elevens mål och självskattning. Om eleven har '1' på ett område, ge fler uppgifter och videoförslag där.
-
-        SVARFORMAT:
-        Svara ENBART med en JSON-lista (inga andra ord eller markdown-formatering).
-        [
-          {{"title": "Kapitelnamn/Moment", "resource": "Sida X-Y + YT-sökord", "time": "Tid i minuter", "difficulty": "Enkel/Medel/Svår"}}
-        ]
-        """
-        content_to_send.append(prompt)
-
-        # 4. Anropa Gemini 1.5 Flash (snabb och bra på PDF)
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        response = model.generate_content(content_to_send)
-        
-        # 5. Tvätta och tolka svaret
-        raw_text = response.text.strip()
-        
-        # Ta bort markdown-kodblock om AI:n råkade skicka med sådana
-        if "```json" in raw_text:
-            raw_text = raw_text.split("```json")[1].split("```")[0].strip()
-        elif "```" in raw_text:
-            raw_text = raw_text.split("```")[1].split("```")[0].strip()
-            
-        ai_plan = json.loads(raw_text)
-
-        return jsonify({
-            "success": True, 
-            "plan": ai_plan
-        })
+        plan_data = json.loads(completion.choices[0].message.content)
+        return jsonify({"success": True, "plan": plan_data})
 
     except Exception as e:
         print(f"FEL vid generering: {str(e)}")
-        return jsonify({
-            "success": False, 
-            "error": "Ett tekniskt fel uppstod när AI:n skulle läsa boken."
-        }), 500
-
+        return jsonify({"success": False, "error": str(e)}), 500
 
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
