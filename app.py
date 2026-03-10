@@ -21,6 +21,8 @@ from threading import Thread  # Ersätter RQ
 from twilio.rest import Client
 import math
 
+import json
+
 from flask_apscheduler import APScheduler
 
 from groq import Groq
