@@ -2618,9 +2618,29 @@ DASH_TEMPLATE = """
                 
                 if (result.success) {
                     console.log("Plan genererad:", result.plan);
-                    // Här kommer vi senare lägga till kod för att visa planen på skärmen!
-                    alert("Planen är klar! Kolla konsolen för att se resultatet.");
-                    closeStudyModal();
+                    
+                    // 1. Hitta containern för resultatet
+                    const resultContainer = document.getElementById('plan-result-content');
+                    resultContainer.innerHTML = ""; // Rensa gammalt innehåll
+
+                    // 2. Bygg listan snyggt
+                    result.plan.forEach((item, index) => {
+                        const stepDiv = document.createElement('div');
+                        stepDiv.style.cssText = "background: #f0f7fa; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid #0097CA;";
+                        
+                        stepDiv.innerHTML = `
+                            <h4 style="margin: 0 0 5px 0; color: #003C58;">${index + 1}. ${item.title}</h4>
+                            <p style="margin: 5px 0; font-size: 0.9em;"><strong>📖 Material:</strong> ${item.resource}</p>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #666; margin-top: 10px;">
+                                <span>⏱️ ${item.time} min</span>
+                                <span style="background: #e0e0e0; padding: 2px 8px; border-radius: 10px;">${item.difficulty}</span>
+                            </div>
+                        `;
+                        resultContainer.appendChild(stepDiv);
+                    });
+
+                    // 3. Gå till det nya steget (Steg 5)
+                    nextStep(5);
                 }
             } catch (error) {
                 console.error("Fel vid generering:", error);
@@ -2717,6 +2737,17 @@ DASH_TEMPLATE = """
                 </select>
                 <button onclick="generateFinalPlan()" style="width: 100%; background: #28a745; color: white; border: none; padding: 15px; border-radius: 10px; margin-top: 20px; cursor: pointer; font-weight: bold;">Skapa Studieplan! 🚀</button>
             </div>
+
+            <div id="step5" class="step">
+                <h2 style="color: #003C58; margin-bottom: 10px;">Din AI-Plan är klar! ✨</h2>
+                <p style="font-size: 0.85em; color: #666; margin-bottom: 20px;">Här är din personliga väg mot målet:</p>
+                
+                <div id="plan-result-content" style="max-height: 400px; overflow-y: auto; padding-right: 5px; margin-bottom: 20px;">
+                    </div>
+
+                <button onclick="closeStudyModal()" style="width: 100%; background: #28a745; color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: bold;">Nu kör vi! 🏁</button>
+            </div>
+            
     
             <button onclick="closeStudyModal()" style="margin-top: 15px; background: none; border: none; color: #999; cursor: pointer; font-size: 0.8em; width: 100%;">Avbryt</button>
         </div>
