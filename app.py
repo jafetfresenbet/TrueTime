@@ -1398,98 +1398,77 @@ def generate_plan():
         data = request.json
         course = data.get('course')
         pdf_path = f"books/{course}.pdf"
-        
-        # Hämta datumen från frontenden
         deadline = data.get('deadlineDate')
         today = data.get('todayDate')
 
-        # 1. Kontrollera om PDF-filen finns
-        if not os.path.exists(pdf_path):
-            return jsonify({
-                "success": False, 
-                "error": f"Hittade inte boken för {course}."
-            }), 400
+        # 1. Beräkna exakt antal dagar (Python sköter matten, inte AI:n)
+        d1 = datetime.strptime(today, "%Y-%m-%d")
+        d2 = datetime.strptime(deadline, "%Y-%m-%d")
+        delta_days = (d2 - d1).days
 
-        # 2. Läs text från PDF lokalt
+        if delta_days <= 0:
+            return jsonify({"success": False, "error": "Deadline måste vara i framtiden!"}), 400
+
+        # 2. Läs PDF (Samma som förut men vi ökar kontexten lite)
         book_context = ""
-        try:
+        if os.path.exists(pdf_path):
             with open(pdf_path, "rb") as f:
-                reader = PyPDF2.PdfReader(f, strict=False)
-                pages_to_read = min(len(reader.pages), 10)
-                for i in range(pages_to_read):
-                    text = reader.pages[i].extract_text()
-                    if text:
-                        book_context += text + "\n"
-        except Exception as pdf_err:
-            print(f"PDF-läsningsfel: {pdf_err}")
-            book_context = "Standardkursplan."
+                reader = PyPDF2.PdfReader(f)
+                # Vi läser de första 15 sidorna för att garanterat få med hela indexet
+                for i in range(min(len(reader.pages), 15)):
+                    book_context += reader.pages[i].extract_text() + "\n"
 
-        # 3. Bygg prompten med datumfokus
+        # 3. Den kraftfulla prompten
         prompt = f"""
-        Du är en expert på matematik i den svenska gymnasieskolan.
-        Dagens datum: {today}
-        Deadline/Provdatum: {deadline}
+        Du är en studiecoach för Matematik 5000+. 
+        Period: {today} till {deadline} ({delta_days} dagar).
         
+        DIN KARTA (Innehållsförteckning):
+        {book_context[:7000]}
+
         UPPGIFT:
-        Skapa en DAG-FÖR-DAG studieplan baserat på kapitlen i denna bok-kontext:
-        ---
-        {book_context[:6000]}
-        ---
-        ELEVPROFIL:
-        - Kurs: {course}
-        - Målbetyg: {data.get('targetGrade')}
-        - Studiestil: {data.get('studyStyle')}
-        - Tillgänglig tid: {data.get('hoursPerDay')} timmar/dag
-        - Självskattning: {data.get('moduleRatings')}
+        Skapa en studieplan med EXAKT {delta_days} dagsplaner. 
+        Varje dag SKA innehålla en blandning av läsning, räkning och video.
 
-        INSTRUKTIONER:
-        1. Fördela studierna jämnt mellan {today} och dagen innan {deadline}.
-        2. Varje dag ska ha specifika sidnummer och ett ämne.
-        3. Svara med en JSON-lista där varje objekt representerar en dag.
+        REGLER:
+        1. Matcha sidnummer strikt mot innehållsförteckningen ovan.
+        2. Inkludera en YouTube-söklink för varje dag baserat på ämnet.
+        3. Sista 2 dagarna ska vara repetition.
 
-        SVARFORMAT (Strikt JSON):
+        SVARFORMAT (JSON):
         {{
           "plan": [
             {{
               "date": "YYYY-MM-DD",
-              "title": "Ämne för dagen",
-              "resource": "Sida X-Y + YT-sökord",
-              "time": "{data.get('hoursPerDay')}h",
-              "difficulty": "Medel"
+              "title": "Ämne",
+              "activities": [
+                {{"type": "läs", "content": "Sidorna X-Y"}},
+                {{"type": "räkna", "content": "Uppgift A-B"}},
+                {{"type": "video", "url": "https://www.youtube.com/results?search_query=..."}}
+              ],
+              "time": "{data.get('hoursPerDay')}h"
             }}
           ]
         }}
         """
 
-        # 4. Anropa Groq API
+        # 4. Anropet
         completion = groq_client.chat.completions.create(
             model="openai/gpt-oss-120b",
             messages=[
-                {"role": "system", "content": "Du är en studieplanerare som endast svarar i strikt JSON-format."},
+                {"role": "system", "content": "Du är en assistent som planerar studier dag-för-dag i strikt JSON."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.3, # Lite högre för bättre kreativitet i schemaläggningen
+            temperature=0.2,
             response_format={"type": "json_object"}
         )
 
-        # 5. Hantera svaret
-        raw_text = completion.choices[0].message.content
-        ai_data = json.loads(raw_text)
-        
-        # Säkerställ att vi skickar en ren lista till frontenden
-        final_plan = ai_data.get("plan", ai_data)
-
-        return jsonify({
-            "success": True, 
-            "plan": final_plan
-        })
+        ai_data = json.loads(completion.choices[0].message.content)
+        return jsonify({"success": True, "plan": ai_data.get("plan", [])})
 
     except Exception as e:
-        print(f"FEL vid generering: {str(e)}")
-        return jsonify({
-            "success": False, 
-            "error": str(e)
-        }), 500
+        print(f"FEL: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
 
 # ---------- Templates ----------
 # För enkelhet använder jag inline templates. Byt gärna till riktiga filer senare.
@@ -2629,29 +2608,32 @@ DASH_TEMPLATE = """
                 if (result.success) {
                     console.log("Plan genererad:", result.plan);
                     
-                    // 1. Hitta containern för resultatet
                     const resultContainer = document.getElementById('plan-result-content');
-                    resultContainer.innerHTML = ""; // Rensa gammalt innehåll
+                    resultContainer.innerHTML = ""; 
 
-                    // 2. Bygg listan snyggt
-                    result.plan.forEach((item, index) => {
+                    // HÄR ÄR DEN NYA KODEN SOM RITAR UT AKTIVITETERNA
+                    result.plan.forEach((day) => {
                         const stepDiv = document.createElement('div');
                         stepDiv.style.cssText = "background: #f0f7fa; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid #0097CA;";
                         
+                        // Skapa listan med aktiviteter (läs, räkna, video)
+                        let activityHtml = day.activities.map(act => {
+                            if(act.type === 'video') return `<li style="list-style:none;">🎥 <a href="${act.url}" target="_blank" style="color:#0097CA; text-decoration:none; font-weight:bold;">Se videogenomgång</a></li>`;
+                            if(act.type === 'läs') return `<li style="list-style:none;">📖 <b>Läs:</b> ${act.content}</li>`;
+                            if(act.type === 'räkna') return `<li style="list-style:none;">✏️ <b>Räkna:</b> ${act.content}</li>`;
+                            return `<li style="list-style:none;">• ${act.content}</li>`;
+                        }).join('');
+
                         stepDiv.innerHTML = `
-                            <div style="font-weight: bold; color: #0097CA; font-size: 0.8em; margin-bottom: 5px;">📅 ${item.date || 'Info saknas'}</div>
-                            <h4 style="margin: 0 0 5px 0; color: #003C58;">${index + 1}. ${item.title}</h4>
-                            <p style="margin: 5px 0; font-size: 0.9em;"><strong>📖 Material:</strong> ${item.resource}</p>
-                            <div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #666; margin-top: 10px;">
-                                <span>⏱️ ${item.time} min</span>
-                                <span style="background: #e0e0e0; padding: 2px 8px; border-radius: 10px;">${item.difficulty}</span>
-                            </div>
+                            <div style="color: #0097CA; font-weight: bold; font-size: 0.8em; margin-bottom: 5px;">📅 ${day.date}</div>
+                            <h4 style="margin: 0 0 10px 0; color: #003C58;">${day.title}</h4>
+                            <ul style="margin: 0; padding: 0; font-size: 0.9em; line-height: 1.6;">${activityHtml}</ul>
+                            <div style="margin-top: 10px; font-size: 0.8em; color: #666;">⏱️ Tid: ${day.time}</div>
                         `;
                         resultContainer.appendChild(stepDiv);
                     });
 
-                    // 3. Gå till det nya steget (Steg 5)
-                    nextStep(5);
+                    nextStep(5); // Gå till resultatvyn
                 }
             } catch (error) {
                 console.error("Fel vid generering:", error);
