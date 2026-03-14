@@ -2603,7 +2603,7 @@ DASH_TEMPLATE = """
                 targetGrade: document.getElementById('grade-goal').value,
                 hoursPerDay: document.getElementById('hours-range').value,
                 studyStyle: document.getElementById('study-style').value,
-                eadlineDate: document.getElementById('deadline-date').value,
+                deadlineDate: document.getElementById('deadline-date').value,
                 todayDate: new Date().toISOString().split('T')[0],
                 moduleRatings: ratings
             };
