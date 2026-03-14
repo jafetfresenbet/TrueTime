@@ -2283,18 +2283,22 @@ DASH_TEMPLATE = """
             }
 
             .spinner {
-                width: 50px;
-                height: 50px;
-                border: 5px solid #f3f3f3;
-                border-top: 5px solid #0097CA;
+                width: 40px;
+                height: 40px;
+                border: 4px solid rgba(0, 151, 202, 0.1);
+                border-left-color: #0097CA; /* Färgen på den snurrande delen */
                 border-radius: 50%;
                 animation: spin 1s linear infinite;
-                margin: 0 auto;
+                margin: 20px auto;
             }
             
             @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
+                to { transform: rotate(360deg); }
+            }
+            
+            /* Säkerställ att .step.active visar elementet som flex/block */
+            .step.active {
+                display: block !important;
             }
         }
     </style>
@@ -2609,7 +2613,7 @@ DASH_TEMPLATE = """
             };
         
             // 2. VISA LADDNINGS-STEGET (Ersätt din gamla alert här)
-            nextStep('-loading'); // Anropar #step-loading
+            nextStep("-loading"); // Anropar #step-loading
         
             try {
                 const response = await fetch('/generate_plan', {
