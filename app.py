@@ -2281,6 +2281,21 @@ DASH_TEMPLATE = """
                 padding: 10px 20px; border-radius: 20px; cursor: pointer;
                 margin-top: 20px; font-weight: bold;
             }
+
+            .spinner {
+                width: 50px;
+                height: 50px;
+                border: 5px solid #f3f3f3;
+                border-top: 5px solid #0097CA;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin: 0 auto;
+            }
+            
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
         }
     </style>
 </head>
@@ -2593,8 +2608,8 @@ DASH_TEMPLATE = """
                 moduleRatings: ratings
             };
         
-            // 2. Visa laddnings-skärm (valfritt men bra)
-            alert("Genererar din personliga AI-plan... Detta kan ta några sekunder.");
+            // 2. VISA LADDNINGS-STEGET (Ersätt din gamla alert här)
+            nextStep('-loading'); // Anropar #step-loading
         
             try {
                 const response = await fetch('/generate_plan', {
@@ -2634,10 +2649,14 @@ DASH_TEMPLATE = """
                     });
 
                     nextStep(5); // Gå till resultatvyn
+                } else {
+                    alert("Fel: " + result.error);
+                    nextStep(4); // Gå tillbaka om det sket sig
                 }
             } catch (error) {
-                console.error("Fel vid generering:", error);
-                alert("Något gick fel när planen skulle skapas.");
+                console.error("Fel:", error);
+                alert("Kunde inte kontakta servern.");
+                nextStep(4);
             }
         }
     
@@ -2733,6 +2752,12 @@ DASH_TEMPLATE = """
                     <option value="theory">Theory First (Fokus på koncept)</option>
                 </select>
                 <button onclick="generateFinalPlan()" style="width: 100%; background: #28a745; color: white; border: none; padding: 15px; border-radius: 10px; margin-top: 20px; cursor: pointer; font-weight: bold;">Skapa Studieplan! 🚀</button>
+            </div>
+
+            <div id="step-loading" class="step" style="text-align: center; padding: 40px 0;">
+                <div class="spinner"></div>
+                <h3 style="color: #003C58; margin-top: 20px;">Skapar din studieplan...</h3>
+                <p style="color: #666; font-size: 0.9em;">AI:n läser din bok och fördelar uppgifterna fram till deadline.</p>
             </div>
 
             <div id="step5" class="step">
