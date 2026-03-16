@@ -29,6 +29,36 @@ from groq import Groq
 import PyPDF2 
 
 # ---------- Konfiguration ----------
+
+BOOK_MAPS = {
+    "Matematik 1c": {
+        "Aritmetik": {"start": 8, "end": 65},
+        "Procent": {"start": 66, "end": 113},
+        "Algebra": {"start": 114, "end": 183},
+        "Geometri": {"start": 184, "end": 239},
+        "Grafer och funktioner": {"start": 240, "end": 293},
+        "Sannolikhet och statistik": {"start": 294, "end": 340}
+    },
+    "Matematik 2c": {
+        "Algebra och linjära modeller": {"start": 8, "end": 79},
+        "Algebra och ickelinjära modeller": {"start": 80, "end": 167},
+        "Geometri": {"start": 168, "end": 211},
+        "Statistik": {"start": 212, "end": 259}
+    },
+    "Matematik 3c": {
+        "Algebra och funktioner": {"start": 8, "end": 71},
+        "Derivata": {"start": 72, "end": 137},
+        "Kurvor, derivata och integraler": {"start": 138, "end": 213},
+        "Trigonometri": {"start": 214, "end": 262}
+    },
+    "Matematik 4": {
+        "Trigonometri": {"start": 8, "end": 79},
+        "Derivata": {"start": 80, "end": 147},
+        "Integraler": {"start": 148, "end": 199},
+        "Komplexa tal": {"start": 200, "end": 277}
+    }
+}
+
 DATABASE = 'mvp.db'
 SECRET_KEY = 'BlirDetTrueTimePåStrawberryArenaNästaÅr?'
 DEBUG = True
@@ -1407,7 +1437,7 @@ def generate_plan():
         deadline = data.get('deadlineDate')
         today = data.get('todayDate')
 
-        # 1. Beräkna exakt antal dagar (Python sköter matten, inte AI:n)
+        # 1. Beräkna dagar
         d1 = datetime.strptime(today, "%Y-%m-%d")
         d2 = datetime.strptime(deadline, "%Y-%m-%d")
         delta_days = (d2 - d1).days
@@ -1415,76 +1445,74 @@ def generate_plan():
         if delta_days <= 0:
             return jsonify({"success": False, "error": "Deadline måste vara i framtiden!"}), 400
 
-        # 2. Läs PDF (Samma som förut men vi ökar kontexten lite)
+        # 2. Hitta relevanta sidor baserat på valda moduler
+        selected_ratings = data.get('moduleRatings', {})
+        relevant_pages = []
+        
+        if course in BOOK_MAPS:
+            for module_name in selected_ratings.keys():
+                if module_name in BOOK_MAPS[course]:
+                    m_info = BOOK_MAPS[course][module_name]
+                    # Vi lägger till start, slut och några sidor däremellan för kontext
+                    relevant_pages.extend([m_info["start"], m_info["start"] + 1, m_info["end"]])
+
+        # 3. Läs PDF (Endast de sidor som rör de valda kapitlen)
         book_context = ""
         if os.path.exists(pdf_path):
             with open(pdf_path, "rb") as f:
                 reader = PyPDF2.PdfReader(f)
-                # Vi läser de första 15 sidorna för att garanterat få med hela indexet
-                for i in range(min(len(reader.pages), 15)):
-                    book_context += reader.pages[i].extract_text() + "\n"
+                pages_to_read = sorted(list(set(relevant_pages))) # Unika, sorterade sidnummer
+                
+                # Om inga specifika kapitel valdes (t.ex. NP), läs index/start
+                if not pages_to_read:
+                    pages_to_read = range(min(len(reader.pages), 15))
 
-        bok_guide = """
-        GUIDE FÖR ATT TOLKA LÄROBOKEN (Matematik 5000+):
-        1. SIDNUMMER: Finns oftast längst ner till höger på udda sidor och vänster på jämna sidor. I textströmmen visas de ofta som en ensam siffra mellan stycken.
-        2. UPPGIFTSNUMMER: Skrivs alltid med fyra siffror (t.ex. 1205, 3410). 
-           - Första siffran indikerar kapitlet.
-           - Andra siffran indikerar avsnittet.
-        3. EXEMPEL: Sidor med grön/blå bakgrund är genomgångar. Uppgifter kommer efter dessa.
-        4. STRUKTUR: Om texten säger '1.2 Polynom', vet du att alla uppgifter som börjar på 12XX tillhör detta avsnitt.
-        """
+                for p_num in pages_to_read:
+                    if p_num < len(reader.pages):
+                        text = reader.pages[p_num].extract_text()
+                        book_context += f"\n[SIDA {p_num}]\n{text}\n"
 
-        # 3. Den kraftfulla prompten
-        
-        # Definiera bokens anatomi baserat på bilden
+        # 4. Den kraftfulla prompten
         bok_struktur_regler = """
         STRUKTURELLA REGLER FÖR ATT TOLKA TEXTEN:
         - FYRSIFFRIGA TAL (t.ex. 1115, 1121): Detta är uppgiftsnummer. 
-        - INRAMADE NUMMER: Betyder att digitala verktyg/GeoGebra krävs. Markera dessa som 'Digital uppgift' i planen.
+        - INRAMADE NUMMER: Betyder att digitala verktyg/GeoGebra krävs. Markera dessa som 'Digital uppgift'.
         - FÄRGADE SIFFROR (1, 2, 3): 
             * 1 = Grundläggande (E-nivå). 
             * 2 = Utmaning (C-nivå). 
             * 3 = Avancerad (A-nivå).
-        - SIDNUMMER: Siffror längst ner i hörnen (t.ex. '15') är sidhänvisningar, inte uppgifter.
+        - SIDNUMMER: Siffror längst ner i hörnen är sidhänvisningar.
         """
         
         prompt = f"""
         Du är en pedagogisk studiecoach för Matematik 5000+. 
-        
         {bok_struktur_regler}
         
         PERIOD: {today} till {deadline} ({delta_days} dagar).
         ELEVPROFIL:
         - Målbetyg: {data.get('targetGrade')}
-        - Studiestil: {data.get('studyStyle')}
-        - Valda kapitel/områden: {data.get('moduleRatings')}
+        - Valda kapitel och deras status: {selected_ratings}
         
-        KONTEXT FRÅN BOKEN (Innehållsförteckning & Teori):
+        KONTEXT FRÅN BOKEN (Sidor som matchar valda kapitel):
         ---
-        {book_context[:7000]}
+        {book_context[:8000]}
         ---
         
         UPPGIFT:
         Skapa en studieplan med EXAKT {delta_days} dagsplaner.
-        Fördela stoffet så att eleven hinner gå igenom alla valda områden innan deadline.
-        
-        VIKTIGA INSTRUKTIONER:
-        1. Anpassa uppgifterna efter målbetyget: 
-           - Om målbetyget är A: Inkludera fler uppgifter från svårighetsgrad '3'.
-           - Om målbetyget är E: Fokusera på svårighetsgrad '1'.
-        2. Varje dag ska innehålla en 'video'-aktivitet med en relevant sökterm på YouTube (t.ex. 'Matematik 5000+ 3c polynom').
-        3. Sista 2 dagarna före deadline ska vara repetition och gamla nationella prov.
-        
+        Anpassa svårighetsgraden på uppgifterna efter målbetyget ({data.get('targetGrade')}).
+        Varje dags 'video' ska vara en YouTube-sökning på kapitlets namn + 'Matematik 5000+'.
+
         SVARFORMAT (Strikt JSON):
         {{
           "plan": [
             {{
               "date": "YYYY-MM-DD",
-              "title": "Ämne för dagen",
+              "title": "Ämne",
               "activities": [
                 {{"type": "läs", "content": "Sida X-Y (Teori & Exempel)"}},
-                {{"type": "räkna", "content": "Uppgift A, B och C (Nivå X)"}},
-                {{"type": "video", "url": "https://www.youtube.com/results?search_query=matte+5000+..."}}
+                {{"type": "räkna", "content": "Uppgift A, B och C (Nivå 1/2/3)"}},
+                {{"type": "video", "url": "https://www.youtube.com/results?search_query=..."}}
               ],
               "time": "{data.get('hoursPerDay')}h"
             }}
@@ -1492,11 +1520,11 @@ def generate_plan():
         }}
         """
 
-        # 4. Anropet
+        # 5. Anropet
         completion = groq_client.chat.completions.create(
             model="openai/gpt-oss-120b",
             messages=[
-                {"role": "system", "content": "Du är en assistent som planerar studier dag-för-dag i strikt JSON."},
+                {"role": "system", "content": "Du är en assistent som planerar studier i strikt JSON."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.2,
