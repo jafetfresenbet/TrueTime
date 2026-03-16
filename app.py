@@ -2715,36 +2715,46 @@ DASH_TEMPLATE = """
         };
         
         function nextStep(step) {
+            // 1. Speciell logik för specifika steg INNAN vi byter vy
+            if (step === 12) {
+                renderModuleCheckboxes(); // VIKTIGT: Fyller listan innan vi visar den
+            }
+        
             if (step === 3) {
                 const container = document.getElementById('modules-container');
                 const selectedCourse = document.getElementById('course-select').value;
-                
                 container.innerHTML = ""; 
+                
                 let modulesToShow = [];
                 
                 if (examType === 'full') {
-                    // Om full kurs, hämta allt från listan
                     modulesToShow = courseModules[selectedCourse] || [];
                 } else {
-                    // Om delar, hämta bara i-bockade
-                    const checkboxes = document.querySelectorAll('.module-check:checked');
-                    checkboxes.forEach(cb => modulesToShow.push(cb.value));
+                    const checkedBoxes = document.querySelectorAll('.module-check:checked');
+                    checkedBoxes.forEach(cb => {
+                        modulesToShow.push(cb.value);
+                    });
                 }
-            
-                // Säkerhetskoll så vi inte fastnar
+        
                 if (modulesToShow.length === 0) {
-                    alert("Vänligen välj minst ett område att plugga på!");
-                    return; // Stoppar funktionen så vi inte går till nästa steg tomhänta
+                    if (examType === 'partial') {
+                        alert("Du måste bocka i minst ett område i listan!");
+                        nextStep(12); 
+                    } else {
+                        alert("Kunde inte hitta några moduler. Gå tillbaka till början.");
+                        nextStep(1);
+                    }
+                    return; // STOPPA funktionen här så vi inte aktiverar steg 3
                 }
-            
-                // Rendera stjärnorna/valen för de valda modulerna
+        
+                // Rendera rullistorna
                 modulesToShow.forEach(module => {
                     const div = document.createElement('div');
                     div.style.marginBottom = "15px";
                     div.innerHTML = `
-                        <label style="display:block; font-size:0.9em; margin-bottom:5px; font-weight:500;">${module}</label>
-                        <select class="module-rating" data-module="${module}" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: #f9f9f9;">
-                            <option value="1">🔴 Behöver lära mig från grunden</option>
+                        <label style="display:block; font-size:0.9em; margin-bottom:5px; font-weight:600;">${module}</label>
+                        <select class="module-rating" data-module="${module}" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                            <option value="1">🔴 Behöver lära mig grunderna</option>
                             <option value="2">🟠 Kan lite grann</option>
                             <option value="3">🟡 Bekväm med grunderna</option>
                             <option value="4">🟢 Behärskar det bra</option>
@@ -2754,10 +2764,20 @@ DASH_TEMPLATE = """
                 });
             }
         
-            // Visa/Dölj steg
+            // 2. Visa/Dölj steg (Denna del körs bara om vi inte gjort en 'return' ovan)
             document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-            const target = document.getElementById('step' + step);
-            if (target) target.classList.add('active');
+            
+            // Hantera både siffror och strängar (t.ex. 12 eller '1-5')
+            const targetId = 'step' + step;
+            const target = document.getElementById(targetId);
+            
+            if (target) {
+                target.classList.add('active');
+                // Scrolla upp till toppen av modalen så användaren ser början på nästa steg
+                target.scrollTop = 0; 
+            } else {
+                console.error("Hittade inte elementet: " + targetId);
+            }
         }
     
         function closeStudyModal() {
@@ -3050,26 +3070,29 @@ DASH_TEMPLATE = """
     }
     
     function renderModuleCheckboxes() {
-        const selectedCourse = document.getElementById('course-select').value;
+        // 1. Hämta vald kurs
+        const courseSelect = document.getElementById('course-select');
+        if (!courseSelect) return;
+        
+        const selectedCourse = courseSelect.value;
         const modules = courseModules[selectedCourse] || [];
         const container = document.getElementById('specific-modules-selection');
         
+        if (!container) return;
+    
         container.innerHTML = "";
+        
+        if (modules.length === 0) {
+            container.innerHTML = "<p style='color:red;'>Kunde inte ladda områden. Kontrollera kursvalet.</p>";
+            return;
+        }
+    
         modules.forEach(module => {
             const div = document.createElement('div');
-            div.style.cssText = "display: flex; align-items: center; gap: 12px; padding: 10px; border-bottom: 1px solid #f0f0f0; cursor: pointer;";
-            
-            // Gör hela raden klickbar
-            div.onclick = (e) => {
-                if (e.target.type !== 'checkbox') {
-                    const cb = div.querySelector('input');
-                    cb.checked = !cb.checked;
-                }
-            };
-    
+            div.style.cssText = "display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #eee;";
             div.innerHTML = `
-                <input type="checkbox" class="module-check" value="${module}" id="check-${module}" style="transform: scale(1.2);">
-                <label for="check-${module}" style="cursor:pointer; font-size: 0.9em; color: #333; flex: 1;">${module}</label>
+                <input type="checkbox" class="module-check" value="${module}" id="check-${module.replace(/\s+/g, '')}">
+                <label for="check-${module.replace(/\s+/g, '')}" style="flex:1; cursor:pointer;">${module}</label>
             `;
             container.appendChild(div);
         });
