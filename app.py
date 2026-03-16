@@ -32,30 +32,92 @@ import PyPDF2
 
 BOOK_MAPS = {
     "Matematik 1c": {
-        "Aritmetik": {"start": 8, "end": 65},
+        "Aritmetik - Om tal": {"start": 8, "end": 65},
+        "Hela tal": {"start": 11, "end": 24},
+        "Rationella och reella tal": {"start": 25, "end": 39},
+        "Tal i potensform": {"start": 40, "end": 53},
+        "Problemlösning (Aritmetik)": {"start": 54, "end": 65},
         "Procent": {"start": 66, "end": 113},
+        "Andelen, delen och det hela": {"start": 68, "end": 74},
+        "Procentuella förändringar": {"start": 75, "end": 88},
+        "Lån och index": {"start": 89, "end": 113},
         "Algebra": {"start": 114, "end": 183},
+        "Algebraiska uttryck": {"start": 116, "end": 125},
+        "Linjära ekvationer och olikheter": {"start": 126, "end": 143},
+        "Potensekvationer": {"start": 144, "end": 155},
+        "Formler och mönster": {"start": 156, "end": 167},
+        "Undersök och bevisa": {"start": 168, "end": 183},
         "Geometri": {"start": 184, "end": 239},
+        "Geometri och algebra": {"start": 186, "end": 192},
+        "Geometri och bevis": {"start": 193, "end": 210},
+        "Trigonometri (1c)": {"start": 211, "end": 218},
+        "Vektorer": {"start": 219, "end": 239},
         "Grafer och funktioner": {"start": 240, "end": 293},
-        "Sannolikhet och statistik": {"start": 294, "end": 340}
+        "Linjära och exponentiella funktioner": {"start": 242, "end": 263},
+        "Funktioner och matematiska modeller": {"start": 264, "end": 293},
+        "Sannolikhet och statistik": {"start": 294, "end": 340},
+        "Enkla slumpförsök": {"start": 296, "end": 301},
+        "Slumpförsök i flera steg": {"start": 302, "end": 317},
+        "Statistik": {"start": 318, "end": 340}
     },
     "Matematik 2c": {
         "Algebra och linjära modeller": {"start": 8, "end": 79},
+        "Algebra och funktioner": {"start": 10, "end": 23},
+        "Räta linjens ekvation": {"start": 24, "end": 38},
+        "Modeller och anpassningar": {"start": 39, "end": 47},
+        "Linjära ekvationssystem": {"start": 48, "end": 79},
         "Algebra och ickelinjära modeller": {"start": 80, "end": 167},
-        "Geometri": {"start": 168, "end": 211},
-        "Statistik": {"start": 212, "end": 259}
+        "Algebraiska identiteter": {"start": 82, "end": 92},
+        "Andragradsekvationer": {"start": 93, "end": 115},
+        "Andragradsfunktioner": {"start": 116, "end": 132},
+        "Exponentialfunktioner och logaritmer": {"start": 133, "end": 167},
+        "Geometri (2c)": {"start": 168, "end": 211},
+        "Vinklar": {"start": 170, "end": 179},
+        "Likformighet": {"start": 180, "end": 193},
+        "Koordinatgeometri": {"start": 194, "end": 211},
+        "Statistik (2c)": {"start": 212, "end": 259},
+        "Statistiska metoder": {"start": 214, "end": 223},
+        "Spridning och fördelning": {"start": 224, "end": 243},
+        "Modellering": {"start": 244, "end": 259}
     },
     "Matematik 3c": {
         "Algebra och funktioner": {"start": 8, "end": 71},
+        "Algebra och polynom": {"start": 10, "end": 28},
+        "Rationella uttryck": {"start": 29, "end": 41},
+        "Funktioner": {"start": 42, "end": 71},
         "Derivata": {"start": 72, "end": 137},
+        "Ändringskvoter och derivata": {"start": 74, "end": 92},
+        "Deriveringsregler": {"start": 93, "end": 108},
+        "Derivatan av exponentialfunktioner": {"start": 109, "end": 137},
         "Kurvor, derivata och integraler": {"start": 138, "end": 213},
-        "Trigonometri": {"start": 214, "end": 262}
+        "Derivatan och grafen": {"start": 140, "end": 159},
+        "Problemlösning med derivata": {"start": 160, "end": 176},
+        "Från derivata till funktion": {"start": 177, "end": 213},
+        "Trigonometri": {"start": 214, "end": 262},
+        "Trigonometri i rätvinkliga trianglar": {"start": 216, "end": 219},
+        "Trigonometri och enhetscirkeln": {"start": 220, "end": 230},
+        "Trigonometri för godtyckliga trianglar": {"start": 231, "end": 262}
     },
     "Matematik 4": {
         "Trigonometri": {"start": 8, "end": 79},
-        "Derivata": {"start": 80, "end": 147},
+        "Trigonometri och enhetscirkeln": {"start": 10, "end": 24},
+        "Trigonometriska formler": {"start": 25, "end": 38},
+        "Trigonometriska funktioner": {"start": 39, "end": 56},
+        "Radianer": {"start": 57, "end": 79},
+        "Derivata (Matte 4)": {"start": 80, "end": 147},
+        "Deriveringsregler I": {"start": 82, "end": 95},
+        "Deriveringsregler II": {"start": 96, "end": 107},
+        "Tillämpningar av derivata": {"start": 108, "end": 124},
+        "Skissa grafer": {"start": 125, "end": 147},
         "Integraler": {"start": 148, "end": 199},
-        "Komplexa tal": {"start": 200, "end": 277}
+        "Integraler och areor": {"start": 150, "end": 167},
+        "Tillämpningar av integraler": {"start": 168, "end": 199},
+        "Komplexa tal": {"start": 200, "end": 277},
+        "Aritmetik med komplexa tal": {"start": 202, "end": 217},
+        "Komplexa tal i polär form": {"start": 218, "end": 227},
+        "Potenser och komplexa tal": {"start": 228, "end": 238},
+        "Polynomekvationer": {"start": 239, "end": 254},
+        "Bevis och bevismetoder": {"start": 255, "end": 277}
     }
 }
 
@@ -1445,32 +1507,48 @@ def generate_plan():
         if delta_days <= 0:
             return jsonify({"success": False, "error": "Deadline måste vara i framtiden!"}), 400
 
-        # 2. Hitta relevanta sidor baserat på valda moduler
+        # 2. Hitta relevanta sidor baserat på valda områden
         selected_ratings = data.get('moduleRatings', {})
-        relevant_pages = []
+        relevant_pages = set() # Vi använder set för att slippa dubbletter
         
         if course in BOOK_MAPS:
             for module_name in selected_ratings.keys():
                 if module_name in BOOK_MAPS[course]:
                     m_info = BOOK_MAPS[course][module_name]
-                    # Vi lägger till start, slut och några sidor däremellan för kontext
-                    relevant_pages.extend([m_info["start"], m_info["start"] + 1, m_info["end"]])
+                    start = m_info["start"]
+                    end = m_info["end"]
+                    
+                    # Om området är under 12 sidor, ta alla sidor
+                    if (end - start) <= 12:
+                        relevant_pages.update(range(start, end + 1))
+                    else:
+                        # Om området är stort, ta de första 6 och de sista 6 sidorna
+                        # (Ofta är teori i början och blandade övningar i slutet)
+                        relevant_pages.update(range(start, start + 7))
+                        relevant_pages.update(range(end - 5, end + 1))
 
-        # 3. Läs PDF (Endast de sidor som rör de valda kapitlen)
+        # 3. Läs PDF
         book_context = ""
         if os.path.exists(pdf_path):
             with open(pdf_path, "rb") as f:
                 reader = PyPDF2.PdfReader(f)
-                pages_to_read = sorted(list(set(relevant_pages))) # Unika, sorterade sidnummer
                 
-                # Om inga specifika kapitel valdes (t.ex. NP), läs index/start
-                if not pages_to_read:
-                    pages_to_read = range(min(len(reader.pages), 15))
+                # Sortera sidorna så vi läser dem i ordning
+                sorted_pages = sorted(list(relevant_pages))
+                
+                # Om inget valdes eller hittades, läs de första 15 sidorna som fallback
+                if not sorted_pages:
+                    sorted_pages = range(min(len(reader.pages), 15))
 
-                for p_num in pages_to_read:
+                # Begränsa till max 30 sidor totalt för att inte göra prompten för gigantisk
+                for p_num in sorted_pages[:30]:
                     if p_num < len(reader.pages):
-                        text = reader.pages[p_num].extract_text()
-                        book_context += f"\n[SIDA {p_num}]\n{text}\n"
+                        try:
+                            text = reader.pages[p_num].extract_text()
+                            if text:
+                                book_context += f"\n--- SIDA {p_num} ---\n{text}\n"
+                        except:
+                            continue
 
         # 4. Den kraftfulla prompten
         bok_struktur_regler = """
@@ -2608,17 +2686,32 @@ DASH_TEMPLATE = """
     
         // Definition av områden per kurs
         const courseModules = {
-            "matematik_1a": ["Tal och beräkningar", "Algebra", "Funktioner", "Sannolikhet och statistik", "Geometri"],
-            "matematik_1b": ["Tal och procent", "Algebra och uttryck", "Funktioner", "Statistik", "Sannolikhet"],
-            "matematik_1c": ["Tal", "Algebra", "Funktioner", "Geometri", "Sannolikhet och statistik"],
-            "matematik_2a": ["Algebra och linjära funktioner", "Ekvationssystem", "Geometri", "Statistik", "Sannolikhet"],
-            "matematik_2b": ["Algebra och linjära modeller", "Andragradsekvationer", "Geometri", "Sannolikhet och statistik"],
-            "matematik_2c": ["Algebra och funktioner", "Andragradsekvationer", "Geometri", "Sannolikhet och statistik"],
-            "matematik_3a": ["Funktioner och förändring", "Derivata", "Statistik"],
-            "matematik_3b": ["Algebra och funktioner", "Derivata", "Sannolikhet och statistik"],
-            "matematik_3c": ["Algebra och funktioner", "Derivata", "Kurvor, derivator och integraler", "Trigonometri"],
-            "matematik_4": ["Trigonometri", "Derivata och funktioner", "Integraler", "Differentialekvationer"],
-            "matematik_5": ["Diskret matematik", "Gränsvärden", "Derivata och analys", "Integraler", "Differentialekvationer"]
+            "Matematik 1c": [
+                "Aritmetik - Om tal", "Hela tal", "Rationella och reella tal", "Tal i potensform", "Problemlösning (Aritmetik)",
+                "Procent", "Andelen, delen och det hela", "Procentuella förändringar", "Lån och index",
+                "Algebra", "Algebraiska uttryck", "Linjära ekvationer och olikheter", "Potensekvationer", "Formler och mönster", "Undersök och bevisa",
+                "Geometri", "Geometri och algebra", "Geometri och bevis", "Trigonometri (1c)", "Vektorer",
+                "Grafer och funktioner", "Linjära och exponentiella funktioner", "Funktioner och matematiska modeller",
+                "Sannolikhet och statistik", "Enkla slumpförsök", "Slumpförsök i flera steg", "Statistik"
+            ],
+            "Matematik 2c": [
+                "Algebra och linjära modeller", "Algebra och funktioner", "Räta linjens ekvation", "Modeller och anpassningar", "Linjära ekvationssystem",
+                "Algebra och ickelinjära modeller", "Algebraiska identiteter", "Andragradsekvationer", "Andragradsfunktioner", "Exponentialfunktioner och logaritmer",
+                "Geometri (2c)", "Vinklar", "Likformighet", "Koordinatgeometri",
+                "Statistik (2c)", "Statistiska metoder", "Spridning och fördelning", "Modellering"
+            ],
+            "Matematik 3c": [
+                "Algebra och funktioner", "Algebra och polynom", "Rationella uttryck", "Funktioner",
+                "Derivata", "Ändringskvoter och derivata", "Deriveringsregler", "Derivatan av exponentialfunktioner",
+                "Kurvor, derivata och integraler", "Derivatan och grafen", "Problemlösning med derivata", "Från derivata till funktion",
+                "Trigonometri", "Trigonometri i rätvinkliga trianglar", "Trigonometri och enhetscirkeln", "Trigonometri för godtyckliga trianglar"
+            ],
+            "Matematik 4": [
+                "Trigonometri", "Trigonometri och enhetscirkeln", "Trigonometriska formler", "Trigonometriska funktioner", "Radianer",
+                "Derivata (Matte 4)", "Deriveringsregler I", "Deriveringsregler II", "Tillämpningar av derivata", "Skissa grafer",
+                "Integraler", "Integraler och areor", "Tillämpningar av integraler",
+                "Komplexa tal", "Aritmetik med komplexa tal", "Komplexa tal i polär form", "Potenser och komplexa tal", "Polynomekvationer", "Bevis och bevismetoder"
+            ]
         };
         
         function nextStep(step) {
@@ -2811,13 +2904,27 @@ DASH_TEMPLATE = """
             </div>
 
             <div id="step12" class="step">
-                <h3 style="color: #003C58;">Vilka områden ingår? ✅</h3>
-                <p style="font-size: 0.85em; color: #666; margin-bottom: 15px;">Bocka i de områden som provet handlar om.</p>
+                <h3 style="color: #003C58; margin-bottom: 5px;">Vilka områden ingår? ✅</h3>
+                <p style="font-size: 0.85em; color: #666; margin-bottom: 15px;">
+                    Välj de kapitel eller avsnitt som provet handlar om.
+                </p>
                 
-                <div id="specific-modules-selection" style="max-height: 250px; overflow-y: auto; margin-bottom: 20px;">
+                <div id="specific-modules-selection" style="
+                    max-height: 300px; 
+                    overflow-y: auto; 
+                    margin-bottom: 20px; 
+                    padding: 10px; 
+                    background: #fdfdfd; 
+                    border: 1px solid #eee; 
+                    border-radius: 12px;
+                    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+                ">
                     </div>
                 
-                <button onclick="nextStep(2)" style="width: 100%; background: #0097CA; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer;">Nästa: Din nivå</button>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="nextStep('1-5')" style="flex: 1; background: #eee; color: #555; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer;">Bakåt</button>
+                    <button onclick="nextStep(2)" style="flex: 2; background: #0097CA; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer;">Nästa: Din nivå</button>
+                </div>
             </div>
     
             <div id="step2" class="step">
@@ -2955,10 +3062,19 @@ DASH_TEMPLATE = """
         container.innerHTML = "";
         modules.forEach(module => {
             const div = document.createElement('div');
-            div.style.cssText = "display: flex; align-items: center; gap: 10px; margin-bottom: 10px; background: #f9f9f9; padding: 10px; border-radius: 8px;";
+            div.style.cssText = "display: flex; align-items: center; gap: 12px; padding: 10px; border-bottom: 1px solid #f0f0f0; cursor: pointer;";
+            
+            // Gör hela raden klickbar
+            div.onclick = (e) => {
+                if (e.target.type !== 'checkbox') {
+                    const cb = div.querySelector('input');
+                    cb.checked = !cb.checked;
+                }
+            };
+    
             div.innerHTML = `
-                <input type="checkbox" class="module-check" value="${module}" id="check-${module}">
-                <label for="check-${module}" style="cursor:pointer; font-size: 0.9em;">${module}</label>
+                <input type="checkbox" class="module-check" value="${module}" id="check-${module}" style="transform: scale(1.2);">
+                <label for="check-${module}" style="cursor:pointer; font-size: 0.9em; color: #333; flex: 1;">${module}</label>
             `;
             container.appendChild(div);
         });
