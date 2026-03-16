@@ -1495,7 +1495,8 @@ def generate_plan():
     try:
         data = request.json
         course = data.get('course')
-        pdf_path = f"books/{course}.pdf"
+        safe_course_name = course.lower().replace(" ", "_")
+        pdf_path = f"books/{safe_course_name}.pdf"
         deadline = data.get('deadlineDate')
         today = data.get('todayDate')
 
@@ -2881,14 +2882,12 @@ DASH_TEMPLATE = """
                 
                 <label style="font-weight:bold; display:block; margin-bottom:5px;">Välj kurs (Endast 1c-4 stöds just nu):</label>
                 <select id="course-select" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px;">
-                    <option value="matematik_1c">Matematik 1c (Stöds ✅)</option>
-                    <option value="matematik_2c">Matematik 2c (Stöds ✅)</option>
-                    <option value="matematik_3c">Matematik 3c (Stöds ✅)</option>
-                    <option value="matematik_4">Matematik 4 (Stöds ✅)</option>
+                    <option value="Matematik 1c">Matematik 1c (Stöds ✅)</option>
+                    <option value="Matematik 2c">Matematik 2c (Stöds ✅)</option>
+                    <option value="Matematik 3c">Matematik 3c (Stöds ✅)</option>
+                    <option value="Matematik 4">Matematik 4 (Stöds ✅)</option>
                     <option value="" disabled>--- Fler kurser kommer snart ---</option>
-                    <option value="matematik_1a" disabled>Matematik 1a (Kommer snart)</option>
-                    <option value="matematik_5" disabled>Matematik 5 (Kommer snart)</option>
-                </select>
+                    </select>
             
                 <label style="font-weight:bold; display:block; margin-bottom:5px;">Välj lärobok:</label>
                 <select id="book-select" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
