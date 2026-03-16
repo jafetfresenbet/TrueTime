@@ -2717,34 +2717,27 @@ DASH_TEMPLATE = """
         function nextStep(step) {
             if (step === 3) {
                 const container = document.getElementById('modules-container');
-                container.innerHTML = ""; 
+                const selectedCourse = document.getElementById('course-select').value;
                 
-                // 1. Bestäm vilka moduler som ska visas
+                container.innerHTML = ""; 
                 let modulesToShow = [];
                 
                 if (examType === 'full') {
-                    // Om det är hela kursen, hämta alla moduler för vald kurs
-                    const selectedCourse = document.getElementById('course-select').value;
+                    // Om full kurs, hämta allt från listan
                     modulesToShow = courseModules[selectedCourse] || [];
                 } else {
-                    // Om det är specifika delar, hämta bara de som bockades i i steg 1.2
-                    document.querySelectorAll('.module-check:checked').forEach(cb => {
-                        modulesToShow.push(cb.value);
-                    });
+                    // Om delar, hämta bara i-bockade
+                    const checkboxes = document.querySelectorAll('.module-check:checked');
+                    checkboxes.forEach(cb => modulesToShow.push(cb.value));
                 }
             
-                // 2. Säkerhetscheck: Om inga moduler hittades
+                // Säkerhetskoll så vi inte fastnar
                 if (modulesToShow.length === 0) {
-                    container.innerHTML = `
-                        <p style='color:red; text-align:center; padding: 20px;'>
-                            ⚠️ Inga områden valda. Gå tillbaka och välj vad du ska plugga på!
-                        </p>
-                        <button onclick="nextStep(1.5)" style="width:100%; padding:10px; border-radius:8px; border:none; background:#eee;">Gå tillbaka</button>
-                    `;
-                    return; // Stoppa här så vi inte loopar tomma listor
+                    alert("Vänligen välj minst ett område att plugga på!");
+                    return; // Stoppar funktionen så vi inte går till nästa steg tomhänta
                 }
             
-                // 3. Skapa rullistorna för de valda modulerna
+                // Rendera stjärnorna/valen för de valda modulerna
                 modulesToShow.forEach(module => {
                     const div = document.createElement('div');
                     div.style.marginBottom = "15px";
@@ -3045,12 +3038,14 @@ DASH_TEMPLATE = """
 
     function setExamType(type) {
         examType = type;
+        console.log("Vald typ:", type); // För felsökning
+        
         if (type === 'full') {
-            nextStep(2); // Gå direkt till nivå-valet
+            nextStep(2); 
         } else {
-            // Om partial, gå till ett nytt steg där vi väljer områden
-            renderModuleCheckboxes();
-            nextStep(12); // Vi ger detta steg ett unikt ID (t.ex. 12 för 1.2)
+            // VIKTIGT: Rendera listan INNAN vi byter steg
+            renderModuleCheckboxes(); 
+            nextStep(12); 
         }
     }
     
