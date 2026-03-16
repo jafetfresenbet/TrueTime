@@ -2758,11 +2758,29 @@ DASH_TEMPLATE = """
                 <button onclick="generateFinalPlan()" style="width: 100%; background: #28a745; color: white; border: none; padding: 15px; border-radius: 10px; margin-top: 20px; cursor: pointer; font-weight: bold;">Skapa Studieplan! 🚀</button>
             </div>
 
-            <div id="step-loading" class="step" style="text-align: center; padding: 40px 0;">
-                <div class="spinner"></div>
-                <h3 style="color: #003C58; margin-top: 20px;">Skapar din studieplan...</h3>
-                <p style="color: #666; font-size: 0.9em;">AI:n läser din bok och fördelar uppgifterna fram till deadline.</p>
+            <div id="step-loading" class="step" style="text-align: center; padding: 40px 20px;">
+                <div class="loading-circle" style="
+                    width: 50px; 
+                    height: 50px; 
+                    border: 5px solid #f3f3f3; 
+                    border-top: 5px solid #0097CA; 
+                    border-radius: 50%; 
+                    margin: 0 auto 20px auto;
+                    animation: spin-kf 1s linear infinite;
+                "></div>
+                
+                <h3 style="color: #003C58; margin: 0;">Skapar din studieplan...</h3>
+                <p style="color: #666; font-size: 0.9em; margin-top: 10px;">
+                    Väntar på svar från AI:n. Detta kan ta upp till 10 sekunder.
+                </p>
             </div>
+            
+            <style>
+            @keyframes spin-kf {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            </style>
 
             <div id="step5" class="step">
                 <h2 style="color: #003C58; margin-bottom: 10px;">Din AI-Plan är klar! ✨</h2>
