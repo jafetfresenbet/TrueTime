@@ -2555,17 +2555,36 @@ DASH_TEMPLATE = """
         
         function nextStep(step) {
             if (step === 3) {
-                const selectedCourse = document.getElementById('course-select').value;
-                const modules = courseModules[selectedCourse] || [];
                 const container = document.getElementById('modules-container');
-                
                 container.innerHTML = ""; 
                 
-                if (modules.length === 0) {
-                    container.innerHTML = "<p style='color:red;'>Välj en kurs i steg 1 först.</p>";
+                // 1. Bestäm vilka moduler som ska visas
+                let modulesToShow = [];
+                
+                if (examType === 'full') {
+                    // Om det är hela kursen, hämta alla moduler för vald kurs
+                    const selectedCourse = document.getElementById('course-select').value;
+                    modulesToShow = courseModules[selectedCourse] || [];
+                } else {
+                    // Om det är specifika delar, hämta bara de som bockades i i steg 1.2
+                    document.querySelectorAll('.module-check:checked').forEach(cb => {
+                        modulesToShow.push(cb.value);
+                    });
                 }
-        
-                modules.forEach(module => {
+            
+                // 2. Säkerhetscheck: Om inga moduler hittades
+                if (modulesToShow.length === 0) {
+                    container.innerHTML = `
+                        <p style='color:red; text-align:center; padding: 20px;'>
+                            ⚠️ Inga områden valda. Gå tillbaka och välj vad du ska plugga på!
+                        </p>
+                        <button onclick="nextStep(1.5)" style="width:100%; padding:10px; border-radius:8px; border:none; background:#eee;">Gå tillbaka</button>
+                    `;
+                    return; // Stoppa här så vi inte loopar tomma listor
+                }
+            
+                // 3. Skapa rullistorna för de valda modulerna
+                modulesToShow.forEach(module => {
                     const div = document.createElement('div');
                     div.style.marginBottom = "15px";
                     div.innerHTML = `
@@ -2703,7 +2722,34 @@ DASH_TEMPLATE = """
                     <option value="annat" disabled>Liber/Origo (Kommer snart)</option>
                 </select>
             
-                <button onclick="nextStep(2)" style="width: 100%; background: #0097CA; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold;">Nästa: Din nivå</button>
+                <button onclick="nextStep('1-5')" style="width: 100%; background: #0097CA; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold;">Nästa: Din nivå</button>
+            </div>
+
+            <div id="step1-5" class="step">
+                <h3 style="color: #003C58;">Vad gäller provet? 📝</h3>
+                <p style="font-size: 0.9em; color: #666;">Är det hela kursen eller bara vissa delar?</p>
+                
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+                    <button onclick="setExamType('full')" style="padding: 15px; border-radius: 10px; border: 2px solid #0097CA; background: white; cursor: pointer; text-align: left;">
+                        <b>Fullständig kurs (t.ex. NP) 🎓</b><br>
+                        <span style="font-size: 0.8em; color: #777;">Planera för alla områden i boken.</span>
+                    </button>
+                    
+                    <button onclick="setExamType('partial')" style="padding: 15px; border-radius: 10px; border: 2px solid #eee; background: white; cursor: pointer; text-align: left;">
+                        <b>Specifika områden 🎯</b><br>
+                        <span style="font-size: 0.8em; color: #777;">Välj ut exakt de kapitel du har prov på.</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="step12" class="step">
+                <h3 style="color: #003C58;">Vilka områden ingår? ✅</h3>
+                <p style="font-size: 0.85em; color: #666; margin-bottom: 15px;">Bocka i de områden som provet handlar om.</p>
+                
+                <div id="specific-modules-selection" style="max-height: 250px; overflow-y: auto; margin-bottom: 20px;">
+                    </div>
+                
+                <button onclick="nextStep(2)" style="width: 100%; background: #0097CA; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer;">Nästa: Din nivå</button>
             </div>
     
             <div id="step2" class="step">
@@ -2818,8 +2864,37 @@ DASH_TEMPLATE = """
     </div>
     
     <script>
+    let examType = "full"; // Standardval
     let currentStep = 0;
     const isAdmin = {{ 'true' if is_any_admin else 'false' }};
+
+    function setExamType(type) {
+        examType = type;
+        if (type === 'full') {
+            nextStep(2); // Gå direkt till nivå-valet
+        } else {
+            // Om partial, gå till ett nytt steg där vi väljer områden
+            renderModuleCheckboxes();
+            nextStep(12); // Vi ger detta steg ett unikt ID (t.ex. 12 för 1.2)
+        }
+    }
+    
+    function renderModuleCheckboxes() {
+        const selectedCourse = document.getElementById('course-select').value;
+        const modules = courseModules[selectedCourse] || [];
+        const container = document.getElementById('specific-modules-selection');
+        
+        container.innerHTML = "";
+        modules.forEach(module => {
+            const div = document.createElement('div');
+            div.style.cssText = "display: flex; align-items: center; gap: 10px; margin-bottom: 10px; background: #f9f9f9; padding: 10px; border-radius: 8px;";
+            div.innerHTML = `
+                <input type="checkbox" class="module-check" value="${module}" id="check-${module}">
+                <label for="check-${module}" style="cursor:pointer; font-size: 0.9em;">${module}</label>
+            `;
+            container.appendChild(div);
+        });
+    }
     
     function showStep(step) {
         currentStep = step;
