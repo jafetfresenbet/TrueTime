@@ -325,6 +325,12 @@ def calculate_priority_score(item, mode, user_skills):
         # Aktiviteter har en fast "vikt" så de flyter med naturligt
         return 1.8 / (t + 1)
 
+# En enkel mappning för att hjälpa AI:n
+def get_actual_page_mapping(pdf_page_index):
+    # Om bokens "Sida 1" är PDF-sida 7, är offseten 6.
+    offset = 2 
+    return pdf_page_index - offset
+
 # ---------- Routes ----------
 @app.route('/profile')
 @login_required
@@ -1418,33 +1424,67 @@ def generate_plan():
                 for i in range(min(len(reader.pages), 15)):
                     book_context += reader.pages[i].extract_text() + "\n"
 
+        bok_guide = """
+        GUIDE FÖR ATT TOLKA LÄROBOKEN (Matematik 5000+):
+        1. SIDNUMMER: Finns oftast längst ner till höger på udda sidor och vänster på jämna sidor. I textströmmen visas de ofta som en ensam siffra mellan stycken.
+        2. UPPGIFTSNUMMER: Skrivs alltid med fyra siffror (t.ex. 1205, 3410). 
+           - Första siffran indikerar kapitlet.
+           - Andra siffran indikerar avsnittet.
+        3. EXEMPEL: Sidor med grön/blå bakgrund är genomgångar. Uppgifter kommer efter dessa.
+        4. STRUKTUR: Om texten säger '1.2 Polynom', vet du att alla uppgifter som börjar på 12XX tillhör detta avsnitt.
+        """
+
         # 3. Den kraftfulla prompten
-        prompt = f"""
-        Du är en studiecoach för Matematik 5000+. 
-        Period: {today} till {deadline} ({delta_days} dagar).
         
-        DIN KARTA (Innehållsförteckning):
+        # Definiera bokens anatomi baserat på bilden
+        bok_struktur_regler = """
+        STRUKTURELLA REGLER FÖR ATT TOLKA TEXTEN:
+        - FYRSIFFRIGA TAL (t.ex. 1115, 1121): Detta är uppgiftsnummer. 
+        - INRAMADE NUMMER: Betyder att digitala verktyg/GeoGebra krävs. Markera dessa som 'Digital uppgift' i planen.
+        - FÄRGADE SIFFROR (1, 2, 3): 
+            * 1 = Grundläggande (E-nivå). 
+            * 2 = Utmaning (C-nivå). 
+            * 3 = Avancerad (A-nivå).
+        - SIDNUMMER: Siffror längst ner i hörnen (t.ex. '15') är sidhänvisningar, inte uppgifter.
+        """
+        
+        prompt = f"""
+        Du är en pedagogisk studiecoach för Matematik 5000+. 
+        
+        {bok_struktur_regler}
+        
+        PERIOD: {today} till {deadline} ({delta_days} dagar).
+        ELEVPROFIL:
+        - Målbetyg: {data.get('targetGrade')}
+        - Studiestil: {data.get('studyStyle')}
+        - Valda kapitel/områden: {data.get('moduleRatings')}
+        
+        KONTEXT FRÅN BOKEN (Innehållsförteckning & Teori):
+        ---
         {book_context[:7000]}
-
+        ---
+        
         UPPGIFT:
-        Skapa en studieplan med EXAKT {delta_days} dagsplaner. 
-        Varje dag SKA innehålla en blandning av läsning, räkning och video.
-
-        REGLER:
-        1. Matcha sidnummer strikt mot innehållsförteckningen ovan.
-        2. Inkludera en YouTube-söklink för varje dag baserat på ämnet.
-        3. Sista 2 dagarna ska vara repetition.
-
-        SVARFORMAT (JSON):
+        Skapa en studieplan med EXAKT {delta_days} dagsplaner.
+        Fördela stoffet så att eleven hinner gå igenom alla valda områden innan deadline.
+        
+        VIKTIGA INSTRUKTIONER:
+        1. Anpassa uppgifterna efter målbetyget: 
+           - Om målbetyget är A: Inkludera fler uppgifter från svårighetsgrad '3'.
+           - Om målbetyget är E: Fokusera på svårighetsgrad '1'.
+        2. Varje dag ska innehålla en 'video'-aktivitet med en relevant sökterm på YouTube (t.ex. 'Matematik 5000+ 3c polynom').
+        3. Sista 2 dagarna före deadline ska vara repetition och gamla nationella prov.
+        
+        SVARFORMAT (Strikt JSON):
         {{
           "plan": [
             {{
               "date": "YYYY-MM-DD",
-              "title": "Ämne",
+              "title": "Ämne för dagen",
               "activities": [
-                {{"type": "läs", "content": "Sidorna X-Y"}},
-                {{"type": "räkna", "content": "Uppgift A-B"}},
-                {{"type": "video", "url": "https://www.youtube.com/results?search_query=..."}}
+                {{"type": "läs", "content": "Sida X-Y (Teori & Exempel)"}},
+                {{"type": "räkna", "content": "Uppgift A, B och C (Nivå X)"}},
+                {{"type": "video", "url": "https://www.youtube.com/results?search_query=matte+5000+..."}}
               ],
               "time": "{data.get('hoursPerDay')}h"
             }}
