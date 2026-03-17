@@ -1519,13 +1519,16 @@ def generate_plan():
                     start = m_info["start"]
                     end = m_info["end"]
                     
-                    # Om området är under 12 sidor, ta alla sidor
-                    if (end - start) <= 12:
+                    # DEBUG: Detta kommer synas i dina server-loggar
+                    print(f"DEBUG: Hittade {module_name} i {course}. Läser sidor {start} till {end}")
+                    
+                    # Om området är under 15 sidor, ta alla sidor (Trigonometri är ofta tätt packat)
+                    if (end - start) <= 15:
                         relevant_pages.update(range(start, end + 1))
                     else:
-                        # Om området är stort, ta de första 6 och de sista 6 sidorna
-                        # (Ofta är teori i början och blandade övningar i slutet)
-                        relevant_pages.update(range(start, start + 7))
+                        # För större områden: Ta de första 8 sidorna (ofta teori) 
+                        # och de sista 6 sidorna (ofta blandade övningar/repetition)
+                        relevant_pages.update(range(start, start + 9))
                         relevant_pages.update(range(end - 5, end + 1))
 
         # 3. Läs PDF
@@ -1554,33 +1557,36 @@ def generate_plan():
         # 4. Den kraftfulla prompten
         bok_struktur_regler = """
         STRUKTURELLA REGLER FÖR ATT TOLKA TEXTEN:
-        - FYRSIFFRIGA TAL (t.ex. 1115, 1121): Detta är uppgiftsnummer. 
-        - INRAMADE NUMMER: Betyder att digitala verktyg/GeoGebra krävs. Markera dessa som 'Digital uppgift'.
-        - FÄRGADE SIFFROR (1, 2, 3): 
-            * 1 = Grundläggande (E-nivå). 
-            * 2 = Utmaning (C-nivå). 
-            * 3 = Avancerad (A-nivå).
-        - SIDNUMMER: Siffror längst ner i hörnen är sidhänvisningar.
+        - SIDNUMMER: I kontexten nedan ser du rubriker som '--- SIDA X ---'. Använd ENDAST dessa nummer.
+        - FYRSIFFRIGA TAL (t.ex. 4115, 4121): Detta är uppgiftsnummer. 
+        - FÄRGADE SIFFROR (1, 2, 3): 1=E-nivå, 2=C-nivå, 3=A-nivå.
         """
         
         prompt = f"""
         Du är en pedagogisk studiecoach för Matematik 5000+. 
+        
         {bok_struktur_regler}
         
+        VIKTIGT: 
+        1. Använd ENDAST sidnummer som finns i 'KONTEXT FRÅN BOKEN' nedan. 
+        2. Om du ser att kontexten innehåller sidor runt 214-260, föreslå ALDRIG sidor som 116-120.
+        3. Om du är osäker på ett sidnummer, skriv bara kapitlets namn istället för siffran.
+        4. Gissa aldrig uppgiftsnummer. Använd bara de 4-siffriga tal du ser i texten.
+
         PERIOD: {today} till {deadline} ({delta_days} dagar).
         ELEVPROFIL:
         - Målbetyg: {data.get('targetGrade')}
-        - Valda kapitel och deras status: {selected_ratings}
+        - Valda områden: {list(selected_ratings.keys())}
         
-        KONTEXT FRÅN BOKEN (Sidor som matchar valda kapitel):
+        KONTEXT FRÅN BOKEN:
         ---
-        {book_context[:8000]}
+        {book_context[:10000]} 
         ---
         
         UPPGIFT:
-        Skapa en studieplan med EXAKT {delta_days} dagsplaner.
-        Anpassa svårighetsgraden på uppgifterna efter målbetyget ({data.get('targetGrade')}).
-        Varje dags 'video' ska vara en YouTube-sökning på kapitlets namn + 'Matematik 5000+'.
+        Skapa en studieplan för {course}. 
+        Fokusera på de valda områdena. Om texten ovan handlar om Trigonometri (sida 214+), se till att dagsplanerna reflekterar detta.
+        Anpassa svårighetsgraden efter målbetyget {data.get('targetGrade')}.
 
         SVARFORMAT (Strikt JSON):
         {{
@@ -1589,8 +1595,8 @@ def generate_plan():
               "date": "YYYY-MM-DD",
               "title": "Ämne",
               "activities": [
-                {{"type": "läs", "content": "Sida X-Y (Teori & Exempel)"}},
-                {{"type": "räkna", "content": "Uppgift A, B och C (Nivå 1/2/3)"}},
+                {{"type": "läs", "content": "Sida X-Y (Rubrik från texten)"}},
+                {{"type": "räkna", "content": "Uppgift XXXX, YYYY (Nivå Z)"}},
                 {{"type": "video", "url": "https://www.youtube.com/results?search_query=..."}}
               ],
               "time": "{data.get('hoursPerDay')}h"
