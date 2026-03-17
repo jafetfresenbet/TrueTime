@@ -1563,41 +1563,36 @@ def generate_plan():
         """
         
         prompt = f"""
-        Du är en pedagogisk studiecoach för Matematik 5000+. 
+        Du är en studiecoach för Matematik 5000+. Din uppgift är att skapa en dagsplan baserad EXKLUSIVT på bifogad kontext.
         
-        {bok_struktur_regler}
+        STRIKTA REGLER FÖR INNEHÅLL:
+        1. 'läs': Du får ENDAST skriva sidnummer (t.ex. 'Sida 214-215'). Gissa aldrig. Använd sidnumren som finns i kontexten (leta efter 'SIDA X' eller sidhänvisningar).
+        2. 'räkna': Du ska ALDRIG skriva namnet på kapitlet här. Du ska skriva en instruktion i formatet: 'Välj [ANTAL] uppgifter från nivå [NIVÅ] och gör dem.'
+           - Om målbetyget är E: Välj nivå 1.
+           - Om målbetyget är C: Välj nivå 2.
+           - Om målbetyget är A: Välj nivå 3.
+        3. 'title': Skriv en kort rubrik för vad dagen handlar om (t.ex. 'Enhetscirkeln').
         
-        VIKTIGT: 
-        1. Använd ENDAST sidnummer som finns i 'KONTEXT FRÅN BOKEN' nedan. 
-        2. Om du ser att kontexten innehåller sidor runt 214-260, föreslå ALDRIG sidor som 116-120.
-        3. Om du är osäker på ett sidnummer, skriv bara kapitlets namn istället för siffran.
-        4. Gissa aldrig uppgiftsnummer. Använd bara de 4-siffriga tal du ser i texten.
-
-        PERIOD: {today} till {deadline} ({delta_days} dagar).
-        ELEVPROFIL:
+        KONTEXT FRÅN BOKEN (Sidor {start}-{end}):
+        ---
+        {book_context[:10000]}
+        ---
+        
+        DATA:
+        - Kurs: {course}
         - Målbetyg: {data.get('targetGrade')}
-        - Valda områden: {list(selected_ratings.keys())}
+        - Tid per dag: {data.get('hoursPerDay')}h
         
-        KONTEXT FRÅN BOKEN:
-        ---
-        {book_context[:10000]} 
-        ---
-        
-        UPPGIFT:
-        Skapa en studieplan för {course}. 
-        Fokusera på de valda områdena. Om texten ovan handlar om Trigonometri (sida 214+), se till att dagsplanerna reflekterar detta.
-        Anpassa svårighetsgraden efter målbetyget {data.get('targetGrade')}.
-
-        SVARFORMAT (Strikt JSON):
+        SVARFORMAT (JSON):
         {{
           "plan": [
             {{
               "date": "YYYY-MM-DD",
-              "title": "Ämne",
+              "title": "Rubrik",
               "activities": [
-                {{"type": "läs", "content": "Sida X-Y (Rubrik från texten)"}},
-                {{"type": "räkna", "content": "Uppgift XXXX, YYYY (Nivå Z)"}},
-                {{"type": "video", "url": "https://www.youtube.com/results?search_query=..."}}
+                {{"type": "läs", "content": "Sida 214-215"}},
+                {{"type": "räkna", "content": "Välj tre uppgifter från nivå 2 och gör dem."}},
+                {{"type": "video", "url": "https://www.youtube.com/results?search_query=matematik+5000+..."}}
               ],
               "time": "{data.get('hoursPerDay')}h"
             }}
