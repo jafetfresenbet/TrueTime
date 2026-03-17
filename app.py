@@ -1554,45 +1554,50 @@ def generate_plan():
                         except:
                             continue
 
-        # 4. Den kraftfulla prompten
+        # 1. Definiera vilken nivå som motsvarar målbetyget för att hjälpa AI:n
+        target_grade = data.get('targetGrade', 'E')
+        level_map = {"E": "1", "D": "1 och 2", "C": "2", "B": "2 och 3", "A": "3"}
+        chosen_level = level_map.get(target_grade, "1")
+        
+        # 2. Den uppdaterade kraftfulla prompten
         bok_struktur_regler = """
         STRUKTURELLA REGLER FÖR ATT TOLKA TEXTEN:
-        - SIDNUMMER: I kontexten nedan ser du rubriker som '--- SIDA X ---'. Använd ENDAST dessa nummer.
-        - FYRSIFFRIGA TAL (t.ex. 4115, 4121): Detta är uppgiftsnummer. 
-        - FÄRGADE SIFFROR (1, 2, 3): 1=E-nivå, 2=C-nivå, 3=A-nivå.
+        - SIDNUMMER: Leta efter texten '--- SIDA X ---' i kontexten. Detta är ditt sidnummer.
+        - FÄRGADE SIFFROR (1, 2, 3): Dessa indikerar svårighetsnivå för uppgifterna.
         """
         
         prompt = f"""
-        Du är en studiecoach för Matematik 5000+. Din uppgift är att skapa en dagsplan baserad EXKLUSIVT på bifogad kontext.
+        Du är en pedagogisk studiecoach för Matematik 5000+. Din uppgift är att skapa en dagsplan baserad EXKLUSIVT på bifogad text.
         
-        STRIKTA REGLER FÖR INNEHÅLL:
-        1. 'läs': Du får ENDAST skriva sidnummer (t.ex. 'Sida 214-215'). Gissa aldrig. Använd sidnumren som finns i kontexten (leta efter 'SIDA X' eller sidhänvisningar).
-        2. 'räkna': Du ska ALDRIG skriva namnet på kapitlet här. Du ska skriva en instruktion i formatet: 'Välj [ANTAL] uppgifter från nivå [NIVÅ] och gör dem.'
-           - Om målbetyget är E: Välj nivå 1.
-           - Om målbetyget är C: Välj nivå 2.
-           - Om målbetyget är A: Välj nivå 3.
-        3. 'title': Skriv en kort rubrik för vad dagen handlar om (t.ex. 'Enhetscirkeln').
+        STRIKTA INSTRUKTIONER FÖR INNEHÅLL:
+        1. 'läs': Här får du ENDAST skriva de exakta sidnumren där teorin eller uppgifterna finns (t.ex. 'Sida 214-216'). 
+        2. 'räkna': Här ska du ALDRIG lista specifika uppgiftsnummer. Du ska använda följande exakta fras: 
+           "Välj tre uppgifter från nivå {chosen_level} och gör dem."
+        3. 'title': En kort och tydlig rubrik på vad kapitlet handlar om enligt boken.
+        
+        PERIOD: {today} till {deadline} ({delta_days} dagar).
+        ELEVPROFIL:
+        - Målbetyg: {target_grade}
+        - Valda områden: {list(selected_ratings.keys())}
         
         KONTEXT FRÅN BOKEN (Sidor {start}-{end}):
         ---
-        {book_context[:10000]}
+        {book_context[:10000]} 
         ---
         
-        DATA:
-        - Kurs: {course}
-        - Målbetyg: {data.get('targetGrade')}
-        - Tid per dag: {data.get('hoursPerDay')}h
+        UPPGIFT:
+        Skapa en studieplan för {course}. Gissa aldrig sidnummer. Om du inte hittar ett sidnummer i texten, skriv 'Sida {start}-{end}'.
         
-        SVARFORMAT (JSON):
+        SVARFORMAT (Strikt JSON):
         {{
           "plan": [
             {{
               "date": "YYYY-MM-DD",
-              "title": "Rubrik",
+              "title": "Kapitelnamn",
               "activities": [
-                {{"type": "läs", "content": "Sida 214-215"}},
-                {{"type": "räkna", "content": "Välj tre uppgifter från nivå 2 och gör dem."}},
-                {{"type": "video", "url": "https://www.youtube.com/results?search_query=matematik+5000+..."}}
+                {{"type": "läs", "content": "Sida X-Y"}},
+                {{"type": "räkna", "content": "Välj tre uppgifter från nivå {chosen_level} och gör dem."}},
+                {{"type": "video", "url": "https://www.youtube.com/results?search_query=matematik+5000+{course}+..."}}
               ],
               "time": "{data.get('hoursPerDay')}h"
             }}
