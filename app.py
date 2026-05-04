@@ -390,25 +390,24 @@ def calculate_priority_score(item, mode, user_skills):
         delta = dt - now
         t = max(0, delta.days + (delta.seconds / 86400))
         
-        # Hämta Tyngd (W) - mappar strängar till siffervärden
-        # Vi antar att du har sparat vikt i din databasmodell för ämnet
+        # Hämta Tyngd (W)
         weight_map = {'50p': 1, '100p': 2, '150p': 3, 'Gymnasiearbete': 4}
-        # Vi behöver hämta vikten från databasen baserat på subject_name eller liknande
-        # För enkelhetens skull i denna loop sätter vi standard till 2 (100p) om ej hittad
         w = 2 
         
-        # Svårighetsfaktor (S) baserat på nivå
-        # Låg nivå = 3 (behöver mer fokus), Hög = 1
+        # Svårighetsfaktor (S)
         skill_level = user_skills.get(item.get('subject_id'), 'Ej vald')
         skill_map = {'Låg': 3, 'Medel': 2, 'Hög': 1, 'Ej vald': 1.5}
         s = skill_map.get(skill_level, 1.5)
         
         if mode == 'planerare':
             # Modell 2: Score = (W*S) / (sqrt(T) + 1)
+            # Denna behålls exakt som innan.
             return (w * s) / (math.sqrt(t) + 1)
         else:
-            # Modell 1: Score = (W*S) / (T + 1)^1.5
-            return (w * s) / ((t + 1) ** 1.5)
+            # SISTA MINUTEN-LOGIK: 
+            # Vi struntar i W och S. Vi vill bara ha lägst T först.
+            # Vi subtraherar T från ett stort tal så att lägre T ger högre score.
+            return 1000000 - t
             
     else: # Aktivitet
         dt = item['start_time']
@@ -416,6 +415,7 @@ def calculate_priority_score(item, mode, user_skills):
         t = max(0, delta.days + (delta.seconds / 86400))
         # Aktiviteter har en fast "vikt" så de flyter med naturligt
         return 1.8 / (t + 1)
+
 
 # En enkel mappning för att hjälpa AI:n
 def get_actual_page_mapping(pdf_page_index):
